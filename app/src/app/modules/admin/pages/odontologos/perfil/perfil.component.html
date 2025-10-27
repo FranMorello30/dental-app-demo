@@ -1,0 +1,203 @@
+<div class="relative min-h-screen w-full overflow-hidden">
+    <div class="relative pt-24 px-8 pb-8">
+        <div class="bg-white/20 backdrop-blur-2xl rounded-xl border border-white/20 shadow-xl p-6 mb-6">
+            <div class="flex flex-col md:flex-row gap-6 items-start md:items-center">
+                <div class="relative rounded-full overflow-hidden h-24 w-24 border-4 border-white/30 flex items-center justify-center bg-white/10">                
+                    <mat-icon svgIcon="custom_outline:stethoscope" class="h-16 w-16 text-white/70" />
+                </div>
+                <div class="flex-1">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div>
+                            <h1 class="text-3xl font-bold text-white mb-1">{{dentist.name}}</h1>
+                            <div class="flex flex-wrap gap-4 text-white/80">
+                                <div class="flex items-center">
+                                    <mat-icon svgIcon="feather:calendar" class="h-4 w-4 mr-2 text-white/80" />
+                                    {{(dentist.especiality)}} 
+                                </div>
+                                <div class="flex items-center">
+                                    <mat-icon svgIcon="feather:phone" class="h-4 w-4 mr-2 text-white/80" />
+                                    {{dentist.phone || "No disponible"}}
+                                </div>
+                                <div class="flex items-center">
+                                    <mat-icon svgIcon="feather:mail" class="h-4 w-4 mr-2 text-white/80" />
+                                    {{dentist.email || "No disponible"}}
+                                </div>
+                                
+                            </div>
+                        </div>
+                        <div class="flex gap-2">
+                            <button class="flex items-center gap-1 bg-blue-500 hover:bg-blue-600 text-white px-3 py-1.5 rounded-lg transition-colors text-md">
+                                <mat-icon svgIcon="feather:edit" class="h-4 w-4 text-white" />
+                                Editar perfil
+                            </button>                        
+                            <button class="flex items-center gap-1 bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-1.5 rounded-lg transition-colors text-md">
+                                <mat-icon svgIcon="feather:calendar" class="h-4 w-4 text-white" />
+                                Agendar cita
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+            </div> 
+             <div class="mt-4 pt-4 border-t border-white/10">
+                        <h3 class="text-white font-lg flex items-center mb-2">
+                        <mat-icon svgIcon="feather:activity" class="h-4 w-4 mr-2 text-blue-400" />
+                        Estadísticas profesionales
+                        </h3>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div class="bg-white/10 rounded-lg p-3 flex flex-col">
+                            <span class="text-white/60 text-md">Pacientes atendidos</span>
+                            <span class="text-white text-xl font-semibold">{{totales.patientsCount}}</span>
+                        </div>
+                        <div class="bg-white/10 rounded-lg p-3 flex flex-col">
+                            <span class="text-white/60 text-md">Citas completadas</span>
+                            <span class="text-white text-xl font-semibold">{{totales.appointmentsCompleted}}</span>
+                        </div>
+                        <div class="bg-white/10 rounded-lg p-3 flex flex-col">
+                            <span class="text-white/60 text-md">Satisfacción</span>
+                            <span class="text-white text-xl font-semibold">{{totales.satisfactionRate}}%</span>
+                        </div>
+                        <div class="bg-white/10 rounded-lg p-3 flex flex-col">
+                            <span class="text-white/60 text-md">Próximas citas</span>
+                            <span class="text-white text-xl font-semibold">{{totales.upcomingAppointments}}</span>
+                        </div>
+                        </div>
+                </div>          
+        </div>
+        <div >
+            <mat-tab-group backgroundColor="transparent" color="primary" class="text-white/80 w-full">
+                <mat-tab label="Información general" class="text-white/80">
+                    
+                </mat-tab>
+                <mat-tab label="Horarios" class="text-white/80">
+                    <div class="grid grid-cols-3 gap-6">
+                        <div class="col-span-2 bg-white/10 backdrop-blur-xl rounded-xl border border-white/10 shadow-md p-6">
+                            <div class ="flex justify-between items-center mb-6">
+                                <h2 class="text-xl font-semibold text-white">Horarios de atención</h2>
+                                <div class="flex gap-2">
+                                    <button mat-raised-button >
+                                        <mat-icon  svgIcon="feather:edit" class="h-4 w-4" />
+                                            Editar horarios
+                                        <!-- @if(editingSchedule){
+                                            <mat-icon svgIcon="feather:x" class="h-4 w-4" />
+                                            Cancelar
+                                        }@else {
+                                            <mat-icon  svgIcon="feather:edit" class="h-4 w-4" />
+                                            Editar horarios
+                                        } -->
+                                        
+                                        
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                @for (item of schedules; track $index) {
+                                    @if(item.is_working_day){
+
+                                
+                                    <div class="bg-white/10 rounded-lg p-4 border border-white/20 hover:bg-white/15 transition-all">
+                                        <div class="flex justify-between items-center mb-2">
+                                            <h3 class="font-medium text-white flex items-center">
+                                            <div class="w-2 h-2 rounded-full bg-green-400 mr-2"></div>
+                                            {{daysOfWeek(item.day_of_week)}}
+                                            </h3>
+                                        </div>
+                                        <div class="flex items-center text-white/80 text-sm">
+                                            <mat-icon svgIcon="feather:clock" class="h-4 w-4 mr-2 text-white/60" />
+                                            {{item.start_time}} - {{item.end_time}}
+                                        </div>
+                                        @if(item.breaks && item.breaks.length > 0) {
+                                            <div class="mt-2">
+                                                <p class="text-white/60 text-md mb-1">Descansos:</p>
+                                                @for (breakItem of item.breaks; track $index) {
+                                                    <div class="text-white/80 text-xs pl-6 py-0.5 flex items-center">
+                                                    <div class="w-1 h-1 rounded-full bg-red-400 mr-1"></div>
+                                                        {{breakItem.start_time}} - {{breakItem.end_time}}
+                                                    </div>
+                                                }
+                                            </div>
+                                        }
+                                        
+                                    </div>
+                                    }
+                                }
+                                
+                            </div>
+                        </div>
+                        <div class="bg-white/10 backdrop-blur-xl rounded-xl border border-white/10 shadow-md p-6">
+                            <div class ="flex justify-between items-center mb-6">
+                                <h2 class="text-xl font-semibold text-white">Días no laborables</h2>
+                                
+                            </div>
+                            <div class="">
+                                <div class="flex justify-between items-center mb-2 ">
+                                    <button (click)="goToPrevious()" mat-icon-button class="p-1 rounded-full  hover:bg-white/20 transition-colors">
+                                        <mat-icon svgIcon="feather:arrow-left-circle" class="h-5 w-5 text-white" />
+                                    </button>
+                                    <h3 className="text-white font-medium">
+                                        {{getFormattedDate()}}
+                                    </h3>
+                                    <button (click)="goToNext()" mat-icon-button class="p-1 rounded-full  hover:bg-white/20 transition-colors">
+                                        <mat-icon svgIcon="feather:arrow-right-circle" class="h-5 w-5 text-white" />
+                                    </button>
+                                </div>
+                                <div class="grid grid-cols-7 gap-1 mb-1">
+                                    @for (day of weekdays; track $index) {
+                                        <div class="text-center text-white/70 py-1">
+                                            {{day}}
+                                        </div>
+                                    }
+                                    @for (day of getMiniCalendarData(); track $index) {
+                                        <div
+                                            (click)="selectDate(day)"
+                                            class='rounded-full w-7 h-7 flex items-center justify-center text-center' 
+                                            [class]="comparedDate(day) ? 'bg-blue-500 text-white' : 'text-white hover:bg-white/20'"
+                                            [ngClass]="getPastDay(day) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'"                                            
+                                            >
+                                            {{day}}
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+
+                             <div class="space-y-2 mb-4">
+                                @for (item of navailabilities; track $index) {
+                                    <div class="flex items-center justify-between bg-white/10 rounded-lg p-3">
+                                    <div class="flex items-center space-x-3">
+                                   
+                                    <div>
+                                        <p class="text-white font-medium">
+                                        {{getFormattedDateForDay(item.unavailable_date)}}
+                                        </p>
+                                        <p class="text-white/70 text-sm">{{item.reason}}</p>
+                                    </div>
+                                    </div>
+                                    <Button
+                                    type="button"
+                                    
+                                     class="text-red-400 hover:text-red-300 hover:bg-white/5">
+                                    <mat-icon svgIcon="feather:trash-2" class="h-4 w-4 text-red-400" />
+                                    </Button>
+                                </div>
+                                }
+                             </div>
+                        </div>
+                    </div>
+                    
+                </mat-tab>
+                <mat-tab label="Cualificaciones" class="text-white/80">
+                   
+                </mat-tab>
+                <mat-tab label="Historal de citas" class="text-white/80">
+
+                </mat-tab>
+                <mat-tab label="Facturación" class="text-white/80">
+
+                </mat-tab>
+                
+            </mat-tab-group>
+        </div>
+    </div>    
+</div>
+
+

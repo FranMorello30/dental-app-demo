@@ -1,0 +1,224 @@
+
+<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+    <div class="w-full max-h-[95vh] rounded-2xl bg-gradient-to-br from-white/20 via-white/10 to-white/5 backdrop-blur-lg shadow-xl border border-white/20 text-white overflow-hidden flex flex-col">
+        <div class="p-6 border-b border-white/10">
+            <div class="flex justify-between items-center">
+              <h2 class="text-xl font-semibold">Nuevo Plan de Tratamiento</h2>
+              <button (click)="cerrarForm()" class="text-white/70 hover:text-white transition-colors" type="button">
+                <mat-icon svgIcon="feather:x" class="h-5 w-5 text-white" />
+              </button>
+            </div>  
+              
+        </div>
+
+        <div class="w-full grid grid-cols-2 gap-2 p-6">
+            <div class="bg-white/10 backdrop-blur-lg rounded-xl border border-white/20 p-4 mb-6">
+                <h3 class="text-lg font-medium mb-4">Información del Plan</h3>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label class="block text-sm font-medium mb-1">Nombre del Plan *</label>
+                    <input
+                    type="text"
+                    name="name"
+                    
+                    class="w-full bg-gray-800/90 border border-white/20 rounded-md px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Ej: Plan de Ortodoncia 2025"
+                    />
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Costo Total Estimado</label>
+                    <div class="relative">
+                    <mat-icon svgIcon="heroicons_outline:currency-dollar" class="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-white/60" />
+                    <input
+                        type="number"
+                        name="totalCost"
+                    
+                    
+                        class="w-full bg-gray-800/90 border border-white/20 rounded-md pl-10 pr-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="0.00"
+                        step="0.01"
+                        readOnly
+                    />
+                    </div>
+                </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label class="block text-sm font-medium mb-1">Fecha de Inicio</label>
+                    <input
+                    type="date"
+                    name="startDate"
+                
+                    class="w-full bg-gray-800/90 border border-white/20 rounded-md px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Fecha Estimada de Finalización</label>
+                    <input
+                    type="date"
+                    name="estimatedEndDate"
+                    
+                    class="w-full bg-gray-800/90 border border-white/20 rounded-md px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                </div>
+                </div>
+
+                <div class="mb-4">
+                <label class="block text-sm font-medium mb-1">Descripción</label>
+            
+                <textarea  name="description"
+                
+                    rows="3"
+                    class="w-full bg-gray-800/90 border border-white/20 rounded-md px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Descripción detallada del plan de tratamiento..."></textarea>
+                </div>
+
+                <div>
+                <label class="block text-sm font-medium mb-1">Notas Adicionales</label>
+                <textarea
+                    name="notes"
+                
+                    rows="2"
+                    class="w-full bg-gray-800/90 border border-white/20 rounded-md px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Notas adicionales, consideraciones especiales..."
+                ></textarea>
+                </div>
+            </div> 
+          
+            <div class="overflow-auto max-h-120">
+                <div class=" p-4 mb-1">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-medium">Tratamientos del Plan</h3>
+                        <button (click)="newTreatmentForm = true" class="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-3 py-1.5 rounded-lg transition-colors text-sm">
+                            <mat-icon svgIcon="feather:plus-circle" class="h-4 w-4 text-white" />
+                            Agregar Tratamiento
+                        </button>
+                    </div>
+                    @if(treatments.length === 0) {
+                    <div class="text-center py-4 text-white/70">
+                        <p>No hay tratamientos agregados al plan.</p>
+                        <p class="text-sm">Haga clic en "Agregar Tratamiento" para comenzar.</p>
+                    </div> }
+                </div>
+                @if(newTreatmentForm) {
+                    <div class="bg-white/10 backdrop-blur-lg rounded-xl border border-white/20 p-4 mb-6">
+                        <h3 class="text-lg font-medium mb-4">Nuevo Tratamiento</h3>
+                        <div class="grid grid-cols-4 gap-1 mb-2">
+                            <div>
+                                <label class="block text-sm font-medium mb-1">Nombre del Tratamiento *</label>
+                                <input
+                                    type="text"
+                                    name="name"
+                                
+                                    class="w-full bg-gray-800/90 border border-white/20 rounded-md px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    placeholder="Ej: Colocación de brackets"
+                                />
+                                </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-1">Prioridad</label>
+                                <select
+                                    name="priority"
+                                
+                                    class="w-full bg-gray-800/90 border border-white/20 rounded-md px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                >
+                                    <option value="low">Baja</option>
+                                    <option value="medium">Media</option>
+                                    <option value="high">Alta</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-1">Costo Estimado</label>
+                                <div class="relative">
+                                    <mat-icon svgIcon="heroicons_outline:currency-dollar" class="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-white/60" />
+                                    <input
+                                    type="number"
+                                    name="estimatedCost"
+                                    
+                                    class="w-full bg-gray-800/90 border border-white/20 rounded-md pl-10 pr-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    placeholder="0.00"
+                                    step="0.01"
+                                    />
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-1">Duración Estimada</label>
+                                <input
+                                    type="text"
+                                    name="estimatedDuration"
+                                
+                                    class="w-full bg-gray-800/90 border border-white/20 rounded-md px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    placeholder="Ej: 1 hora, 30 minutos"
+                                />
+                            </div>
+                        </div>
+                        <div class="mb-2">
+                            <label class="block text-sm font-medium mb-1">Descripción</label>
+                            <textarea
+                            name="description"                                                
+                            rows="2"
+                            class="w-full bg-gray-800/90 border border-white/20 rounded-md px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="Descripción del tratamiento..."
+                            ></textarea>
+                        </div>                
+                        <div class="flex justify-end gap-3">
+                            <button (click)="newTreatmentForm = false" class="px-4 py-2 bg-white/10 hover:bg-red-500 rounded-lg transition-colors">
+                                Cancelar
+                            </button>
+                            <button (click)="crearTreatment()" class="px-4 py-2 bg-green-500 hover:bg-green-600 rounded-lg transition-colors flex items-center gap-2">
+                                <mat-icon svgIcon="feather:save" class="h-4 w-4" />
+                                Agregar
+                            </button>
+                        </div>
+                    </div>
+                } 
+
+                @if (!newTreatmentForm && treatments.length > 0) {
+                    <div class="space-y-3">
+                    @for (treatment of treatments; track $index) {
+                        <div class="bg-white/5 rounded-lg p-3">
+                            <div class="flex justify-between items-start mb-2">
+                                <div class="flex-1">
+                                <h4 class="font-medium text-white">{{treatment.name}}</h4>
+                                <p class="text-white/70 text-sm">{{treatment.description}}</p>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                <span
+                                    [ngClass]="['px-2', 'py-0.5', 'rounded-full', 'text-xs', 'border', getPriorityColor(treatment.priority)]"
+                                >  {{getPriorityLabel(treatment.priority)}}
+                                </span>
+                                <button (click)="treatments.splice($index, 1)">
+                                    <mat-icon svgIcon="feather:trash-2" class="h-4 w-4 text-red-400 hover:text-red-300 transition-colors" />
+                                </button>
+                                </div>
+                            </div>
+                            <div class="flex justify-between items-center text-sm">
+                                <span class="text-white/70">Duración: {{treatment.estimatedDuration}}</span>
+                                <span class="text-white font-medium">${{treatment.estimatedCost | number}}</span>
+                            </div>
+                        </div>
+                    }
+                    </div>
+                }
+            </div>         
+             
+        </div>  
+        <div class="p-4 border-t border-white/10">
+          <div class="flex gap-3 my-auto">
+              <button
+                (click)="cerrarForm()"
+                type="button"                
+                class="flex-1 py-2.5 bg-white/10 hover:bg-red-500 rounded-xl text-md transition-colors font-medium" >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                
+                class="flex-1 py-2.5 bg-blue-500 hover:bg-blue-600 rounded-xl text-md transition-colors font-medium flex items-center justify-center"
+                
+              >Grabar</button>
+          </div>
+        </div>             
+    </div>
+</div>

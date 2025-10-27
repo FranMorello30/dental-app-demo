@@ -1,0 +1,98 @@
+<div class="bg-white/10 backdrop-blur-xl rounded-xl border border-white/10 shadow-md p-6">
+              <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-semibold text-white">Historial de Citas</h2>
+                <div class="flex gap-2">
+                  <button
+                    onClick={handleScheduleAppointment}
+                    class="flex items-center gap-1 bg-blue-500 hover:bg-blue-600 text-white px-3 py-1.5 rounded-lg transition-colors text-sm"
+                  >
+                    <mat-icon svgIcon="feather:calendar" class="h-4 w-4" />
+                    Agendar nueva cita
+                  </button>
+                  <button class="flex items-center gap-1 bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-lg transition-colors text-sm">
+                    <mat-icon  svgIcon="feather:download" class="h-4 w-4" />
+                    Exportar
+                  </button>
+                </div>
+              </div>
+
+              <div class="overflow-x-auto">
+                <table class="w-full">
+                  <thead>
+                    <tr class="border-b border-white/20">
+                      <th class="px-4 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">
+                        Fecha
+                      </th>
+                      <th class="px-4 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">
+                        Tratamiento
+                      </th>
+                      <th class="px-4 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">
+                        Dentista
+                      </th>
+                      <th class="px-4 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">
+                        Estado
+                      </th>
+                      <th class="px-4 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">
+                        Costo
+                      </th>
+                      <th class="px-4 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">
+                        Acciones
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-white/10">
+                    @for (appointment of appointmentHistoryData; track $index) {
+                    <tr  class="hover:bg-white/5 transition-colors">
+                      <td class="px-4 py-4 whitespace-nowrap text-sm text-white">
+                        {{ formatDate(appointment.date) }}
+                      </td>
+                      <td class="px-4 py-4 text-sm text-white">{{ appointment.treatment }}</td>
+                      <td class="px-4 py-4 text-sm text-white">{{ appointment.dentist }}</td>
+                      <td class="px-4 py-4 whitespace-nowrap text-sm">
+                        <span
+                          [ngClass]="{
+                            'px-2 py-1 rounded-full text-xs': true,
+                            'bg-green-500/20 text-green-300': appointment.status === 'Completada',
+                            'bg-red-500/20 text-red-300': appointment.status === 'Cancelada',
+                            'bg-blue-500/20 text-blue-300': appointment.status !== 'Completada' && appointment.status !== 'Cancelada'
+                          }"
+                        >
+                          {{ appointment.status }}
+                        </span>
+                      </td>
+                      <td class="px-4 py-4 whitespace-nowrap text-sm text-white">
+                        ${{ appointment.cost.toFixed(2) }}
+                        <span *ngIf="appointment.paid" class="ml-2 text-green-400 text-xs">PAGADO</span>
+                      </td>
+                      <td class="px-4 py-4 whitespace-nowrap text-sm text-white">
+                        <div class="flex gap-2">
+                          <button
+                            class="text-blue-400 hover:text-blue-300 transition-colors"
+                            title="Ver detalles"
+                          >
+                            <!-- Replace with Angular icon component or SVG as needed -->
+                            <mat-icon svgIcon="feather:file-text" class="h-4 w-4" />
+                          </button>
+                          <button
+                            *ngIf="appointment.status === 'Completada'"
+                            class="text-blue-400 hover:text-blue-300 transition-colors"
+                            title="Descargar recibo"
+                          >
+                            <!-- Replace with Angular icon component or SVG as needed -->
+                            <mat-icon svgIcon="feather:download" class=" h-4 w-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                }
+                  </tbody>
+                </table>
+              </div>
+
+              @if(appointmentHistoryData.length === 0)
+              {
+                <div class="text-center py-10">
+                  <p class="text-white/70">No hay citas registradas.</p>
+                </div>
+              }
+</div>

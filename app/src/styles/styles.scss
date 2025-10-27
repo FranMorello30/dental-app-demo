@@ -1,0 +1,81 @@
+/* ----------------------------------------------------------------------------------------------------- */
+/*  @ Import/write your custom styles here.
+/*  @ Styles from this file will override 'vendors.scss' and Fuse's base styles.
+/* ----------------------------------------------------------------------------------------------------- */
+//@import '';
+
+
+
+.bg-encabezado-tabla {
+    background-color: #fe4300 !important;
+    color: white !important;
+}
+
+.bg-ventana {
+    background-color: #01488a !important;
+    color: white !important;
+}
+
+.bg-btn-export {
+    background-color: #05ced4 !important;
+    color: white !important;
+}
+
+.no-results {
+    text-align: center;
+    padding: 20px;
+    font-size: 18px;
+    color: #757575;
+}
+
+.attachment-list {
+    font-size: 13px;
+    width: 100%;
+    .attachment {
+        border: 1px solid;
+        border-radius: 20px;
+        padding-left: 16px;
+        margin-top: 8px;
+        min-width: 400px;
+        .filename {
+            font-weight: 600;
+        }
+
+        &:last-child {
+            margin-bottom: 0;
+        }
+    }
+}
+.d-none {
+    display: none;
+}
+
+.p-4-5 {
+    padding: 0.95rem /* 16px */ !important;
+}
+
+.w-ventana-65 {
+    width: 67% !important;
+}
+
+.altura-pequena {
+    height: 50px;
+}
+.altura-campo {
+    height: 74px;
+}
+
+.custom-button {
+    transition: all 0.3s ease;
+}
+
+.custom-button:hover {
+    background-color: #3f51b5; /* Cambia el color de fondo si es necesario */
+    @apply text-white; /* Cambia el color del texto si es necesario */
+    color: white; /* Cambia el color del texto si es necesario */
+    box-shadow: 0 3px 5px 2px rgba(63, 81, 181, 0.3); /* Añade sombra si es necesario */
+    mat-icon {
+        @apply text-white;
+    }
+}
+

@@ -1,0 +1,180 @@
+
+<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+    <div class="w-full max-w-320 max-h-[95vh] rounded-2xl bg-gradient-to-br from-white/20 via-white/10 to-white/5 backdrop-blur-lg shadow-xl border border-white/20 text-white overflow-hidden flex flex-col">
+        <div class="p-6 border-b border-white/10">
+            <div class="flex justify-between items-center">
+              <h2 class="text-xl font-semibold">Detalle de Cita Dental</h2>
+              <button (click)="cerrarFormCita()" class="text-white/70 hover:text-white transition-colors" type="button">
+                <mat-icon svgIcon="feather:x" class="h-5 w-5 text-white" />
+              </button>
+            </div>
+
+            <div class="bg-orange-500/20 border border-orange-500/30 rounded-lg p-3 mt-4 mb-2 text-white">
+              <div class="flex items-center">
+                <mat-icon svgIcon="feather:alert-circle" class="h-5 w-5 mr-2 text-orange-400" />
+                <div>
+                  <p class="font-medium">Esta cita ha finalizado automáticamente</p>
+                  <p class="text-sm text-white/80">
+                    Por favor, complete la información del tratamiento realizado y los dientes tratados.
+                  </p>
+                </div>
+              </div>            
+            </div>
+         
+              <!-- <h3 class="text-white text-2xl">Información de la Cita</h3> -->
+                <div class="flex flex-row gap-2 mt-1">
+                   <p class="flex items-center">
+                    <mat-icon svgIcon="feather:file-text" class="mr-2 h-5 w-5 text-white" />
+                    Tratamiento: {{appointment().treatment }}
+                </p>
+                <p class="flex items-center">
+                    <mat-icon svgIcon="feather:calendar" class="mr-2 h-5 w-5 text-white" />
+                    {{appointment().start_time.toLocaleDateString("es-ES", {
+                    weekday: "long",
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                    })}}
+                </p>
+                <p class="flex items-center">
+                    <mat-icon svgIcon="feather:clock" class="mr-2 h-5 w-5 text-white" />
+                    {{appointment().start_time | date:'hh:mm a' }} - {{appointment().end_time | date:'hh:mm a' }}
+                </p>
+                <!-- <p class="flex items-center">
+                    <MapPin className="mr-2 h-5 w-5 text-blue-400" />
+                    {{appointment.location}}
+                </p> -->
+                <p class="flex items-center">
+                    <mat-icon svgIcon="feather:user" class="mr-2 h-5 w-5 text-white" />
+                    Paciente: {{appointment().patient?.name}}
+                </p>
+               
+                </div>
+            
+            
+        </div>
+        <div class="custom-scrollbar overflow-y-auto px-6 flex-grow">
+            <!-- <mat-tab-group backgroundColor="transparent" color="primary" class="text-white/80 w-full">
+                <mat-tab label="Información y Tratamiendo" class="text-white/80"> -->
+                   <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-1">
+                        <div>
+                            
+                            <div class="bg-white/10 backdrop-blur-lg rounded-xl border border-white/20 p-4 mb-6">
+                                <h3 class="text-white font-medium mb-4">Trabajo Realizado</h3>
+                                <div class="space-y-4">
+                                <div>
+                                    <!-- <label class="block text-sm font-medium mb-1">
+                                     <span class="text-red-400">*</span>
+                                    </label> -->
+                                    <textarea
+                                    [formControl]="trabajoRealizado"
+                                    
+                                    rows=6
+                                    class="w-full bg-gray-800/90 border border-white/20 rounded-md px-3 py-2 text-white placeholder:text-white/70 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    placeholder="Describa el trabajo realizado durante la cita..."
+                                    required
+                                    ></textarea>
+                                    <p class="text-xs text-white/60 mt-1">Este campo es obligatorio</p>
+                                </div>
+
+                               
+                                 <upload-archivo (uploadAdjuntos)="uploadFiles($event)"/>
+
+                                  <!-- <div>
+                                    <label class="block text-sm font-medium mb-1">Notas Adicionales</label>
+                                    <textarea
+                                   [formControl]="notasAdicionales"
+                                    
+                                    rows=3
+                                    class="w-full bg-gray-800/90 border border-white/20 rounded-md px-3 py-2 text-white placeholder:text-white/70 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    placeholder="Notas adicionales sobre el tratamiento..."
+                                    ></textarea>
+                                </div> -->
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                          <odontograma (selectedTeethChange)="teethSeleted($event)"></odontograma>
+                            <!-- <div class="bg-white/10 backdrop-blur-lg rounded-xl border border-white/20 p-4 mb-6">
+                             
+                            </div> -->
+                            <!-- <div class="bg-white/10 backdrop-blur-lg rounded-xl border border-white/20 p-4">
+                                <div class="flex items-center justify-between mb-4">
+                                  <h3 class="text-white font-medium">Cita de Seguimiento</h3>
+                                  <div class="flex items-center">
+                                    <input
+                                      type="checkbox"
+                                      id="needs-followup"
+                                     
+                                     
+                                      class="mr-2 h-4 w-4 rounded border-white/20 bg-white/10 text-blue-500 focus:ring-blue-500"
+                                    />
+                                    <label htmlFor="needs-followup" class="text-sm text-white/70">
+                                      Programar seguimiento
+                                    </label>
+                                  </div>
+                                </div>
+
+                                <div class="">
+                                  <div class="flex justify-between items-center mb-2 ">
+                                      <button (click)="goToPrevious()" mat-icon-button class="p-1 rounded-full  hover:bg-white/20 transition-colors">
+                                          <mat-icon svgIcon="feather:arrow-left-circle" class="h-5 w-5 text-white" />
+                                      </button>
+                                      <h3 className="text-white font-medium">
+                                          {{getFormattedDate()}}
+                                      </h3>
+                                      <button (click)="goToNext()" mat-icon-button class="p-1 rounded-full  hover:bg-white/20 transition-colors">
+                                          <mat-icon svgIcon="feather:arrow-right-circle" class="h-5 w-5 text-white" />
+                                      </button>
+                                  </div>
+                                  <div class="grid grid-cols-7 gap-1 mb-1">
+                                      @for (day of weekdays; track $index) {
+                                          <div class="text-center text-white/70 py-1">
+                                              {{day}}
+                                          </div>
+                                      }
+                                      @for (day of getMiniCalendarData(); track $index) {
+                                          <div
+                                              (click)="selectDate(day)"
+                                              class='rounded-full w-7 h-7 flex items-center justify-center text-center' 
+                                              [class]="comparedDate(day) ? 'bg-blue-500 text-white' : 'text-white hover:bg-white/20'"
+                                              [ngClass]="getPastDay(day) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'"                                            
+                                              >
+                                              {{day}}
+                                          </div>
+                                      }
+                                  </div>
+                                </div>
+
+
+                            </div> -->
+                        </div>
+                   </div>
+                <!-- </mat-tab> -->
+                <!-- <mat-tab label="Odontograma" class="text-white/80 h-full"> -->
+                   
+                <!-- </mat-tab>
+            </mat-tab-group> -->
+        </div>
+        <div class="p-6 border-t border-white/10">
+          <div class="flex gap-3">
+              <button
+                type="button"
+                (click)="cerrarFormCita()"
+                class="flex-1 py-2.5 bg-white/10 hover:bg-red-500 rounded-xl text-md transition-colors font-medium"
+                
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                (click)="grabarDetalle()"
+                class="flex-1 py-2.5 bg-blue-500 hover:bg-blue-600 rounded-xl text-md transition-colors font-medium flex items-center justify-center"
+                
+              >Grabar y Finalizar</button>
+          </div>
+        </div>
+    </div>
+  </div>
+
+

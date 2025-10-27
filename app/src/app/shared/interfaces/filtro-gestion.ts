@@ -1,0 +1,49 @@
+export interface FiltroGestion {
+    pacientes: FiltroPaciente[];
+}
+export interface FiltroPaciente {
+    rut: string;
+    CantDocsxCob: number;
+    llamadas_mes: number;
+    whatsapp_mes: number;
+    EjeAsignado: string;
+    ClasifCartera: string;
+    SwGestionMasiva: boolean;
+    MotivoRestGMasiva: string;
+    Pagare: boolean;
+    Tratamiento: boolean;
+    Sms: number;
+    Emails: number;
+    Otros: number;
+    Estado: string;
+    nombre: string;
+    apellido: string;
+    fallecido: boolean;
+    nombre_isapre_actual: string;
+    deuda_actual: string;
+    deuda_xbonificar_actual: string;
+    deuda_copago_actual: string;
+    fec_ult_gestion: string;
+    fec_prox_gestion: string;
+    cant_pams: number;
+    fec_pam_antiguo: string;
+    email: string;
+    email_cont: string;
+    MailExtras: string;
+    tlf_movil: string;
+    tlf_movil_cont: string;
+    tlf_fijo: string;
+    TelefonosExtras: string;
+    sexo: string;
+    FecCartaC: string;
+    EstadoCartaC: string;
+    usr_asignado: number;
+    TipoPrestaciones: string;
+    MtoDeudaReal: string;
+    status_pams: string;
+    ruts_isapres: string;
+    dias_antig_min: string;
+    dias_antig_max: string;
+    Empresas: string;
+    CupoLLam: number;
+}

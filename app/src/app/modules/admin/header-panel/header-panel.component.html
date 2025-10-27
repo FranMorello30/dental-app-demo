@@ -1,0 +1,161 @@
+<div [ngClass]="{'fixed inset-0 z-50 bg-black/30 backdrop-blur-sm transition-opacity duration-300': true, 'opacity-100': isOpen, 'opacity-0 pointer-events-none': !isOpen}">
+  <div
+    #menuRef
+    [ngClass]="{'absolute left-0 top-0 h-auto  w-64 bg-white/20 backdrop-blur-lg m-4 rounded-3xl border-r border-white/20 shadow-xl p-5 transform transition-transform duration-300 ease-in-out': true, 'translate-x-0': isOpen, '-translate-x-full': !isOpen}"
+  >
+    <div class="flex flex-col h-full">
+      <div class="flex justify-between items-center mb-8">
+        <h2 class="text-2xl font-semibold text-white drop-shadow-sm">Dental Clinic</h2>
+        <button (click)="isOpen = false" mat-icon-button class="text-white/70 hover:text-white p-1 rounded-full hover:bg-white/10 transition-colors" aria-label="Close menu">
+          <mat-icon svgIcon="feather:x" class="h-5 w-5 text-white/70" />
+        </button>
+      </div>
+
+      <span class="flex-1">
+        <ul class="space-y-2">
+        
+          
+          <!-- <li *ngFor="let item of menuItems" >
+            <a
+              [routerLink]="item.path"
+              class="hover:cursor-pointer"
+              [ngClass]="{'flex items-center gap-3 px-4 py-3 rounded-lg transition-colors': true, 'bg-blue-500 text-white': pathname === item.path, 'text-white/80 hover:bg-white/10 hover:text-white': pathname !== item.path}"
+            >
+              
+              <mat-icon class="h-5 w-5 text-white/70" [svgIcon]="item.icon"></mat-icon>
+              <span>{{ item.name }}</span>
+              <span *ngIf="item.badge" class="ml-auto bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                {{ item.badge }}
+              </span>
+            </a>
+          </li> -->
+<!-- hover:bg-white/10 hover:text-white -->
+
+          <li>
+            <a
+              routerLink="/admin/calendario"
+              routerLinkActive="bg-blue-500 text-white shadow-lg"
+              class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-white/80 "
+            >
+              <mat-icon class="h-5 w-5 text-white/70" svgIcon="feather:calendar"></mat-icon>
+              <span>Calendario</span>
+            </a>
+          </li>
+
+          <li>
+            <a
+              routerLink="/admin/pacientes"
+              routerLinkActive="bg-blue-500 text-white shadow-lg"
+              class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-white/80 "
+            >
+              <mat-icon class="h-5 w-5 text-white/70" svgIcon="feather:users"></mat-icon>
+              <span>Pacientes</span>
+            </a>
+          </li>
+
+          <li>
+            <a
+              routerLink="/admin/odontologos"
+              routerLinkActive="bg-blue-500 text-white shadow-lg"
+              class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-white/80 "
+            >
+              <mat-icon class="h-5 w-5 text-white/70" svgIcon="custom_outline:stethoscope"></mat-icon>
+              <span>Odontólogos</span>
+            </a>
+          </li>
+
+          <li>
+            <a
+              routerLink="/admin/configuraciones"
+              routerLinkActive="bg-blue-500 text-white shadow-lg"
+              class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-white/80 "
+            >
+              <mat-icon class="h-5 w-5 text-white/70" svgIcon="feather:settings"></mat-icon>
+              <span>Configuraciones</span>
+            </a>
+          </li>
+
+        </ul>
+      </span>  
+
+  
+      <button
+      (click)="signOut()"
+        class="flex items-center gap-3 px-4 py-3 text-white/80 hover:bg-white/10 hover:text-white rounded-lg transition-colors"
+      >
+       <mat-icon class="h-5 w-5 text-white/70" svgIcon="feather:log-out"></mat-icon>
+        <span>Cerrar sesión</span>
+      </button>
+    </div>
+  </div>
+</div>
+<div class="absolute top-0 left-0 right-0 z-10 flex items-center justify-between px-8 py-6">
+  <div class="flex items-center gap-4">
+    <button
+(click)="isOpen = true"
+      class=""
+      aria-label="Abrir menú de navegación"
+    >
+      <mat-icon class="text-white" svgIcon="feather:menu"></mat-icon>
+    </button>
+    <span class="text-2xl font-semibold text-white drop-shadow-lg">Calendario</span>
+  </div>
+
+  <div class="flex items-center gap-4">
+
+      <form class="relative">
+        <mat-icon class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/70" svgIcon="feather:search"></mat-icon>
+      
+        <input
+          type="text"
+          placeholder="Buscar..."
+          
+          
+          class="rounded-full bg-white/10  pl-10 pr-4 py-2 text-white placeholder:text-white/70 border border-white/20 focus:outline-none focus:ring-2 focus:ring-white/30"
+        />
+      </form>
+      <!-- backdrop-blur-sm -->
+    
+
+    
+
+    <div class="relative" >
+      <button
+      
+        class="h-10 w-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold shadow-md hover:bg-blue-600 transition-colors"
+        aria-label="Menú de usuario"
+      >
+        D
+      </button>
+
+    
+        <!-- <div class="absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white/10 backdrop-blur-md border border-white/20 overflow-hidden z-20">
+          <div class="py-2">
+            <button
+            
+              class="flex items-center w-full px-4 py-2 text-sm text-white hover:bg-white/10 transition-colors"
+            >
+              <span class="mr-2 h-4 w-4" ></span>
+              Perfil
+            </button>
+            <button
+              
+              class="flex items-center w-full px-4 py-2 text-sm text-white hover:bg-white/10 transition-colors"
+            >
+              <span class="mr-2 h-4 w-4" ></span>
+              Configuración
+            </button>
+            <div class="border-t border-white/10 my-1"></div>
+            <button
+              
+              class="flex items-center w-full px-4 py-2 text-sm text-white hover:bg-white/10 transition-colors"
+            >
+              <span class="mr-2 h-4 w-4" ></span>
+              Cerrar sesión
+            </button>
+          </div>
+        </div> -->
+    
+    </div>
+  </div>
+</div>

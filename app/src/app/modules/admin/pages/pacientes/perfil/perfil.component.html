@@ -1,0 +1,373 @@
+<div class="relative min-h-screen w-full overflow-hidden">
+    <div class="relative pt-24 px-8 pb-8">
+        <div class="bg-white/20 backdrop-blur-2xl rounded-xl border border-white/20 shadow-xl p-6 mb-6">
+            <div class="flex flex-col md:flex-row gap-6 items-start md:items-center">
+                <div class="relative rounded-full overflow-hidden h-24 w-24 border-4 border-white/30 flex items-center justify-center bg-white/10">                
+                    <mat-icon svgIcon="feather:user" class="h-16 w-16 text-white/70" />
+                </div>
+                <div class="flex-1">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div>
+                            <h1 class="text-3xl font-bold text-white mb-1">{{patient.name}}</h1>
+                            <div class="flex flex-wrap gap-4 text-white/80">
+                                <div class="flex items-center">
+                                    <mat-icon svgIcon="feather:calendar" class="h-4 w-4 mr-2 text-white/80" />
+                                    {{formatMonth(patient.dateOfBirth)}} ({{getEdad()}} años)
+                                </div>
+                                <div class="flex items-center">
+                                    <mat-icon svgIcon="feather:phone" class="h-4 w-4 mr-2 text-white/80" />
+                                    {{patient.phone || "No disponible"}}
+                                </div>
+                                <div class="flex items-center">
+                                    <mat-icon svgIcon="feather:mail" class="h-4 w-4 mr-2 text-white/80" />
+                                    {{patient.email || "No disponible"}}
+                                </div>
+                                <div class="flex items-center">
+                                    <mat-icon svgIcon="feather:map-pin" class="h-4 w-4 mr-2 text-white/80" />
+                                    {{patient.address || "No disponible"}}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex gap-2">
+                            <button class="flex items-center gap-1 bg-blue-500 hover:bg-blue-600 text-white px-3 py-1.5 rounded-lg transition-colors text-md">
+                                <mat-icon svgIcon="feather:edit" class="h-4 w-4 text-white" />
+                                Editar perfil
+                            </button>                        
+                            <button (click)="crearCita()" class="flex items-center gap-1 bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-1.5 rounded-lg transition-colors text-md">
+                                <mat-icon svgIcon="feather:calendar" class="h-4 w-4 text-white" />
+                                Agendar cita
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>           
+        </div>
+        <div >
+            <!-- color="primary" -->
+            <mat-tab-group backgroundColor="transparent"  class="w-full">
+                <mat-tab label="Información general" class="text-white/80">
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div class="lg:col-span-1 space-y-6">
+                            <div class="bg-white/10 backdrop-blur-xl rounded-xl border border-white/10 shadow-md p-5">
+                                <div class="flex justify-between items-center mb-4">
+                                    <h2 class="text-xl font-semibold text-white">Información Personal</h2>
+                                    <button class=" hover:text-blue-300 transition-colors">
+                                        <mat-icon svgIcon="feather:edit" class="h-4 w-4 text-blue-400" />
+                                    </button>
+                                </div>
+                                <div class="space-y-3">
+                                    <div>
+                                    <p class="text-white/60 text-md">Nombre completo</p>
+                                    <p class="text-white">{{patient.name}}</p>
+                                    </div>
+                                    <div>
+                                    <p class="text-white/60 text-md">Fecha de nacimiento</p>
+                                    <p class="text-white">
+                                        {{formatMonth(patient.dateOfBirth)}} ({{getEdad()}} años)
+                                    </p>
+                                    </div>
+                                    <div>
+                                    <p class="text-white/60 text-md">Teléfono</p>
+                                    <p class="text-white">{{patient.phone}}</p>
+                                    </div>
+                                    <div>
+                                    <p class="text-white/60 text-md">Email</p>
+                                    <p class="text-white">{{patient.email}}</p>
+                                    </div>
+                                    <div>
+                                    <p class="text-white/60 text-md">Dirección</p>
+                                    <p class="text-white">{{patient.address}}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="bg-white/10 backdrop-blur-xl rounded-xl border border-white/10 shadow-md p-5">
+                                <div class="flex justify-between items-center mb-4">
+                                    <h2 class="text-xl font-semibold text-white">Información de Seguro</h2>
+                                   <button class=" hover:text-blue-300 transition-colors">
+                                        <mat-icon svgIcon="feather:edit" class="h-4 w-4 text-blue-400" />
+                                    </button>
+                                </div>
+                                <div class="space-y-3">
+                                    <div>
+                                        <p class="text-white/60 text-md">Plan de seguro</p>
+                                        <p class="text-white">{{patient.insurance }}</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-white/60 text-md">Número de póliza</p>
+                                        <p class="text-white">{{patient.insuranceId }}</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-white/60 text-md">Estado de cobertura</p>
+                                        <div class="flex items-center">
+                                            <div class="w-3 h-3 rounded-full bg-green-500 mr-2"></div>
+                                            <p class="text-white">Activo</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="bg-white/10 backdrop-blur-xl rounded-xl border border-white/10 shadow-md p-5">
+                                <h2 class="text-xl font-semibold text-white mb-4">Próxima Cita</h2>
+                                @if (patient.nextAppointment) {
+                                    <div>
+                                        <div class="flex items-center text-blue-400 text-lg mb-1">
+                                            <mat-icon svgIcon="feather:calendar" class="h-5 w-5 mr-2 text-white" />
+                                            {{formatDate(patient.nextAppointment)}}
+                                        </div>
+                                        <p class="text-white mb-3">Revisión periódica</p>
+                                        <div class="flex justify-between">
+                                            <button class=" text-white/70 hover:text-white flex items-center gap-1 transition-colors">
+                                                <mat-icon svgIcon="feather:edit" class="h-4 w-4 text-white/70" />
+                                                Reprogramar
+                                            </button>
+                                            <button class=" text-white/70 hover:text-white flex items-center gap-1 transition-colors">
+                                                <mat-icon svgIcon="feather:x" class="h-4 w-4 text-white/70" />
+                                                Cancelar
+                                            </button>
+                                        </div>
+                                    </div>
+                                }@else {
+                                    <div>
+                                        <p class="text-white/70 mb-3">No hay citas programadas.</p>
+                                        <button class="w-full py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors flex items-center justify-center gap-1 text-md">
+                                            <mat-icon svgIcon="feather:calendar" class="h-4 w-4 text-white" />
+                                            Agendar cita
+                                        </button>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                        <div class="lg:col-span-1">
+                            <div class="bg-white/10 backdrop-blur-xl rounded-xl border border-white/10 shadow-md p-5 h-auto">
+                                <div class="flex justify-between items-center mb-4">
+                                    <h2 class="text-xl font-semibold text-white">Odontograma Actual</h2>
+                                    <div class="flex gap-2">
+                                    <!-- <button class="text-blue-400 hover:text-blue-300 transition-colors" title="Editar">
+                                        <Edit class="h-4 w-4" />
+                                    </button> -->
+                                    <!-- <button class="text-blue-400 hover:text-blue-300 transition-colors" title="Descargar">
+                                        <mat-icon class="h-4 w-4 text-blue-400" />
+                                    </button> -->
+                                    <button class="text-blue-400 hover:text-blue-300 transition-colors" title="Imprimir">
+                                        <mat-icon svgIcon="feather:printer" class="h-4 w-4 text-blue-400" />
+                                    </button>
+                                    </div>
+                                </div>
+                                <div class="flex justify-center">
+                                    <app-odontograma [treatedTeeth]="dientesTratados"></app-odontograma>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="lg:col-span-1 space-y-6"></div>
+                    </div>
+                </mat-tab>
+                <mat-tab label="Historia Clínica" class="text-white/80">
+                   
+                </mat-tab>
+                <mat-tab label="Planes de tratamiento" class="text-white/80">
+                   <plan-tratamiento></plan-tratamiento>
+                </mat-tab>
+                <mat-tab label="Historal de citas" class="text-white/80">
+                    <historial-cita></historial-cita>
+                </mat-tab>
+                <mat-tab label="Facturación" class="text-white/80">
+
+                </mat-tab>
+                
+            </mat-tab-group>
+        </div>
+    </div>    
+</div>
+
+
+@if(registerEvent){
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+    <div class="w-full max-w-md max-h-[95vh] rounded-2xl bg-gradient-to-br from-white/20 via-white/10 to-white/5 backdrop-blur-lg shadow-xl border border-white/20 text-white overflow-hidden flex flex-col">
+        <div class="p-6 border-b border-white/10">
+            <div class="flex justify-between items-center">
+              <h2 class="text-xl font-semibold">Programar Cita Dental</h2>
+              <button (click)="cerrarFormCita()" class="text-white/70 hover:text-white transition-colors" type="button">
+                <mat-icon svgIcon="feather:x" class="h-5 w-5 text-white" />
+              </button>
+            </div>    
+            <div class="">
+                <div class="flex justify-between items-center mb-2 ">
+                    <button (click)="goToPrevious()" mat-icon-button class="p-1 rounded-full  hover:bg-white/20 transition-colors">
+                        <mat-icon svgIcon="feather:arrow-left-circle" class="h-5 w-5 text-white" />
+                    </button>
+                    <h3 className="text-white font-medium">
+                        {{getFormattedDate()}}
+                    </h3>
+                    <button (click)="goToNext()" mat-icon-button class="p-1 rounded-full  hover:bg-white/20 transition-colors">
+                        <mat-icon svgIcon="feather:arrow-right-circle" class="h-5 w-5 text-white" />
+                    </button>
+                </div>
+                <div class="grid grid-cols-7 gap-1 mb-1">
+                    @for (day of weekdays; track $index) {
+                         <div class="text-center text-white/70 py-1">
+                            {{day}}
+                        </div>
+                    }
+                    @for (day of getMiniCalendarData(); track $index) {
+                        <div
+                            (click)="selectDate(day)"
+                            class='rounded-full w-7 h-7 flex items-center justify-center text-center' 
+                            [class]="comparedDate(day) ? 'bg-blue-500 text-white' : 'text-white hover:bg-white/20'"
+                            [ngClass]="getPastDay(day) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'"                                            
+                            >
+                             {{day}}
+                        </div>
+                    }
+                </div>
+            </div>
+            <div class="flex items-center gap-2 mt-1">
+                    <mat-icon svgIcon="feather:calendar" class="h-5 w-5 text-white" />
+                    <span>
+                        @if(dateSelected){
+                            {{dateSelected.toLocaleDateString("es-ES", {
+                                weekday: "long",
+                                month: "long",
+                                day: "numeric",
+                                year: "numeric",
+                            })}}
+                        }@else {
+                            {{currentDate.toLocaleDateString("es-ES", {
+                                weekday: "long",
+                                month: "long",
+                                day: "numeric",
+                                year: "numeric",
+                            })}}
+                        }                    
+                    </span>
+                </div>        
+        </div>
+        <div class="custom-scrollbar overflow-y-auto px-6 flex-grow">
+            <div class="mb-4">
+                
+                
+                <div>
+                    <label class="block font-medium mb-1">
+                    Tratamiento <span class="text-red-400">*</span>
+                    </label>
+                    <div class="relative">
+                        <select class="w-full bg-gray-800/90  rounded-md px-3 py-2 text-white placeholder:text-white/70 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="">Seleccionar Tratamiento</option>
+                            @for (item of tratamientos; track $index) {
+                            <option [value]="item" class="bg-gray-800 text-white">
+                                {{item}}
+                            </option>
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-md font-medium mb-1">Hora de Inicio</label>
+                  <div class="relative">
+                      <mat-icon svgIcon="feather:clock" class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/70" />
+                      <select class="w-full bg-gray-800/90 rounded-md pl-10 pr-3 py-2 text-white placeholder:text-white/70 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="" class="bg-gray-800 text-white">
+                          Seleccionar Hora
+                        </option>
+                        @for (time of timeSlotsForm; track $index) {
+                          <option [value]="time" class="bg-gray-800 text-white">
+                              {{time}}
+                          </option>
+                        }
+                      </select>
+                  </div>
+                </div>
+                <div>
+                  <label class="block text-md font-medium mb-1">Hora de Fin</label>
+                  <div class="relative">
+                      <mat-icon svgIcon="feather:clock" class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/70" />
+                      <select class="w-full bg-gray-800/90 rounded-md pl-10 pr-3 py-2 text-white placeholder:text-white/70 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="" class="bg-gray-800 text-white">
+                          Seleccionar Hora
+                        </option>
+                        @for (time of timeSlotsForm; track $index) {
+                          <option [value]="time" class="bg-gray-800 text-white">
+                              {{time}}
+                          </option>
+                        }
+                      </select>
+                  </div>
+                </div>
+            </div>
+            <div>
+                <label class="block font-medium mb-1">
+                  Estado <span class="text-red-400">*</span>
+                </label>
+                <div class="relative">
+                  <select class="w-full bg-gray-800/90  rounded-md px-3 py-2 text-white placeholder:text-white/70 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    
+                    @for (item of edoCitas; track $index) {
+                      <option [value]="item" class="bg-gray-800 text-white">
+                        {{item}}
+                      </option>
+                    }
+                  </select>
+                </div>
+            </div>
+            <div>
+              <label class="block text-md font-medium mb-1">Comentarios</label>
+              <textarea
+              
+               
+                rows="3"
+                class="w-full bg-gray-800/90 border border-white/20 rounded-md px-3 py-2 text-white placeholder:text-white/70 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Añadir notas o instrucciones especiales..."
+              ></textarea>
+            </div>
+            </div>
+        </div>
+        <div class="p-6 border-t border-white/10">
+          <div class="flex gap-3">
+              <button
+                (click)="cerrarFormCita()"
+                type="button"                
+                class="flex-1 py-2.5 bg-white/10 hover:bg-red-400/70 rounded-xl text-md transition-colors font-medium" >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                
+                class="flex-1 py-2.5 bg-blue-500 hover:bg-blue-600 rounded-xl text-md transition-colors font-medium flex items-center justify-center"
+                
+              >Grabar</button>
+          </div>
+        </div>
+    </div>
+    <!-- <div class="w-full max-w-md max-h-[90vh] rounded-2xl bg-gradient-to-br from-white/20 via-white/10 to-white/5 backdrop-blur-lg shadow-xl border border-white/20 text-white overflow-hidden flex flex-col">
+        <div class="">
+                <div class="flex justify-between items-center mb-2 ">
+                    <button (click)="goToPrevious()" mat-icon-button class="p-1 rounded-full  hover:bg-white/20 transition-colors">
+                        <mat-icon svgIcon="feather:arrow-left-circle" class="h-5 w-5 text-white" />
+                    </button>
+                    <h3 className="text-white font-medium">
+                        {{getFormattedDate()}}
+                    </h3>
+                    <button (click)="goToNext()" mat-icon-button class="p-1 rounded-full  hover:bg-white/20 transition-colors">
+                        <mat-icon svgIcon="feather:arrow-right-circle" class="h-5 w-5 text-white" />
+                    </button>
+                </div>
+                <div class="grid grid-cols-7 gap-1 mb-1">
+                    @for (day of weekdays; track $index) {
+                         <div class="text-center text-white/70 py-1">
+                            {{day}}
+                        </div>
+                    }
+                    @for (day of getMiniCalendarData(); track $index) {
+                        <div
+                            (click)="selectDate(day)"
+                            class='rounded-full w-7 h-7 flex items-center justify-center text-center' 
+                            [class]="comparedDate(day) ? 'bg-blue-500 text-white' : 'text-white hover:bg-white/20'"
+                            [ngClass]="getPastDay(day) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'"                                            
+                            >
+                             {{day}}
+                        </div>
+                    }
+                </div>
+            </div>
+    </div> -->
+  </div>
+}

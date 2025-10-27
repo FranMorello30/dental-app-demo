@@ -1,0 +1,84 @@
+<div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class='p-6 rounded-lg shadow-xl max-w-md w-full mx-4' [class]="getStatusColor(selectedEvent().status)">
+      <h3 class="text-2xl font-bold mb-4 text-white">{{selectedEvent().title}}</h3>
+      <div class="space-y-3 text-white">
+        <p class="flex items-start">
+          <mat-icon svgIcon="feather:users" class="mr-2 h-5 w-5 mt-1 text-white" />
+          <span>
+            <strong>Odontológo</strong>
+            <br />
+            {{selectedEvent().dentist.name}}
+          </span>
+        </p>
+        <p class="flex items-center">
+          <mat-icon svgIcon="feather:clock" class="mr-2 h-5 w-5 text-white" />
+          {{ selectedEvent().start_time | date:'hh:mm a' }} - {{ selectedEvent().end_time | date:'hh:mm a' }}
+        </p>
+        <!-- <p class="flex items-center">
+          <mat-icon svgIcon="feather:map-pin" class="mr-2 h-5 w-5 text-white" />
+          {{selectedEvent.location}}
+        </p> -->
+       
+        <p class="flex items-center">
+          <mat-icon svgIcon="feather:calendar" class="mr-2 h-5 w-5 text-white" />
+          {{formatWeekDay(selectedEvent().start_time)}}, {{selectedEvent().start_time.getDate()}} {{formatMonth(selectedEvent().start_time)}}
+        </p>
+        <div class="flex items-start">
+          <mat-icon svgIcon="feather:layers" class="mr-2 h-5 w-5 mt-1 text-white" />
+          <div class="flex-1">
+            <div class="flex items-center justify-between">
+              <span class="font-bold">Estado</span>
+              @if (!editingStatus) {
+                <button (click)="editingStatus = true" class="text-xs bg-white/20 hover:bg-white/30 px-2 py-1 rounded transition-colors">
+                  Cambiar
+                </button>
+              }@else {
+                <div class="flex gap-2">
+                  <button (click)="changeStatus()" class=" bg-green-700  rounded transition-colors">
+                    <mat-icon svgIcon="feather:check" class="size-1 text-white" />
+                  </button>
+                  <button class=" bg-red-500/50 hover:bg-red-500/70  rounded transition-colors">
+                    <mat-icon svgIcon="feather:x" class="size-1 text-white" />
+                  </button>
+                </div>
+              }
+            </div>
+            @if (!editingStatus) {
+              <span class="bg-black/20 px-2 py-0.5 rounded inline-block mt-1">{{selectedEvent().status}}</span>
+            }@else {
+              <div class="space-y-2">
+                <select [formControl]="inputEstado" class="mt-1 w-full bg-black/20 border border-white/30 rounded px-2 py-1 text-white text-md">
+                  @for (status of edoCitas; track $index) {
+                    <option [value]="status" class="bg-gray-800 text-white">
+                      {{status}}
+                    </option>
+                  }
+                </select>
+              </div>
+            }
+
+            @if(editingStatus){
+               <div>
+              <label class="block text-md font-medium mb-1">Motivo Cancelación</label>
+              <textarea
+              
+               
+                rows="1"
+                class="w-full bg-black/20 border border-white/20 rounded-md px-3 py-2 text-white placeholder:text-white/70 "
+                placeholder="Añadir notas o instrucciones especiales..."
+              ></textarea>
+            </div>
+            }
+          </div>
+        </div>
+        <p>
+          <span class="font-bold">Descripción:</span> {{selectedEvent().description}}
+        </p>
+      </div>
+      <div class="mt-6 flex justify-end">
+        <button (click)="closedEvent()" class="bg-white text-gray-800 px-4 py-2 rounded hover:bg-gray-100 transition-colors">
+          Cerrar
+        </button>
+      </div>
+    </div>
+  </div>

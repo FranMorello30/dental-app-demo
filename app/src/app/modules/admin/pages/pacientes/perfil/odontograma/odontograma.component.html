@@ -1,0 +1,142 @@
+<div class="flex flex-col gap-4 w-full overflow-hidden">
+  <!-- Leyenda -->
+  <div class="bg-white/5 rounded-lg p-3 border border-white/10 w-full">
+    <h4 class="text-white/80 font-medium mb-2 text-sm">Tratamientos aplicados</h4>
+    <div class="flex flex-wrap gap-3">
+      <ng-container *ngFor="let treatment of usedTreatments">
+        <div class="flex items-center gap-2">
+          <div
+            class="rounded-full"
+            [ngClass]="currentSize.legend"
+            [ngStyle]="{ backgroundColor: treatment.color }"
+          ></div>
+          <span class="text-white" [ngClass]="currentSize.legendText">{{ treatment.name }}</span>
+        </div>
+      </ng-container>
+    </div>
+  </div>
+
+  <!-- Odontograma -->
+  <div class="flex justify-center w-full">
+    <div [ngClass]="currentSize.container" class="max-w-full">
+      <div class="flex flex-col items-center">
+        <!-- Dientes superiores -->
+        <div class="grid grid-cols-2 gap-2 w-full mb-4">
+          <div class="flex justify-end">
+            <ng-container *ngFor="let tooth of upperTeeth[0]">
+              <div class="flex flex-col items-center" [ngClass]="currentSize.tooth">
+                <div
+                  class="border-2 rounded-t-lg flex items-center justify-center"
+                  [ngClass]="getToothColor(tooth) ? 'border-opacity-70' : 'border-white/20'"
+                  [ngStyle]="{
+                    borderColor: getToothColor(tooth),
+                    backgroundColor: getToothColor(tooth) ? getToothColor(tooth) + '20' : ''
+                  }"
+                  [class]="currentSize.toothShape"
+                >
+                  <svg
+                    *ngIf="getToothColor(tooth)"
+                    [attr.fill]="getToothColor(tooth)"
+                    [attr.stroke]="getToothColor(tooth)"
+                    [ngClass]="currentSize.circle"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle cx="12" cy="12" r="10" />
+                  </svg>
+                </div>
+                <span class="mt-1 text-white/50" [ngClass]="currentSize.text">{{ tooth }}</span>
+              </div>
+            </ng-container>
+          </div>
+
+          <div class="flex justify-start">
+            <ng-container *ngFor="let tooth of upperTeeth[1]">
+              <div class="flex flex-col items-center" [ngClass]="currentSize.tooth">
+                <div
+                  class="border-2 rounded-t-lg flex items-center justify-center"
+                  [ngClass]="getToothColor(tooth) ? 'border-opacity-70' : 'border-white/20'"
+                  [ngStyle]="{
+                    borderColor: getToothColor(tooth),
+                    backgroundColor: getToothColor(tooth) ? getToothColor(tooth) + '20' : ''
+                  }"
+                  [class]="currentSize.toothShape"
+                >
+                  <svg
+                    *ngIf="getToothColor(tooth)"
+                    [attr.fill]="getToothColor(tooth)"
+                    [attr.stroke]="getToothColor(tooth)"
+                    [ngClass]="currentSize.circle"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle cx="12" cy="12" r="10" />
+                  </svg>
+                </div>
+                <span class="mt-1 text-white/50" [ngClass]="currentSize.text">{{ tooth }}</span>
+              </div>
+            </ng-container>
+          </div>
+        </div>
+
+        <!-- Línea divisoria -->
+        <div class="w-full border-t border-white/10 mb-4"></div>
+
+        <!-- Dientes inferiores -->
+        <div class="grid grid-cols-2 gap-2 w-full">
+          <div class="flex justify-end">
+            <ng-container *ngFor="let tooth of lowerTeeth[0]">
+              <div class="flex flex-col items-center" [ngClass]="currentSize.tooth">
+                <span class="mb-1 text-white/50" [ngClass]="currentSize.text">{{ tooth }}</span>
+                <div
+                  class="border-2 rounded-b-lg flex items-center justify-center"
+                  [ngClass]="getToothColor(tooth) ? 'border-opacity-70' : 'border-white/20'"
+                  [ngStyle]="{
+                    borderColor: getToothColor(tooth),
+                    backgroundColor: getToothColor(tooth) ? getToothColor(tooth) + '20' : ''
+                  }"
+                  [class]="currentSize.toothShape"
+                >
+                  <svg
+                    *ngIf="getToothColor(tooth)"
+                    [attr.fill]="getToothColor(tooth)"
+                    [attr.stroke]="getToothColor(tooth)"
+                    [ngClass]="currentSize.circle"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle cx="12" cy="12" r="10" />
+                  </svg>
+                </div>
+              </div>
+            </ng-container>
+          </div>
+
+          <div class="flex justify-start">
+            <ng-container *ngFor="let tooth of lowerTeeth[1]">
+              <div class="flex flex-col items-center" [ngClass]="currentSize.tooth">
+                <span class="mb-1 text-white/50" [ngClass]="currentSize.text">{{ tooth }}</span>
+                <div
+                  class="border-2 rounded-b-lg flex items-center justify-center"
+                  [ngClass]="getToothColor(tooth) ? 'border-opacity-70' : 'border-white/20'"
+                  [ngStyle]="{
+                    borderColor: getToothColor(tooth),
+                    backgroundColor: getToothColor(tooth) ? getToothColor(tooth) + '20' : ''
+                  }"
+                  [class]="currentSize.toothShape"
+                >
+                  <svg
+                    *ngIf="getToothColor(tooth)"
+                    [attr.fill]="getToothColor(tooth)"
+                    [attr.stroke]="getToothColor(tooth)"
+                    [ngClass]="currentSize.circle"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle cx="12" cy="12" r="10" />
+                  </svg>
+                </div>
+              </div>
+            </ng-container>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
