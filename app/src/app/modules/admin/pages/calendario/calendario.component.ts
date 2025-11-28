@@ -19,6 +19,7 @@ import { Dentist } from '@shared/models/dentist.model';
 import { AppointmentStatus } from './calendario.model';
 import { CalendarioService } from './calendario.service';
 import { ModalDetalleComponent } from './components/modal-detalle/modal-detalle.component';
+import { ModalEventoSidebarComponent } from './components/modal-evento-sidebar/modal-evento-sidebar.component';
 import { ModalEventoComponent } from './components/modal-evento/modal-evento.component';
 import { ModalRegistroComponent } from './components/modal-registro/modal-registro.component';
 
@@ -35,6 +36,7 @@ import { ModalRegistroComponent } from './components/modal-registro/modal-regist
         ModalRegistroComponent,
         ModalEventoComponent,
         ModalDetalleComponent,
+        ModalEventoSidebarComponent,
     ],
     templateUrl: './calendario.component.html',
     styles: `
@@ -480,19 +482,19 @@ export class CalendarioComponent implements OnInit {
     getStatusColor(status: string): string {
         switch (status) {
             case 'Sin confirmar':
-                return 'bg-yellow-400';
+                return 'bg-yellow-500';
             case 'Confirmada':
-                return 'bg-green-500';
+                return 'bg-green-600';
             case 'En consulta':
-                return 'bg-purple-500';
+                return 'bg-purple-600';
             case 'Cancelada':
-                return 'bg-red-500';
+                return 'bg-red-600';
             case 'Finalizada':
-                return 'bg-gray-500';
+                return 'bg-gray-600';
             case 'Finalizada (Pendiente)':
                 return 'bg-orange-500'; // Color distintivo para citas finalizadas pendientes de documentación
             default:
-                return 'bg-blue-500';
+                return 'bg-blue-600';
         }
     }
     totByStatus(status: AppointmentStatus) {

@@ -1,84 +1,271 @@
-<div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-    <div class='p-6 rounded-lg shadow-xl max-w-md w-full mx-4' [class]="getStatusColor(selectedEvent().status)">
-      <h3 class="text-2xl font-bold mb-4 text-white">{{selectedEvent().title}}</h3>
-      <div class="space-y-3 text-white">
-        <p class="flex items-start">
-          <mat-icon svgIcon="feather:users" class="mr-2 h-5 w-5 mt-1 text-white" />
-          <span>
-            <strong>Odontológo</strong>
-            <br />
-            {{selectedEvent().dentist.name}}
-          </span>
-        </p>
-        <p class="flex items-center">
-          <mat-icon svgIcon="feather:clock" class="mr-2 h-5 w-5 text-white" />
-          {{ selectedEvent().start_time | date:'hh:mm a' }} - {{ selectedEvent().end_time | date:'hh:mm a' }}
-        </p>
-        <!-- <p class="flex items-center">
-          <mat-icon svgIcon="feather:map-pin" class="mr-2 h-5 w-5 text-white" />
-          {{selectedEvent.location}}
-        </p> -->
-       
-        <p class="flex items-center">
-          <mat-icon svgIcon="feather:calendar" class="mr-2 h-5 w-5 text-white" />
-          {{formatWeekDay(selectedEvent().start_time)}}, {{selectedEvent().start_time.getDate()}} {{formatMonth(selectedEvent().start_time)}}
-        </p>
-        <div class="flex items-start">
-          <mat-icon svgIcon="feather:layers" class="mr-2 h-5 w-5 mt-1 text-white" />
-          <div class="flex-1">
-            <div class="flex items-center justify-between">
-              <span class="font-bold">Estado</span>
-              @if (!editingStatus) {
-                <button (click)="editingStatus = true" class="text-xs bg-white/20 hover:bg-white/30 px-2 py-1 rounded transition-colors">
-                  Cambiar
-                </button>
-              }@else {
-                <div class="flex gap-2">
-                  <button (click)="changeStatus()" class=" bg-green-700  rounded transition-colors">
-                    <mat-icon svgIcon="feather:check" class="size-1 text-white" />
-                  </button>
-                  <button class=" bg-red-500/50 hover:bg-red-500/70  rounded transition-colors">
-                    <mat-icon svgIcon="feather:x" class="size-1 text-white" />
-                  </button>
-                </div>
-              }
-            </div>
-            @if (!editingStatus) {
-              <span class="bg-black/20 px-2 py-0.5 rounded inline-block mt-1">{{selectedEvent().status}}</span>
-            }@else {
-              <div class="space-y-2">
-                <select [formControl]="inputEstado" class="mt-1 w-full bg-black/20 border border-white/30 rounded px-2 py-1 text-white text-md">
-                  @for (status of edoCitas; track $index) {
-                    <option [value]="status" class="bg-gray-800 text-white">
-                      {{status}}
-                    </option>
-                  }
-                </select>
-              </div>
-            }
+<div
+    class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm"
+>
+    <div
+        class="animate-in fade-in zoom-in mx-auto w-full max-w-md overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl duration-200"
+    >
+        <!-- Header with dynamic color strip -->
+        <div
+            class="h-2 w-full"
+            [class]="getStatusColor(selectedEvent().status)"
+        ></div>
 
-            @if(editingStatus){
-               <div>
-              <label class="block text-md font-medium mb-1">Motivo Cancelación</label>
-              <textarea
-              
-               
-                rows="1"
-                class="w-full bg-black/20 border border-white/20 rounded-md px-3 py-2 text-white placeholder:text-white/70 "
-                placeholder="Añadir notas o instrucciones especiales..."
-              ></textarea>
+        <div class="p-6">
+            <div class="mb-4 flex items-start justify-between">
+                <h3 class="text-xl font-bold leading-tight text-gray-900">
+                    {{ selectedEvent().title }}
+                </h3>
+                <button
+                    (click)="closedEvent()"
+                    class="-mr-2 -mt-2 rounded-full p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
+                >
+                    <mat-icon svgIcon="feather:x" class="h-5 w-5" />
+                </button>
             </div>
-            }
-          </div>
+
+            <div class="space-y-4 text-sm text-gray-600">
+                <div
+                    class="flex items-start rounded-lg border border-gray-100 bg-gray-50 p-3"
+                >
+                    <mat-icon
+                        svgIcon="feather:users"
+                        class="mr-3 mt-0.5 h-5 w-5 text-blue-500"
+                    />
+                    <div>
+                        <span
+                            class="block text-xs font-semibold uppercase tracking-wide text-gray-500"
+                            >Odontólogo</span
+                        >
+                        <span class="text-base font-medium text-gray-900">{{
+                            selectedEvent().dentist.name
+                        }}</span>
+                    </div>
+                </div>
+
+                <div
+                    class="flex items-start rounded-lg border border-gray-100 bg-gray-50 p-3"
+                >
+                    <mat-icon
+                        svgIcon="feather:user"
+                        class="mr-3 mt-0.5 h-5 w-5 text-green-500"
+                    />
+                    <div>
+                        <span
+                            class="block text-xs font-semibold uppercase tracking-wide text-gray-500"
+                            >Paciente</span
+                        >
+                        <span
+                            class="block text-base font-medium text-gray-900"
+                            >{{ selectedEvent().patient.name }}</span
+                        >
+                        @if (selectedEvent().patient.email) {
+                            <span class="block text-xs text-gray-500">{{
+                                selectedEvent().patient.email
+                            }}</span>
+                        }
+                        @if (selectedEvent().patient.phone) {
+                            <span class="block text-xs text-gray-500">{{
+                                selectedEvent().patient.phone
+                            }}</span>
+                        }
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div
+                        class="flex items-center rounded-lg border border-gray-100 bg-gray-50 p-2.5"
+                    >
+                        <mat-icon
+                            svgIcon="feather:clock"
+                            class="mr-2 h-4 w-4 text-gray-400"
+                        />
+                        <span class="font-medium text-gray-700"
+                            >{{ selectedEvent().start_time | date: 'hh:mm a' }}
+                            -
+                            {{
+                                selectedEvent().end_time | date: 'hh:mm a'
+                            }}</span
+                        >
+                    </div>
+                    <div
+                        class="flex items-center rounded-lg border border-gray-100 bg-gray-50 p-2.5"
+                    >
+                        <mat-icon
+                            svgIcon="feather:calendar"
+                            class="mr-2 h-4 w-4 text-gray-400"
+                        />
+                        <span class="font-medium text-gray-700"
+                            >{{ selectedEvent().start_time.getDate() }}
+                            {{ formatMonth(selectedEvent().start_time) }}</span
+                        >
+                    </div>
+                </div>
+
+                <div class="flex items-start pt-2">
+                    <mat-icon
+                        svgIcon="feather:layers"
+                        class="mr-3 mt-1 h-5 w-5 text-gray-400"
+                    />
+                    <div class="flex-1">
+                        <div class="mb-1 flex items-center justify-between">
+                            <span class="font-semibold text-gray-900"
+                                >Estado</span
+                            >
+                            @if (!editingStatus && !reprogramming) {
+                                <div class="flex gap-2">
+                                    <button
+                                        (click)="toggleReprogramming()"
+                                        class="rounded px-2 py-1 text-xs font-medium text-orange-600 transition-colors hover:bg-orange-50 hover:text-orange-800"
+                                    >
+                                        Reprogramar
+                                    </button>
+                                    <button
+                                        (click)="editingStatus = true"
+                                        class="rounded px-2 py-1 text-xs font-medium text-blue-600 transition-colors hover:bg-blue-50 hover:text-blue-800"
+                                    >
+                                        Cambiar Estado
+                                    </button>
+                                </div>
+                            } @else if (editingStatus) {
+                                <div class="flex gap-2">
+                                    <button
+                                        (click)="changeStatus()"
+                                        class="rounded bg-green-100 p-1 text-green-700 transition-colors hover:bg-green-200"
+                                    >
+                                        <mat-icon
+                                            svgIcon="feather:check"
+                                            class="h-4 w-4"
+                                        />
+                                    </button>
+                                    <button
+                                        (click)="editingStatus = false"
+                                        class="rounded bg-red-100 p-1 text-red-700 transition-colors hover:bg-red-200"
+                                    >
+                                        <mat-icon
+                                            svgIcon="feather:x"
+                                            class="h-4 w-4"
+                                        />
+                                    </button>
+                                </div>
+                            }
+                        </div>
+                        @if (!editingStatus && !reprogramming) {
+                            <span
+                                class="inline-block rounded-full px-2.5 py-1 text-xs font-medium text-white shadow-sm"
+                                [class]="getStatusColor(selectedEvent().status)"
+                            >
+                                {{ selectedEvent().status }}
+                            </span>
+                        }
+
+                        @if (editingStatus) {
+                            <div
+                                class="mt-2 space-y-3 rounded-lg border border-gray-200 bg-gray-50 p-3"
+                            >
+                                <select
+                                    [formControl]="inputEstado"
+                                    class="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                >
+                                    @for (status of edoCitas; track $index) {
+                                        <option
+                                            [value]="status"
+                                            class="text-gray-900"
+                                        >
+                                            {{ status }}
+                                        </option>
+                                    }
+                                </select>
+
+                                <div>
+                                    <label
+                                        class="mb-1 block text-xs font-medium text-gray-500"
+                                        >Motivo (Opcional)</label
+                                    >
+                                    <textarea
+                                        rows="2"
+                                        class="w-full resize-none rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        placeholder="Añadir notas..."
+                                    ></textarea>
+                                </div>
+                            </div>
+                        }
+
+                        @if (reprogramming) {
+                            <div
+                                class="animate-in fade-in slide-in-from-top-2 mt-2 space-y-3 rounded-lg border border-orange-100 bg-orange-50 p-4 duration-200"
+                            >
+                                <h4
+                                    class="mb-2 text-sm font-bold text-gray-900"
+                                >
+                                    Reprogramar Cita
+                                </h4>
+
+                                <div>
+                                    <label
+                                        class="mb-1 block text-xs font-medium text-gray-600"
+                                        >Nueva Fecha</label
+                                    >
+                                    <input
+                                        [formControl]="newDateControl"
+                                        [min]="minDate"
+                                        type="date"
+                                        class="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label
+                                        class="mb-1 block text-xs font-medium text-gray-600"
+                                        >Nueva Hora</label
+                                    >
+                                    <input
+                                        [formControl]="newTimeControl"
+                                        type="time"
+                                        class="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                                    />
+                                </div>
+
+                                <div class="flex justify-end gap-2 pt-2">
+                                    <button
+                                        (click)="toggleReprogramming()"
+                                        class="rounded-md px-3 py-1.5 text-xs font-medium text-gray-600 transition-colors hover:bg-gray-100"
+                                    >
+                                        Cancelar
+                                    </button>
+                                    <button
+                                        (click)="saveReschedule()"
+                                        class="rounded-md bg-orange-500 px-3 py-1.5 text-xs font-medium text-white shadow-sm transition-colors hover:bg-orange-600"
+                                    >
+                                        Guardar Cambios
+                                    </button>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                @if (selectedEvent().description) {
+                    <div class="mt-2 border-t border-gray-100 pt-2">
+                        <span class="mb-1 block font-semibold text-gray-900"
+                            >Descripción</span
+                        >
+                        <p
+                            class="rounded-lg bg-gray-50 p-3 text-sm text-gray-600"
+                        >
+                            {{ selectedEvent().description }}
+                        </p>
+                    </div>
+                }
+            </div>
+
+            <div class="mt-6 flex justify-end border-t border-gray-100 pt-4">
+                <button
+                    (click)="closedEvent()"
+                    class="rounded-lg bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-200"
+                >
+                    Cerrar
+                </button>
+            </div>
         </div>
-        <p>
-          <span class="font-bold">Descripción:</span> {{selectedEvent().description}}
-        </p>
-      </div>
-      <div class="mt-6 flex justify-end">
-        <button (click)="closedEvent()" class="bg-white text-gray-800 px-4 py-2 rounded hover:bg-gray-100 transition-colors">
-          Cerrar
-        </button>
-      </div>
     </div>
-  </div>
+</div>

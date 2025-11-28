@@ -51,6 +51,7 @@ export class AuthSignInComponent implements OnInit {
     showAlert: boolean = false;
     isLoggingIn: boolean = false;
     error: string = '';
+    passwordVisible: boolean = false;
     /**
      * Constructor
      */

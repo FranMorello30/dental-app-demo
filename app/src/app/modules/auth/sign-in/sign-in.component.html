@@ -1,86 +1,159 @@
-<div class="relative min-h-screen w-full overflow-hidden flex items-center justify-center">
-    <div class="relative z-10 w-full max-w-md mx-4">
-      <div class="bg-gradient-to-br from-white/20 via-white/10 to-white/5 backdrop-blur-2xl p-8 rounded-2xl shadow-xl border border-white/20 text-white">
-        <div class="text-center mb-8">
-          <h1 class="text-3xl font-bold mb-2">Clínica Dental</h1>
-          <p class="text-white/70">Inicie sesión para acceder a su cuenta</p>
-        </div>
-  
-        <div *ngIf="error" class="mb-6 p-3 bg-red-500/20 border border-red-500/30 rounded-lg text-white text-sm">
-          {{ error }}
-        </div>
-  
-        <form [formGroup]="signInForm"  class="space-y-6">
-          <div>
-            <label class="block text-sm font-medium mb-2" for="email">Correo Electrónico</label>
-            <div class="relative">
-              <!-- Reemplaza "[MailIcon]" por el componente o SVG adecuado -->
-              <mat-icon class="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-white/50" svgIcon="heroicons_outline:envelope"></mat-icon>
-              <input
-                type="text"
-                id="email"
-                placeholder="Ingrese su correo electrónico"
-                formControlName="username"
-                class="w-full bg-white/10 border border-white/20 rounded-lg pl-10 pr-4 py-3 text-white placeholder:text-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-          </div>
-  
-          <div>
-            <label class="block text-sm font-medium mb-2" for="password">Contraseña</label>
-            <div class="relative">
-              <!-- Reemplaza "[LockIcon]" por el componente o SVG adecuado -->
-              <mat-icon class="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-white/50" svgIcon="heroicons_outline:lock-closed"></mat-icon>
-              <input
-                type="text"
-                id="password"
-                placeholder="Ingrese su contraseña"
-                formControlName="password"
-                class="w-full bg-white/10 border border-white/20 rounded-lg pl-10 pr-4 py-3 text-white placeholder:text-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-          </div>
-  
-          <div class="flex items-center justify-between">
-            <div class="flex items-center">
-              <input
-                type="checkbox"
-                id="remember-me"
-                formControlName="rememberMe"
-                class="h-4 w-4 rounded border-white/20 bg-white/10 text-blue-500 focus:ring-blue-500"
-              />
-              <label for="remember-me" class="ml-2 block text-sm text-white/70">Recordarme</label>
-            </div>
-            <div class="text-sm">
-              <a routerLink="#" class="text-blue-400 hover:text-blue-300">¿Olvidó su contraseña?</a>
-            </div>
-          </div>
-  
-          <button
-          
-            (click)="signIn()"
-            class="w-full flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white font-medium py-3 px-4 rounded-lg transition-colors"
-            [ngClass]="{'opacity-70 cursor-wait': isLoggingIn}"
-          >
-            <ng-container *ngIf="isLoggingIn; else notLoading">
-              <div class="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-              <span>Iniciando sesión...</span>
-            </ng-container>
-            <ng-template #notLoading>
-              <!-- Reemplaza "[LogInIcon]" por el componente o SVG adecuado -->
-             
-              <span>Iniciar sesión</span>
-            </ng-template>
-          </button>
-
-          <div class="mt-8 flex items-center">
-            <div class="mt-px flex-auto border-t"></div>
-            <div class="text-white/70 mx-2">Or continue with</div>
-            <div class="mt-px flex-auto border-t"></div>
-        </div>
-        </form>
-  
-        
-      </div>
+<div
+    class="relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-slate-50"
+>
+    <!-- Background Pattern/Decoration (Optional) -->
+    <div class="pointer-events-none absolute inset-0 overflow-hidden">
+        <svg
+            class="absolute left-0 top-0 h-full w-full text-gray-100"
+            viewBox="0 0 100 100"
+            preserveAspectRatio="none"
+        >
+            <path
+                d="M0 0 L100 0 L100 100 Z"
+                fill="currentColor"
+                fill-opacity="0.5"
+            ></path>
+        </svg>
     </div>
-  </div>
+
+    <div class="relative z-10 mx-4 w-full max-w-md">
+        <div class="rounded-2xl border border-gray-100 bg-white p-8 shadow-xl">
+            <div class="mb-8 text-center">
+                <div
+                    class="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-blue-100"
+                >
+                    <mat-icon
+                        class="text-blue-600"
+                        svgIcon="heroicons_outline:user"
+                    ></mat-icon>
+                </div>
+                <h1 class="mb-2 text-2xl font-bold text-gray-900">
+                    Bienvenido
+                </h1>
+                <p class="text-gray-500">
+                    Inicie sesión para acceder a su cuenta
+                </p>
+            </div>
+
+            <div
+                *ngIf="error"
+                class="mb-6 rounded-r border-l-4 border-red-500 bg-red-50 p-4 text-sm text-red-700"
+            >
+                <div class="flex items-center">
+                    <mat-icon
+                        class="mr-2 h-5 w-5 text-red-500"
+                        svgIcon="heroicons_solid:exclamation-circle"
+                    ></mat-icon>
+                    {{ error }}
+                </div>
+            </div>
+
+            <form [formGroup]="signInForm" class="space-y-5">
+                <div>
+                    <label
+                        class="mb-1 block text-sm font-medium text-gray-700"
+                        for="email"
+                        >Correo Electrónico</label
+                    >
+                    <div class="relative">
+                        <mat-icon
+                            class="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400"
+                            svgIcon="heroicons_outline:envelope"
+                        ></mat-icon>
+                        <input
+                            type="text"
+                            id="email"
+                            placeholder="nombre@ejemplo.com"
+                            formControlName="username"
+                            class="w-full rounded-lg border border-gray-300 bg-gray-50 py-2.5 pl-10 pr-4 text-gray-900 transition-all placeholder:text-gray-400 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                    </div>
+                </div>
+
+                <div>
+                    <label
+                        class="mb-1 block text-sm font-medium text-gray-700"
+                        for="password"
+                        >Contraseña</label
+                    >
+                    <div class="relative">
+                        <mat-icon
+                            class="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400"
+                            svgIcon="heroicons_outline:lock-closed"
+                        ></mat-icon>
+                        <input
+                            [type]="passwordVisible ? 'text' : 'password'"
+                            id="password"
+                            placeholder="••••••••"
+                            formControlName="password"
+                            class="w-full rounded-lg border border-gray-300 bg-gray-50 py-2.5 pl-10 pr-10 text-gray-900 transition-all placeholder:text-gray-400 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                        <button
+                            type="button"
+                            (click)="passwordVisible = !passwordVisible"
+                            class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none"
+                        >
+                            <mat-icon
+                                class="h-5 w-5"
+                                [svgIcon]="
+                                    passwordVisible
+                                        ? 'heroicons_outline:eye'
+                                        : 'heroicons_outline:eye-slash'
+                                "
+                            ></mat-icon>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <input
+                            type="checkbox"
+                            id="remember-me"
+                            formControlName="rememberMe"
+                            class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        />
+                        <label
+                            for="remember-me"
+                            class="ml-2 block text-sm text-gray-600"
+                            >Recordarme</label
+                        >
+                    </div>
+                    <div class="text-sm">
+                        <a
+                            routerLink="#"
+                            class="font-medium text-blue-600 hover:text-blue-500"
+                            >¿Olvidó su contraseña?</a
+                        >
+                    </div>
+                </div>
+
+                <button
+                    (click)="signIn()"
+                    class="flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 font-semibold text-white shadow-sm transition-all hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                    [ngClass]="{ 'cursor-wait opacity-75': isLoggingIn }"
+                    [disabled]="isLoggingIn"
+                >
+                    <ng-container *ngIf="isLoggingIn; else notLoading">
+                        <mat-spinner
+                            diameter="20"
+                            class="text-white"
+                        ></mat-spinner>
+                        <span>Iniciando sesión...</span>
+                    </ng-container>
+                    <ng-template #notLoading>
+                        <span>Iniciar sesión</span>
+                        <mat-icon
+                            class="ml-1 h-5 w-5"
+                            svgIcon="heroicons_outline:arrow-right"
+                        ></mat-icon>
+                    </ng-template>
+                </button>
+            </form>
+        </div>
+
+        <div class="mt-6 text-center text-sm text-gray-500">
+            &copy; 2024 Clínica Dental. Todos los derechos reservados.
+        </div>
+    </div>
+</div>

@@ -1,179 +1,334 @@
-@if(selectedDate()){
-<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-    <div class="w-full max-w-md max-h-[95vh] rounded-2xl bg-gradient-to-br from-white/20 via-white/10 to-white/5 backdrop-blur-lg shadow-xl border border-white/20 text-white overflow-hidden flex flex-col">
-        <div class="p-6 border-b border-white/10">
-            <div class="flex justify-between items-center">
-              <h2 class="text-xl font-semibold">Programar Cita Dental</h2>
-              <button (click)="cerrarFormCita()" class="text-white/70 hover:text-white transition-colors" type="button">
-                <mat-icon svgIcon="feather:x" class="h-5 w-5 text-white" />
-              </button>
-            </div>
-
-            <div class="flex items-center gap-2 mt-3">
-              <mat-icon svgIcon="feather:calendar" class="h-5 w-5 text-white/70" />
-              <span>
-                @if(selectedDate()){
-                  {{selectedDate().toLocaleDateString("es-ES", {  weekday: "long",
-                                month: "long",
-                                day: "numeric",
-                                year: "numeric", })}}
-                }
-              </span>
-            </div>
-
-        </div>
-        <div class="custom-scrollbar overflow-y-auto px-6 flex-grow">
-          <form [formGroup]="formulario" id="appointmentForm" class="py-4 space-y-4">
-            <div class="">
-                <label class="block font-medium mb-1">
-                  Paciente <span class="text-red-400">*</span>
-                </label>
-               <div class="relative">
-                  <select formControlName="paciente"  class="w-full bg-gray-800/90  rounded-md px-3 py-2 text-white placeholder:text-white/70 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    
-                     @for (time of patients; track $index) {
-                        <option [value]="time.id" class="px-3 py-2 hover:bg-gray-700 cursor-pointer flex items-center gap-2">
-                            <mat-icon [svgIcon]="'feather:user'" class="h-4 w-4 text-white/70" /> 
-                            {{time.name}} @if(time.email) {
-                            <span class="text-xs text-white/70 ml-2"> - {{time.email}}</span>} 
-                        </option>
-                      }
-                  </select>
+@if (selectedDate()) {
+    <div
+        class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
+    >
+        <div
+            class="animate-in fade-in zoom-in flex max-h-[95vh] w-full max-w-md flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white text-gray-900 shadow-2xl duration-200"
+        >
+            <div class="border-b border-gray-100 bg-gray-50/50 p-6">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-xl font-bold text-gray-900">
+                        Programar Cita Dental
+                    </h2>
+                    <button
+                        (click)="cerrarFormCita()"
+                        class="rounded-full p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
+                        type="button"
+                    >
+                        <mat-icon svgIcon="feather:x" class="h-5 w-5" />
+                    </button>
                 </div>
-                 
-                    <!-- <mat-form-field class="w-full fuse-mat-dense fuse-mat-no-subscript p-0 bg-gray-800/90">
-                      <input type="text"
-                             class="mat-input-element bg-transparent border border-red-400"
-                             matInput
-                             formControlName="paciente" 
-                             [matAutocomplete]="auto">
-                      <mat-autocomplete autoActiveFirstOption #auto="matAutocomplete" class="bg-gray-800/90 " [displayWith]="displayPaciente">
-                        @for (option of filteredOptions | async; track option) {
-                          <mat-option [value]="option" class="text-white">
-                             {{option.name}}
-                          </mat-option>
+
+                <div
+                    class="mt-3 flex w-fit items-center gap-2 rounded-full bg-blue-50 px-3 py-1.5 text-blue-600"
+                >
+                    <mat-icon svgIcon="feather:calendar" class="h-4 w-4" />
+                    <span class="text-sm font-medium capitalize">
+                        @if (selectedDate()) {
+                            {{
+                                selectedDate().toLocaleDateString('es-ES', {
+                                    weekday: 'long',
+                                    month: 'long',
+                                    day: 'numeric',
+                                    year: 'numeric',
+                                })
+                            }}
                         }
-                      </mat-autocomplete>
-                    </mat-form-field> -->
-               
-                        <!-- <div class="">
-                          <label class="block font-medium mb-1">
-                            Paciente <span class="text-red-400">*</span>
-                          </label>
-                          <mat-form-field class="w-full fuse-mat-dense fuse-mat-no-subscript p-0">
-                            <input
-                              type="text"
-                              matInput
-                              placeholder="Buscar paciente"
-                              formControlName="paciente"
-                              [matAutocomplete]="auto"
-                              class="bg-gray-800/90 rounded-md px-3 py-2 text-white placeholder:text-white/70 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    </span>
+                </div>
+            </div>
+            <div
+                class="custom-scrollbar flex-grow overflow-y-auto bg-white px-6"
+            >
+                <form
+                    [formGroup]="formulario"
+                    id="appointmentForm"
+                    class="space-y-5 py-6"
+                >
+                    <div class="">
+                        <label
+                            class="mb-1.5 block text-sm font-semibold text-gray-700"
+                        >
+                            Paciente <span class="text-red-500">*</span>
+                        </label>
+
+                        @if (!formulario.get('paciente').value) {
+                            <div class="relative">
+                                <mat-icon
+                                    svgIcon="feather:search"
+                                    class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400"
+                                />
+                                <input
+                                    [formControl]="searchControl"
+                                    type="text"
+                                    placeholder="Buscar paciente por nombre..."
+                                    class="w-full rounded-lg border border-gray-300 bg-gray-50 py-2.5 pl-10 pr-4 text-gray-900 transition-all placeholder:text-gray-400 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                />
+
+                                @if (showResults) {
+                                    <div
+                                        class="absolute left-0 right-0 top-full z-50 mt-1 max-h-60 overflow-y-auto rounded-xl border border-gray-200 bg-white shadow-lg"
+                                    >
+                                        @if (searchResults.length > 0) {
+                                            <ul class="py-1">
+                                                @for (
+                                                    patient of searchResults;
+                                                    track patient.id
+                                                ) {
+                                                    <li
+                                                        (click)="
+                                                            selectPaciente(
+                                                                patient
+                                                            )
+                                                        "
+                                                        class="flex cursor-pointer items-center gap-3 border-b border-gray-100 px-4 py-3 transition-colors last:border-0 hover:bg-gray-50"
+                                                    >
+                                                        <div
+                                                            class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-600"
+                                                        >
+                                                            {{
+                                                                patient.name
+                                                                    .charAt(0)
+                                                                    .toUpperCase()
+                                                            }}
+                                                        </div>
+                                                        <div
+                                                            class="flex flex-col"
+                                                        >
+                                                            <span
+                                                                class="text-sm font-medium text-gray-900"
+                                                                >{{
+                                                                    patient.name
+                                                                }}</span
+                                                            >
+                                                            <span
+                                                                class="text-xs text-gray-500"
+                                                                >{{
+                                                                    patient.email
+                                                                }}</span
+                                                            >
+                                                        </div>
+                                                    </li>
+                                                }
+                                            </ul>
+                                        } @else {
+                                            <div
+                                                class="p-4 text-center text-sm text-gray-500"
+                                            >
+                                                No se encontraron pacientes.
+                                            </div>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        } @else {
+                            <div
+                                class="flex items-center justify-between rounded-xl border border-blue-100 bg-blue-50 p-3"
+                            >
+                                <div class="flex items-center gap-3">
+                                    <div
+                                        class="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 text-sm font-bold text-blue-600"
+                                    >
+                                        {{
+                                            formulario
+                                                .get('paciente')
+                                                .value.name.charAt(0)
+                                                .toUpperCase()
+                                        }}
+                                    </div>
+                                    <div class="flex flex-col">
+                                        <span
+                                            class="text-sm font-bold text-gray-900"
+                                            >{{
+                                                formulario.get('paciente').value
+                                                    .name
+                                            }}</span
+                                        >
+                                        <span class="text-xs text-blue-600">{{
+                                            formulario.get('paciente').value
+                                                .email
+                                        }}</span>
+                                    </div>
+                                </div>
+                                <button
+                                    (click)="clearSelection()"
+                                    type="button"
+                                    class="rounded-lg p-1.5 text-gray-400 transition-all hover:bg-red-50 hover:text-red-500"
+                                >
+                                    <mat-icon
+                                        svgIcon="feather:x"
+                                        class="h-4 w-4"
+                                    />
+                                </button>
+                            </div>
+                        }
+
+                        @if (
+                            formulario.get('paciente').hasError('required') &&
+                            formulario.get('paciente').touched &&
+                            !formulario.get('paciente').value
+                        ) {
+                            <p class="mt-1 text-xs text-red-500">
+                                El paciente es requerido
+                            </p>
+                        }
+                    </div>
+                    <div>
+                        <label
+                            class="mb-1.5 block text-sm font-semibold text-gray-700"
+                        >
+                            Tratamiento <span class="text-red-500">*</span>
+                        </label>
+                        <mat-form-field class="w-full" appearance="outline">
+                            <mat-select
+                                formControlName="tratamiento"
+                                placeholder="Seleccionar Tratamiento"
+                            >
+                                @for (item of tratamientos; track item.id) {
+                                    <mat-option [value]="item.name">
+                                        {{ item.name }}
+                                    </mat-option>
+                                }
+                            </mat-select>
+                            @if (
+                                formulario
+                                    .get('tratamiento')
+                                    .hasError('required') &&
+                                formulario.get('tratamiento').touched
+                            ) {
+                                <mat-error
+                                    >El tratamiento es requerido</mat-error
+                                >
+                            }
+                        </mat-form-field>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label
+                                class="mb-1.5 block text-sm font-semibold text-gray-700"
+                                >Hora de Inicio</label
+                            >
+                            <div class="relative">
+                                <mat-icon
+                                    svgIcon="feather:clock"
+                                    class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400"
+                                />
+                                <select
+                                    formControlName="startTime"
+                                    class="appearance-none h-[42px] w-full rounded-lg border border-gray-300 bg-gray-50 py-2.5 pl-10 pr-8 text-gray-900 transition-all placeholder:text-gray-400 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                >
+                                    <option value="" class="text-gray-500">
+                                        --:--
+                                    </option>
+                                    @for (time of timeInitSlots; track $index) {
+                                        <option
+                                            [value]="time"
+                                            class="text-gray-900"
+                                        >
+                                            {{ time }}
+                                        </option>
+                                    }
+                                </select>
+                                <mat-icon
+                                    svgIcon="feather:chevron-down"
+                                    class="pointer-events-none absolute right-2 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400"
+                                />
+                            </div>
+                        </div>
+                        <div>
+                            <label
+                                class="mb-1.5 block text-sm font-semibold text-gray-700"
+                                >Hora de Fin</label
+                            >
+                            <div class="relative">
+                                <mat-icon
+                                    svgIcon="feather:clock"
+                                    class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400"
+                                />
+                                <select
+                                    formControlName="endTime"
+                                    class="appearance-none h-[42px] w-full rounded-lg border border-gray-300 bg-gray-50 py-2.5 pl-10 pr-8 text-gray-900 transition-all placeholder:text-gray-400 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                >
+                                    <option value="" class="text-gray-500">
+                                        --:--
+                                    </option>
+                                    @for (
+                                        time of filteredEndSlots;
+                                        track $index
+                                    ) {
+                                        <option
+                                            [value]="time"
+                                            class="text-gray-900"
+                                        >
+                                            {{ time }}
+                                        </option>
+                                    }
+                                </select>
+                                <mat-icon
+                                    svgIcon="feather:chevron-down"
+                                    class="pointer-events-none absolute right-2 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400"
+                                />
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <label
+                            class="mb-1.5 block text-sm font-semibold text-gray-700"
+                        >
+                            Estado <span class="text-red-500">*</span>
+                        </label>
+                        <div class="relative">
+                            <select
+                                formControlName="estado"
+                                class="appearance-none w-full rounded-lg border border-gray-300 bg-gray-50 px-3 py-2.5 text-gray-900 transition-all placeholder:text-gray-400 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            >
+                                @for (item of edoCitas; track $index) {
+                                    <option
+                                        [value]="item"
+                                        class="text-gray-900"
+                                    >
+                                        {{ item }}
+                                    </option>
+                                }
+                            </select>
+                            <mat-icon
+                                svgIcon="feather:chevron-down"
+                                class="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400"
                             />
-                            <mat-autocomplete autoActiveFirstOption #auto="matAutocomplete" [displayWith]="displayPaciente">
-                              <mat-option *ngFor="let option of filteredOptions | async" [value]="option">
-                                <mat-icon svgIcon="feather:user" class="h-4 w-4 text-white/70"></mat-icon>
-                                {{ option.name }} <span *ngIf="option.email" class="text-xs text-white/70 ml-2"> - {{ option.email }}</span>
-                              </mat-option>
-                            </mat-autocomplete>
-                          </mat-form-field>
-                        </div> -->
-
+                        </div>
+                    </div>
+                    <div>
+                        <label
+                            class="mb-1.5 block text-sm font-semibold text-gray-700"
+                            >Comentarios</label
+                        >
+                        <textarea
+                            rows="3"
+                            class="w-full resize-none rounded-lg border border-gray-300 bg-gray-50 px-3 py-2.5 text-gray-900 transition-all placeholder:text-gray-400 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="Añadir notas o instrucciones especiales..."
+                        ></textarea>
+                    </div>
+                </form>
             </div>
-            <div>
-                <label class="block font-medium mb-1">
-                  Tratamiento <span class="text-red-400">*</span>
-                </label>
-                <div class="relative">
-                  <select formControlName="tratamiento"  class="w-full bg-gray-800/90  rounded-md px-3 py-2 text-white placeholder:text-white/70 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    <option value="">Seleccionar Tratamiento</option>
-                    @for (item of tratamientos; track item.id) {
-                      <option [value]="item.name" class="bg-gray-800 text-white">
-                        {{item.name}}
-                      </option>
-                    }
-                  </select>
+            <div class="border-t border-gray-100 bg-gray-50 p-6">
+                <div class="flex gap-3">
+                    <button
+                        type="button"
+                        (click)="cerrarFormCita()"
+                        class="flex-1 rounded-xl border border-gray-300 bg-white py-2.5 text-sm font-medium text-gray-700 shadow-sm transition-all hover:bg-gray-50"
+                    >
+                        Cancelar
+                    </button>
+                    <button
+                        type="button"
+                        (click)="grabarCita()"
+                        class="flex flex-1 items-center justify-center gap-2 rounded-xl bg-blue-600 py-2.5 text-sm font-medium text-white shadow-md transition-all hover:bg-blue-700"
+                    >
+                        <mat-icon svgIcon="feather:save" class="h-4 w-4" />
+                        Grabar
+                    </button>
                 </div>
             </div>
-            <div class="grid grid-cols-2 gap-4">
-                <div>
-                  <label class="block text-md font-medium mb-1">Hora de Inicio</label>
-                  <div class="relative">
-                      <mat-icon svgIcon="feather:clock" class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/70" />
-                      <select formControlName="startTime" class="w-full bg-gray-800/90 rounded-md pl-10 pr-3 py-2 text-white placeholder:text-white/70 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <option value="" class="bg-gray-800 text-white">
-                          Seleccionar Hora
-                        </option>
-                        @for (time of timeInitSlots; track $index) {
-                          <option [value]="time" class="bg-gray-800 text-white">
-                              {{time}}
-                          </option>
-                        }
-                      </select>
-                  </div>
-                </div>
-                <div>
-                  <label class="block text-md font-medium mb-1">Hora de Fin</label>
-                  <div class="relative">
-                      <mat-icon svgIcon="feather:clock" class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/70" />
-                      <select formControlName="endTime" class="w-full bg-gray-800/90 rounded-md pl-10 pr-3 py-2 text-white placeholder:text-white/70 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <option value="" class="bg-gray-800 text-white">
-                          Seleccionar Hora
-                        </option>
-                        @for (time of filteredEndSlots; track $index) {
-                          <option [value]="time" class="bg-gray-800 text-white">
-                              {{time}}
-                          </option>
-                        }
-                      </select>
-                  </div>
-                </div>
-            </div>
-            <div>
-                <label class="block font-medium mb-1">
-                  Estado <span class="text-red-400">*</span>
-                </label>
-                <div class="relative">
-                  <select formControlName="estado" class="w-full bg-gray-800/90  rounded-md px-3 py-2 text-white placeholder:text-white/70 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    
-                    @for (item of edoCitas; track $index) {
-                      <option [value]="item" class="bg-gray-800 text-white">
-                        {{item}}
-                      </option>
-                    }
-                  </select>
-                </div>
-            </div>
-            <div>
-              <label class="block text-md font-medium mb-1">Comentarios</label>
-              <textarea
-              
-               
-                rows="3"
-                class="w-full bg-gray-800/90 border border-white/20 rounded-md px-3 py-2 text-white placeholder:text-white/70 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Añadir notas o instrucciones especiales..."
-              ></textarea>
-            </div>
-          </form>
-        </div>
-        <div class="p-6 border-t border-white/10">
-          <div class="flex gap-3">
-              <button
-                type="button"
-                (click)="cerrarFormCita()"
-                class="flex-1 py-2.5 bg-white/10 hover:bg-red-500 rounded-xl text-md transition-colors font-medium"
-                
-              >
-                Cancelar
-              </button>
-              <button
-                type="button"
-                (click)="grabarCita()"
-                class="flex-1 py-2.5 bg-blue-500 hover:bg-blue-600 rounded-xl text-md transition-colors font-medium flex items-center justify-center"
-                
-              >Grabar</button>
-          </div>
         </div>
     </div>
-  </div>
 }
-

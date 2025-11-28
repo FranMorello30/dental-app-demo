@@ -12,12 +12,12 @@ export class NavigationService {
     private menu = {
         menu: [
             {
-                id: 'odontologos',
-                title: 'odontologos',
+                id: 'Calendario',
+                title: 'Calendario',
 
                 type: 'basic',
-                icon: 'mat_outline:add_task',
-                link: '/odontologos',
+                icon: 'feather:calendar',
+                link: '/admin/calendario',
                 disabled: false,
             },
             {
@@ -25,56 +25,28 @@ export class NavigationService {
                 title: 'Pacientes',
 
                 type: 'basic',
-                icon: 'mat_outline:add_task',
-                link: '/pacientes',
+                icon: 'feather:users',
+                link: '/admin/pacientes',
                 disabled: false,
             },
 
             {
-                id: 'reservaciones',
-                title: 'Reservaciones',
+                id: 'odontologos',
+                title: 'Odontólogos',
 
                 type: 'basic',
-                icon: 'mat_outline:add_task',
-                link: '/reservaciones',
+                icon: 'custom_outline:stethoscope',
+                link: '/admin/odontologos',
                 disabled: false,
             },
 
             {
-                id: 'citas',
-                title: 'Gestión',
+                id: 'configuraciones',
+                title: 'Configuraciones',
 
                 type: 'basic',
-                icon: 'mat_outline:add_task',
-                link: '/citas',
-                disabled: false,
-            },
-            {
-                id: 'inventario',
-                title: 'inventario',
-
-                type: 'basic',
-                icon: 'mat_outline:add_task',
-                link: '/inventario',
-                disabled: false,
-            },
-
-            {
-                id: 'facturas',
-                title: 'facturas',
-
-                type: 'basic',
-                icon: 'mat_outline:add_task',
-                link: '/facturas',
-                disabled: false,
-            },
-            {
-                id: 'odontograma',
-                title: 'odontograma',
-
-                type: 'basic',
-                icon: 'mat_outline:add_task',
-                link: '/odontograma',
+                icon: 'feather:settings',
+                link: '/admin/configuraciones',
                 disabled: false,
             },
         ],

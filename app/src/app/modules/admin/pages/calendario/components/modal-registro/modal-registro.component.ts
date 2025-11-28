@@ -16,15 +16,18 @@ import {
     FormControl,
     FormGroup,
     ReactiveFormsModule,
+    Validators,
 } from '@angular/forms';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
+import { MatOptionModule } from '@angular/material/core';
 import {
     MAT_FORM_FIELD_DEFAULT_OPTIONS,
     MatFormFieldModule,
 } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
-import { Appointment } from '@shared/models/appointement.model'; // <<--- agrega esto
+import { MatSelectModule } from '@angular/material/select';
+import { Appointment } from '@shared/models/appointement.model';
 import { Dentist } from '@shared/models/dentist.model';
 import { Paciente } from '@shared/models/pacientes.model';
 import { Treatment } from '@shared/models/treatment.model';
@@ -44,50 +47,23 @@ import { CalendarioService } from '../../calendario.service';
         MatFormFieldModule,
         MatInputModule,
         MatAutocompleteModule,
+        MatSelectModule,
+        MatOptionModule,
         AsyncPipe,
     ],
     templateUrl: './modal-registro.component.html',
     styles: [
         `
-            // .mat-form-field {
-            //     width: 100% !important;
-            // }
-            // .mat-form-field-wrapper {
-            //     padding: 0 !important;
-            // }
-            // .mat-form-field-flex {
-            //     padding: 0 !important;
-            //     background: transparent !important;
-            //     border-radius: 0 !important;
-            // }
-            // .mat-form-field-infix {
-            //     padding: 0 !important;
-            //     width: 100% !important;
-            // }
-            .mat-input-element {
-                background: #23272f !important;
-                color: #fff !important;
-                padding: 0.5rem 1rem !important;
-                border-radius: 0.5rem !important;
-                width: 100% !important;
-                box-sizing: border-box !important;
-                margin: 0 !important;
+            ::ng-deep .mat-mdc-form-field-subscript-wrapper {
+                display: none;
             }
-            // .mat-form-field-underline,
-            // .mat-form-field-ripple {
-            //     display: none !important;
-            // }
-            // .mat-autocomplete-panel {
-            //     background: #23272f !important;
-            //     color: #fff !important;
-            // }
         `,
     ],
     changeDetection: ChangeDetectionStrategy.OnPush,
     providers: [
         {
             provide: MAT_FORM_FIELD_DEFAULT_OPTIONS,
-            useValue: { subscriptSizing: 'dynamic' },
+            useValue: { subscriptSizing: 'dynamic', appearance: 'outline' },
         },
     ],
 })
@@ -129,9 +105,13 @@ export class ModalRegistroComponent implements OnInit, OnChanges {
         tratamiento: FormControl<string>;
         startTime: FormControl<string>;
         endTime: FormControl<string>;
-        paciente: FormControl<string>;
+        paciente: FormControl<string | Paciente>;
         dentist: FormControl<Dentist>;
     }>;
+
+    searchControl = new FormControl('');
+    searchResults: Paciente[] = [];
+    showResults = false;
 
     ngOnInit(): void {
         this._getTreatments();
@@ -162,28 +142,19 @@ export class ModalRegistroComponent implements OnInit, OnChanges {
                 });
 
             this.formulario.get('dentist')?.setValue(this.dentist());
-
-            // this.filteredOptions = this.formulario
-            //     .get('paciente')
-            //     .valueChanges.pipe(
-            //         startWith(''),
-            //         map((value) => {
-            //             const filterValue =
-            //                 typeof value === 'string'
-            //                     ? value
-            //                     : value?.name ?? '';
-            //             return this._filter(filterValue);
-            //         })
-            //     );
         }
 
-        this.formulario.controls.paciente.valueChanges.subscribe(
-            (paciente: string) => {
-                this.paciente = this.patients.find((p) => p.id === paciente);
-
-                this._detectChange.markForCheck();
+        // Listen to search changes
+        this.searchControl.valueChanges.subscribe((value) => {
+            if (value && value.length > 0) {
+                this.searchResults = this._filter(value);
+                this.showResults = true;
+            } else {
+                this.searchResults = [];
+                this.showResults = false;
             }
-        );
+            this._detectChange.markForCheck();
+        });
     }
 
     ngOnChanges(changes: SimpleChanges): void {
@@ -197,6 +168,10 @@ export class ModalRegistroComponent implements OnInit, OnChanges {
         this.timeEndSlots = [];
         this.filteredEndSlots = [];
         this.formulario.reset();
+        this.searchControl.reset();
+        this.searchResults = [];
+        this.showResults = false;
+        this.paciente = null;
         this.isClosed.emit(true);
     }
     private _combineDateAndTime(date: Date, time12: string): string {
@@ -215,6 +190,10 @@ export class ModalRegistroComponent implements OnInit, OnChanges {
     }
 
     grabarCita() {
+        if (this.formulario.invalid) {
+            return;
+        }
+
         const startDateTime = this._combineDateAndTime(
             this.selectedDate(),
             this.formulario.value.startTime
@@ -224,15 +203,25 @@ export class ModalRegistroComponent implements OnInit, OnChanges {
             this.formulario.value.endTime
         );
 
+        const pacienteValue = this.formulario.value.paciente;
+        const pacienteId =
+            typeof pacienteValue === 'string'
+                ? pacienteValue
+                : (pacienteValue as Paciente).id;
+        const pacienteName =
+            typeof pacienteValue === 'string'
+                ? pacienteValue
+                : (pacienteValue as Paciente).name;
+
         const cita = {
-            title: 'Cita con ' + this.paciente.name,
+            title: 'Cita con ' + pacienteName,
             description: this.formulario.value.tratamiento,
             start_time: startDateTime,
             end_time: endDateTime,
             status: this.formulario.value.estado,
             treatment: this.formulario.value.tratamiento,
             dentistId: this.dentist().id,
-            patientId: this.paciente.id,
+            patientId: pacienteId,
         };
 
         this._calendarioService.createAppointment(cita).subscribe({
@@ -343,11 +332,14 @@ export class ModalRegistroComponent implements OnInit, OnChanges {
 
     private _createForm() {
         this.formulario = this._formBuilder.group({
-            estado: ['Confirmada'],
-            tratamiento: [],
-            startTime: [],
-            endTime: [{ value: '', disabled: true }],
-            paciente: [],
+            estado: ['Confirmada', Validators.required],
+            tratamiento: ['', Validators.required],
+            startTime: ['', Validators.required],
+            endTime: [{ value: '', disabled: true }, Validators.required],
+            paciente: new FormControl<string | Paciente>(
+                '',
+                Validators.required
+            ),
             dentist: [this.dentist()],
         });
     }
@@ -403,8 +395,16 @@ export class ModalRegistroComponent implements OnInit, OnChanges {
         return hour * 60 + minute;
     }
 
-    // Agrega este método para mostrar el nombre del paciente en el input
-    displayPaciente(paciente: Paciente): string {
-        return paciente ? paciente.name : '';
+    selectPaciente(paciente: Paciente) {
+        this.paciente = paciente;
+        this.formulario.get('paciente').setValue(paciente);
+        this.showResults = false;
+        this.searchControl.setValue('');
+    }
+
+    clearSelection() {
+        this.paciente = null;
+        this.formulario.get('paciente').setValue('');
+        this.searchControl.setValue('');
     }
 }

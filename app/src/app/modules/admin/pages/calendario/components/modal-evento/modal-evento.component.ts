@@ -43,11 +43,17 @@ export class ModalEventoComponent implements OnInit {
     ];
 
     editingStatus = false;
-
     inputEstado = new FormControl('');
+
+    reprogramming = false;
+    newDateControl = new FormControl('');
+    newTimeControl = new FormControl('');
+    minDate: string;
 
     ngOnInit(): void {
         this.inputEstado.setValue(this.selectedEvent().status);
+        const today = new Date();
+        this.minDate = today.toISOString().split('T')[0];
 
         // this.inputEstado.valueChanges.subscribe((value) => {
         //     if (value) {
@@ -116,5 +122,74 @@ export class ModalEventoComponent implements OnInit {
                     },
                 });
         }
+    }
+
+    toggleReprogramming() {
+        this.reprogramming = !this.reprogramming;
+        if (this.reprogramming) {
+            // Initialize with current values
+            const start = new Date(this.selectedEvent().start_time);
+            this.newDateControl.setValue(start.toISOString().split('T')[0]);
+            const hours = start.getHours().toString().padStart(2, '0');
+            const minutes = start.getMinutes().toString().padStart(2, '0');
+            this.newTimeControl.setValue(`${hours}:${minutes}`);
+        }
+    }
+
+    saveReschedule() {
+        if (this.newDateControl.invalid || this.newTimeControl.invalid) return;
+
+        const dateStr = this.newDateControl.value;
+        const timeStr = this.newTimeControl.value;
+
+        // Validation: Past date check
+        const selectedDate = new Date(dateStr + 'T00:00:00');
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        if (selectedDate < today) {
+            alert('No puedes reprogramar a una fecha pasada.');
+            return;
+        }
+
+        // Combine date and time
+        const startDateTime = new Date(`${dateStr}T${timeStr}:00`);
+
+        // Calculate end time (preserve duration)
+        const originalStart = new Date(this.selectedEvent().start_time);
+        const originalEnd = new Date(this.selectedEvent().end_time);
+        const durationMs = originalEnd.getTime() - originalStart.getTime();
+        const endDateTime = new Date(startDateTime.getTime() + durationMs);
+
+        // Format for backend (YYYY-MM-DD HH:mm:ss)
+        const formatDateTime = (date: Date) => {
+            const yyyy = date.getFullYear();
+            const mm = (date.getMonth() + 1).toString().padStart(2, '0');
+            const dd = date.getDate().toString().padStart(2, '0');
+            const hh = date.getHours().toString().padStart(2, '0');
+            const min = date.getMinutes().toString().padStart(2, '0');
+            const ss = date.getSeconds().toString().padStart(2, '0');
+            return `${yyyy}-${mm}-${dd} ${hh}:${min}:${ss}`;
+        };
+
+        const payload = {
+            start_time: formatDateTime(startDateTime),
+            end_time: formatDateTime(endDateTime),
+            dentistId: this.selectedEvent().dentist.id, // Ensure dentist is preserved
+            patientId: this.selectedEvent().patient.id,
+        };
+
+        this._calendarioService
+            .updateAppointment(this.selectedEvent().id, payload)
+            .subscribe({
+                next: () => {
+                    this.changedEvent.emit(true);
+                    this.closedEvent();
+                },
+                error: (err) => {
+                    console.error('Error rescheduling appointment:', err);
+                    alert('Error al reprogramar la cita.');
+                },
+            });
     }
 }

@@ -1,20 +1,20 @@
 
-<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-    <div class="w-full max-w-320 max-h-[95vh] rounded-2xl bg-gradient-to-br from-white/20 via-white/10 to-white/5 backdrop-blur-lg shadow-xl border border-white/20 text-white overflow-hidden flex flex-col">
-        <div class="p-6 border-b border-white/10">
+<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+    <div class="w-full max-w-320 max-h-[95vh] rounded-2xl bg-white shadow-2xl border border-gray-200 text-gray-900 overflow-hidden flex flex-col animate-in fade-in zoom-in duration-200">
+        <div class="p-6 border-b border-gray-100 bg-gray-50/50">
             <div class="flex justify-between items-center">
-              <h2 class="text-xl font-semibold">Detalle de Cita Dental</h2>
-              <button (click)="cerrarFormCita()" class="text-white/70 hover:text-white transition-colors" type="button">
-                <mat-icon svgIcon="feather:x" class="h-5 w-5 text-white" />
+              <h2 class="text-xl font-bold text-gray-900">Detalle de Cita Dental</h2>
+              <button (click)="cerrarFormCita()" class="text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full p-1 transition-colors" type="button">
+                <mat-icon svgIcon="feather:x" class="h-5 w-5" />
               </button>
             </div>
 
-            <div class="bg-orange-500/20 border border-orange-500/30 rounded-lg p-3 mt-4 mb-2 text-white">
-              <div class="flex items-center">
-                <mat-icon svgIcon="feather:alert-circle" class="h-5 w-5 mr-2 text-orange-400" />
+            <div class="bg-orange-50 border border-orange-100 rounded-lg p-4 mt-4 mb-2 text-gray-800">
+              <div class="flex items-start">
+                <mat-icon svgIcon="feather:alert-circle" class="h-5 w-5 mr-3 text-orange-500 mt-0.5" />
                 <div>
-                  <p class="font-medium">Esta cita ha finalizado automáticamente</p>
-                  <p class="text-sm text-white/80">
+                  <p class="font-semibold text-orange-900">Esta cita ha finalizado automáticamente</p>
+                  <p class="text-sm text-gray-600 mt-1">
                     Por favor, complete la información del tratamiento realizado y los dientes tratados.
                   </p>
                 </div>
@@ -22,13 +22,13 @@
             </div>
          
               <!-- <h3 class="text-white text-2xl">Información de la Cita</h3> -->
-                <div class="flex flex-row gap-2 mt-1">
-                   <p class="flex items-center">
-                    <mat-icon svgIcon="feather:file-text" class="mr-2 h-5 w-5 text-white" />
-                    Tratamiento: {{appointment().treatment }}
+                <div class="flex flex-wrap gap-4 mt-2 text-sm">
+                   <p class="flex items-center bg-blue-50 text-blue-700 px-3 py-1.5 rounded-full font-medium">
+                    <mat-icon svgIcon="feather:file-text" class="mr-2 h-4 w-4" />
+                    {{appointment().treatment }}
                 </p>
-                <p class="flex items-center">
-                    <mat-icon svgIcon="feather:calendar" class="mr-2 h-5 w-5 text-white" />
+                <p class="flex items-center text-gray-600">
+                    <mat-icon svgIcon="feather:calendar" class="mr-2 h-4 w-4 text-gray-400" />
                     {{appointment().start_time.toLocaleDateString("es-ES", {
                     weekday: "long",
                     year: "numeric",
@@ -36,31 +36,34 @@
                     day: "numeric",
                     })}}
                 </p>
-                <p class="flex items-center">
-                    <mat-icon svgIcon="feather:clock" class="mr-2 h-5 w-5 text-white" />
+                <p class="flex items-center text-gray-600">
+                    <mat-icon svgIcon="feather:clock" class="mr-2 h-4 w-4 text-gray-400" />
                     {{appointment().start_time | date:'hh:mm a' }} - {{appointment().end_time | date:'hh:mm a' }}
                 </p>
                 <!-- <p class="flex items-center">
                     <MapPin className="mr-2 h-5 w-5 text-blue-400" />
                     {{appointment.location}}
                 </p> -->
-                <p class="flex items-center">
-                    <mat-icon svgIcon="feather:user" class="mr-2 h-5 w-5 text-white" />
-                    Paciente: {{appointment().patient?.name}}
+                <p class="flex items-center text-gray-600">
+                    <mat-icon svgIcon="feather:user" class="mr-2 h-4 w-4 text-gray-400" />
+                    Paciente: <span class="font-semibold ml-1 text-gray-900">{{appointment().patient?.name}}</span>
                 </p>
                
                 </div>
             
             
         </div>
-        <div class="custom-scrollbar overflow-y-auto px-6 flex-grow">
+        <div class="custom-scrollbar overflow-y-auto px-6 py-6 flex-grow bg-gray-50/30">
             <!-- <mat-tab-group backgroundColor="transparent" color="primary" class="text-white/80 w-full">
                 <mat-tab label="Información y Tratamiendo" class="text-white/80"> -->
-                   <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-1">
+                   <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             
-                            <div class="bg-white/10 backdrop-blur-lg rounded-xl border border-white/20 p-4 mb-6">
-                                <h3 class="text-white font-medium mb-4">Trabajo Realizado</h3>
+                            <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5 mb-6">
+                                <h3 class="text-gray-900 font-semibold mb-4 flex items-center gap-2">
+                                    <mat-icon svgIcon="feather:edit-3" class="h-4 w-4 text-blue-500" />
+                                    Trabajo Realizado
+                                </h3>
                                 <div class="space-y-4">
                                 <div>
                                     <!-- <label class="block text-sm font-medium mb-1">
@@ -70,11 +73,14 @@
                                     [formControl]="trabajoRealizado"
                                     
                                     rows=6
-                                    class="w-full bg-gray-800/90 border border-white/20 rounded-md px-3 py-2 text-white placeholder:text-white/70 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    class="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none"
                                     placeholder="Describa el trabajo realizado durante la cita..."
                                     required
                                     ></textarea>
-                                    <p class="text-xs text-white/60 mt-1">Este campo es obligatorio</p>
+                                    <p class="text-xs text-gray-500 mt-1.5 flex items-center gap-1">
+                                        <mat-icon svgIcon="feather:info" class="h-3 w-3" />
+                                        Este campo es obligatorio
+                                    </p>
                                 </div>
 
                                
@@ -94,7 +100,9 @@
                             </div>
                         </div>
                         <div>
-                          <odontograma (selectedTeethChange)="teethSeleted($event)"></odontograma>
+                          <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
+                              <odontograma (selectedTeethChange)="teethSeleted($event)"></odontograma>
+                          </div>
                             <!-- <div class="bg-white/10 backdrop-blur-lg rounded-xl border border-white/20 p-4 mb-6">
                              
                             </div> -->
@@ -156,12 +164,12 @@
                 <!-- </mat-tab>
             </mat-tab-group> -->
         </div>
-        <div class="p-6 border-t border-white/10">
-          <div class="flex gap-3">
+        <div class="p-6 border-t border-gray-100 bg-gray-50">
+          <div class="flex gap-3 justify-end">
               <button
                 type="button"
                 (click)="cerrarFormCita()"
-                class="flex-1 py-2.5 bg-white/10 hover:bg-red-500 rounded-xl text-md transition-colors font-medium"
+                class="px-6 py-2.5 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-xl text-sm font-medium transition-all shadow-sm"
                 
               >
                 Cancelar
@@ -169,12 +177,13 @@
               <button
                 type="button"
                 (click)="grabarDetalle()"
-                class="flex-1 py-2.5 bg-blue-500 hover:bg-blue-600 rounded-xl text-md transition-colors font-medium flex items-center justify-center"
+                class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-medium transition-all shadow-md flex items-center justify-center gap-2"
                 
-              >Grabar y Finalizar</button>
+              >
+                <mat-icon svgIcon="feather:save" class="h-4 w-4" />
+                Grabar y Finalizar
+            </button>
           </div>
         </div>
     </div>
   </div>
-
-

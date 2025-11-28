@@ -1,48 +1,48 @@
-<h3 class="text-white font-medium mb-4">Archivos y Fotos</h3>
-<div class="space-y-4">
-    <div (click)="fileInput.click()" class="border-2 border-dashed border-white/30 rounded-lg p-4 text-center cursor-pointer hover:bg-white/5 transition-colors">
-        <mat-icon svgIcon="feather:upload" class="h-8 w-8 text-white mx-auto mb-2" />
-        <p class="text-white/70">Haga clic para subir archivos o fotos</p>
-        <input
-        #fileInput
-        type="file"                                        
-        class="hidden"
-        multiple
-        accept="image/*,.pdf"
-      (change)="capturarFile($event)"
-        />
-    </div>
-    <div class="grid grid-cols-2 gap-2">
-        @for (item of filePreviewUrls; track $index) {
-        <div class="relative group">
-            @if(item.endsWith('.pdf')) {
-            <div class="h-24 rounded-md overflow-hidden">
-                <iframe [src]="item | imagen | safeUrl" class="w-full h-full object-cover rounded-lg" ></iframe>
-            </div>
-            }@else {
-            <div class="h-24 rounded-md overflow-hidden">
-                <img [src]="item | imagen" class="w-full h-full object-cover rounded-lg" />
+<div class="bg-gray-50 rounded-xl border border-gray-200 p-5">
+  <h3 class="text-gray-900 font-semibold mb-4 flex items-center gap-2">
+    <mat-icon svgIcon="feather:image" class="h-5 w-5 text-blue-600" />
+    Archivos y Fotos
+  </h3>
+  <div class="space-y-4">
+      <div (click)="fileInput.click()" class="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center cursor-pointer hover:bg-white hover:border-blue-400 transition-all group bg-white">
+          <div class="bg-blue-50 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:bg-blue-100 transition-colors">
+            <mat-icon svgIcon="feather:upload-cloud" class="h-6 w-6 text-blue-600" />
+          </div>
+          <p class="text-gray-900 font-medium">Haga clic para subir archivos</p>
+          <p class="text-xs text-gray-500 mt-1">Soporta imágenes y PDF</p>
+          <input
+          #fileInput
+          type="file"                                        
+          class="hidden"
+          multiple
+          accept="image/*,.pdf"
+        (change)="capturarFile($event)"
+          />
+      </div>
+      
+      @if(filePreviewUrls.length > 0) {
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            @for (item of filePreviewUrls; track $index) {
+            <div class="relative group aspect-square">
+                @if(item.endsWith('.pdf')) {
+                <div class="w-full h-full rounded-lg overflow-hidden border border-gray-200 bg-white">
+                    <iframe [src]="item | imagen | safeUrl" class="w-full h-full object-cover" ></iframe>
+                </div>
+                }@else {
+                <div class="w-full h-full rounded-lg overflow-hidden border border-gray-200 bg-white shadow-sm">
+                    <img [src]="item | imagen" class="w-full h-full object-cover" />
+                </div>
+                }
+                
+                <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-lg backdrop-blur-[1px]">
+                <button mat-icon-button (click)="filePreviewUrls.splice($index, 1)" class="bg-white/90 hover:bg-red-50 text-red-600 rounded-full shadow-lg transform scale-90 group-hover:scale-100 transition-all">
+                    <mat-icon svgIcon="feather:trash-2" class="h-5 w-5" />
+                </button>
+                </div>
+                <!-- <p class="text-[10px] text-gray-500 truncate mt-1 text-center">{{item}}</p> -->
             </div>
             }
-            
-            <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-            <button mat-flat-button class="bg-red-500 rounded-full text-white">
-                <mat-icon svgIcon="feather:trash-2" class="h-4 w-4 text-white" />
-            </button>
-            </div>
-            <p class="text-xs text-white/70 truncate mt-1">{{item}}</p>
         </div>
-        }
-    </div>
+      }
+  </div>
 </div>
-
- <!-- @if(item.startWith('data:image/')) {
-            <div class="h-24 rounded-md overflow-hidden">
-                <img [src]="item.nombre | imagen" class="w-full h-full object-cover rounded-lg" />
-            </div>
-            } @else { 
-            <div class="h-24 bg-gray-800/90 rounded-md flex items-center justify-center">
-                <mat-icon svgIcon="feather:file" class="h-8 w-8 text-white/70" />
-            </div>
-
-            } -->

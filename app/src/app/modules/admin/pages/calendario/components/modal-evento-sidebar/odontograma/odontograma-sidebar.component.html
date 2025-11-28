@@ -1,0 +1,155 @@
+<div class="flex h-full w-full flex-col p-4">
+    <!-- Controls Section -->
+    <div class="mb-4 flex flex-col gap-3">
+        <mat-form-field appearance="outline" class="w-full">
+            <mat-label>Condición</mat-label>
+            <mat-select [(value)]="currentCondition">
+                <mat-option
+                    *ngFor="let condition of conditions"
+                    [value]="condition.id"
+                >
+                    <div class="flex items-center gap-2">
+                        <div
+                            class="h-4 w-4 rounded-full"
+                            [style.backgroundColor]="condition.color"
+                        ></div>
+                        <span>{{ condition.name }}</span>
+                    </div>
+                </mat-option>
+            </mat-select>
+        </mat-form-field>
+
+        <button
+            mat-stroked-button
+            color="warn"
+            (click)="clearAll()"
+            class="w-full"
+        >
+            Limpiar todo
+        </button>
+    </div>
+
+    <!-- SVG Odontogram -->
+    <div
+        class="relative mb-4 w-full overflow-hidden rounded-lg border bg-white p-2"
+    >
+        <div class="absolute left-0 top-1/2 h-px w-full bg-gray-200"></div>
+        <div class="absolute left-1/2 top-0 h-full w-px bg-gray-200"></div>
+
+        <svg
+            viewBox="0 0 530 760"
+            class="h-auto w-full"
+            style="max-height: 350px"
+        >
+            <g
+                *ngFor="let tooth of upperTeeth"
+                (click)="handleToothClick(tooth.id)"
+                class="cursor-pointer"
+            >
+                <image
+                    [attr.xlink:href]="
+                        'assets/images/dientes/' + tooth.id + '.png'
+                    "
+                    [attr.x]="tooth.x - 20"
+                    [attr.y]="tooth.y - 20"
+                    height="55"
+                    width="55"
+                    [ngClass]="{
+                        'opacity-40': getToothFill(tooth.id) !== 'transparent',
+                    }"
+                />
+                <circle
+                    *ngIf="getToothFill(tooth.id) !== 'transparent'"
+                    [attr.cx]="tooth.x"
+                    [attr.cy]="tooth.y"
+                    r="18"
+                    [attr.fill]="getToothFill(tooth.id)"
+                    opacity="0.6"
+                    class="pointer-events-none"
+                />
+            </g>
+
+            <g
+                *ngFor="let tooth of lowerTeeth"
+                (click)="handleToothClick(tooth.id)"
+                class="cursor-pointer"
+            >
+                <image
+                    [attr.xlink:href]="
+                        'assets/images/dientes/' + tooth.id + '.png'
+                    "
+                    [attr.x]="tooth.x - 20"
+                    [attr.y]="tooth.y - 20"
+                    height="55"
+                    width="55"
+                    [ngClass]="{
+                        'opacity-40': getToothFill(tooth.id) !== 'transparent',
+                    }"
+                />
+                <circle
+                    *ngIf="getToothFill(tooth.id) !== 'transparent'"
+                    [attr.cx]="tooth.x"
+                    [attr.cy]="tooth.y"
+                    r="18"
+                    [attr.fill]="getToothFill(tooth.id)"
+                    opacity="0.6"
+                    class="pointer-events-none"
+                />
+            </g>
+        </svg>
+    </div>
+
+    <!-- Legend and Selected Teeth -->
+    <div class="grid grid-cols-1 gap-3">
+        <div class="rounded-lg border bg-gray-50 p-3">
+            <h3 class="mb-2 text-sm font-semibold text-gray-700">Leyenda</h3>
+            <div class="flex flex-wrap gap-2">
+                <div
+                    *ngFor="let condition of conditions"
+                    class="flex items-center gap-1.5"
+                >
+                    <div
+                        class="h-3 w-3 rounded-full border border-gray-300"
+                        [style.background-color]="condition.color"
+                    ></div>
+                    <span class="text-xs text-gray-600">{{
+                        condition.name
+                    }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="rounded-lg border bg-gray-50 p-3">
+            <h3 class="mb-2 text-sm font-semibold text-gray-700">
+                Dientes seleccionados
+            </h3>
+            <div
+                *ngIf="
+                    (selectedTeeth | keyvalue).length > 0;
+                    else noTeethSelected
+                "
+                class="max-h-32 space-y-1 overflow-y-auto"
+            >
+                <div
+                    *ngFor="let tooth of selectedTeeth | keyvalue"
+                    class="flex items-center gap-2 text-xs"
+                >
+                    <span class="font-medium">{{ tooth.key }}:</span>
+                    <div
+                        class="h-2.5 w-2.5 rounded-full border border-gray-300"
+                        [style.background-color]="getToothColor(tooth.value)"
+                    ></div>
+                    <span class="text-gray-600">{{
+                        getConditionName(tooth.value)
+                    }}</span>
+                </div>
+            </div>
+
+            <ng-template #noTeethSelected>
+                <p class="text-xs text-gray-400">
+                    No hay dientes seleccionados
+                </p>
+            </ng-template>
+        </div>
+    </div>
+</div>

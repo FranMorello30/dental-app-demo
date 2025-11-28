@@ -5,6 +5,7 @@ import {
     EventEmitter,
     Output,
 } from '@angular/core';
+import { MatIconModule } from '@angular/material/icon';
 interface TreatmentType {
     id: string;
     name: string;
@@ -18,7 +19,7 @@ interface TreatedTooth {
 @Component({
     selector: 'odontograma',
     standalone: true,
-    imports: [CommonModule],
+    imports: [CommonModule, MatIconModule],
     templateUrl: './odontograma.component.html',
     styles: ``,
     changeDetection: ChangeDetectionStrategy.OnPush,

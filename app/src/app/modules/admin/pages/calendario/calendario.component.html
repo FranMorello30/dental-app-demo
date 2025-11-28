@@ -1,414 +1,833 @@
-<div class="relative min-h-screen w-full overflow-hidden">
-  
-  <div class="relative h-full w-full pt-20 flex items-start pb-4">
-    <!-- overflow-y-auto max-h-180 -->
-    <div class="w-64 items-start  bg-white/10 backdrop-blur-2xl p-4 shadow-xl border-r border-white/20 rounded-tr-3xl rounded-br-3xl flex flex-col justify-between ">      
-          <div class="mb-4 w-full">
-        
-              <label class="block text-white font-medium mb-2 text-center">Seleccionar Odontólogo</label>
-             <mat-select [formControl]="selectDentist" class="w-full hover:cursor-pointer bg-gray-800/90 border border-white/30 rounded-lg px-3 py-2 text-white appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500">
-              <!-- <option class="bg-gray-800 text-white">Todos los Odontologos</option> -->
-               
-                @for (dentist of dentists; track dentist.id) {
-                  <mat-option [value]="dentist" >
-                    {{dentist.name}} 
-                  </mat-option>
-                }
-             </mat-select>
-        </div>
-
-        <button [disabled]="!dentist" (click)="crearCita()" 
-            class="mb-6 flex items-center justify-center gap-2 rounded-full bg-blue-500 px-4 py-3 text-white w-full"
-            [ngClass]="{'opacity-50 cursor-not-allowed': !dentist}">
-            <mat-icon class="text-white" svgIcon="feather:plus"></mat-icon>
-            <span>Crear</span>
-        </button>   
-        <div class="mb-6">
-          <div class="flex items-center justify-between mb-4">
-         
-            <h3 class="text-white font-medium">{{ getFormattedDate() }}</h3>
-            <div class="flex items-center justify-between">
-              <button mat-icon-button class="p-1 rounded-full hover:bg-white/20" >
-                <mat-icon class="text-white" svgIcon="feather:chevron-left"></mat-icon>
-              </button>
-              <button  mat-icon-button class="p-1 rounded-full hover:bg-white/20" >
-                <mat-icon class="text-white" svgIcon="feather:chevron-right"></mat-icon>
-              </button>
-            </div>            
-          </div>
-          <div class="grid grid-cols-7 gap-1 text-center">
-            @for (item of diasMini; track $index) {
-              <div class="text-xs text-white/70 font-medium py-1">
-                {{item === "X" ? "Mi" : item}}
-              </div>
-            }
-            @for (day of getMiniCalendarData(); track $index) {
-              <!-- [class]="getPastDay(day) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'" -->
-              <div
-                      
-                      class='text-xs rounded-full w-7 h-7 flex items-center justify-center' 
-                      [class]="day === currentDate.getDate() ? 'bg-blue-500 text-white' : 'text-white hover:bg-white/20'"
-                      [ngClass]="getPastDay(day) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'"
-                      
-                      
-                    >
-                      {{day}}
-                    </div>
-            }
-          </div>
-        </div> 
-        <div class="w-full">
-          <h3 class="text-white font-medium text-lg mb-3">Total citas</h3>
-          <div class="space-y-2 w-full ">
-            <div class="flex items-center justify-between">
-              <span class="text-white text-md flex items-center gap-2">
-                <div class="w-3 h-3 rounded-sm bg-yellow-400"></div>
-                Sin confirmar
-              </span>
-              <span class="text-white text-md font-medium">{{totByStatus("Sin confirmar")}}</span>
-            </div>
-            <div class="flex items-center justify-between">
-              <span class="text-white text-md flex items-center gap-2">
-                <div class="w-3 h-3 rounded-sm bg-green-500"></div>
-                Confirmada
-              </span>
-              <span class="text-white text-md font-medium">{{totByStatus("Confirmada")}}</span>
-            </div>
-            <div class="flex items-center justify-between">
-              <span class="text-white text-md flex items-center gap-2">
-                <div class="w-3 h-3 rounded-sm bg-purple-500"></div>
-                En consulta
-              </span>
-              <span class="text-white text-md font-medium">{{totByStatus("En consulta")}}</span>
-            </div>
-            <div class="flex items-center justify-between">
-              <span class="text-white text-md flex items-center gap-2">
-                <div class="w-3 h-3 rounded-sm bg-red-500"></div>
-                Cancelada
-              </span>
-              <span class="text-white text-md font-medium">{{totByStatus("Cancelada")}}</span>
-            </div>
-            <div class="flex items-center justify-between">
-              <span class="text-white text-md flex items-center gap-2">
-                <div class="w-3 h-3 rounded-sm bg-gray-500"></div>
-                Finalizada
-              </span>
-              <span class="text-white text-md font-medium">{{totByStatus("Finalizada")}}</span>
-            </div>
-          </div>
-        </div>
-        <div class="mt-6">
-          <h3 class="text-white font-medium mb-3 flex items-center">
-            <mat-icon svgIcon="feather:info" class="h-4 w-4 mr-2 text-orange-400" />
-            Pendientes de documentar
-          </h3>
-          <div class="space-y-2 max-h-40 overflow-y-auto">
-            @for (event of allEvents; track $index) {
-              @if (event.status === "Finalizada (Pendiente)") {
-                <div (click)="eventDetails(event)" class="bg-orange-500/20 rounded-lg p-2 text-white text-xs cursor-pointer hover:bg-orange-500/30">
-                  <div class="font-medium text-md">{{event.title}} - {{event.patientName}} {{event.patientLastName}}</div>
-                  <div class="text-white flex items-center mt-1 text-md">
-                    <mat-icon svgIcon="feather:calendar" class="h-3 w-3 mr-3 text-white" />
-                    {{event.start_time.toLocaleDateString("es-ES", { month: "long", day: "numeric"  })}}
-                    
-                  </div>
-                </div>
-              }
-            }
-            
-            <!-- <div class="text-white/50 text-xs text-center py-2">No hay citas pendientes</div> -->
-          </div>
-        </div>
-    </div>
-    <div class="flex-1 flex flex-col">  
-        <div class="flex items-center justify-between p-4 border-b border-white/20">
-          <div class="flex items-center gap-4">
-            <button class="px-4 py-2 text-white bg-blue-500 rounded-md" (click)="getCurrentDate()">
-              Hoy
-            </button>
-            <div class="flex">
-              <!-- <button mat-button class="p-2 text-white hover:bg-white/10 rounded-r-md" (click)="changeMonth(-1)">
-                <mat-icon class="h-5 w-5 size-10 text-white" svgIcon="feather:chevron-left"></mat-icon>
-              </button>
-              <button mat-button class="p-2 text-white hover:bg-white/10 rounded-l-md" (click)="changeMonth(1)">
-                <mat-icon class="h-5 w-5 size-10 text-white" svgIcon="feather:chevron-right"></mat-icon>
-              </button> -->
-              <button mat-button class="p-2 text-white hover:bg-white/10 rounded-r-md" (click)="goToPrevious()">
-                <mat-icon class="h-5 w-5 size-10 text-white" svgIcon="feather:chevron-left"></mat-icon>
-              </button>
-              <button mat-button class="p-2 text-white hover:bg-white/10 rounded-l-md" (click)="goToNext()">
-                <mat-icon class="h-5 w-5 size-10 text-white" svgIcon="feather:chevron-right"></mat-icon>
-              </button>
-            </div>
-            <h2 class="text-xl font-semibold text-white">{{currentDate.toLocaleDateString("es-ES", { month: "long", day: "numeric" , year:'numeric' })}}</h2>
-          </div>
-
-          <div class="flex items-center gap-2 rounded-md p-1">
-            <button (click)="onViewChange('day')" class='px-3 py-1 rounded text-white text-md' [ngClass]="{'bg-white/20': currentView === 'day'}">
-              Día
-            </button>
-            <button (click)="onViewChange('week')" class='px-3 py-1 rounded text-white text-md' [ngClass]="{'bg-white/20 ': currentView === 'week' }">
-              Semana
-            </button>
-            <button (click)="onViewChange('month')" class='px-3 py-1 rounded text-white text-md' [ngClass]="{'bg-white/20 ': currentView === 'month' }">
-              Mes
-            </button>
-          </div>
-        </div>
-        <!-- [ngClass]="!registerEvent ? 'overflow-auto' : ''" -->
-        <div class="flex-1 p-4"
-        
-          >
-          @if(currentView === 'day'){
-            <div class="bg-white/20 backdrop-blur-2xl rounded-xl border border-white/20 shadow-xl h-full calendar-container">
-              <div class="grid grid-cols-2 border-b border-white/20">
-                <div class="p-2 text-center text-white/50 text-xs"></div>
-                <div class="p-2 text-center border-l border-white/20">
-                  <div class="text-md text-white/70 font-medium">{{formatWeekDay(currentDate)}}</div>
-                  <div class="text-lg font-medium mt-1 text-white bg-blue-500 rounded-full w-8 h-8 flex items-center justify-center mx-auto">
-                    {{currentDate.getDate()}}
-                  </div>
-                </div>
-              </div>
-              <div class="grid grid-cols-2">
-                <div class="text-white/70">
-                  @for (time of timeSlots; track $index) {
-                    <div  class="h-20 border-b border-white/10 pr-2 text-right text-md">
-                      
-                      @if(time > 12){
-                        {{time - 12}} PM
-                      }@else if( time === 12){
-                        {{time}} PM
-                     
-                      }@else {
-                        {{time}} AM
-                      }
-                    </div>
-                  }
-                </div>
-                <div class="border-l border-white/20 relative" [class]="!isPastDate(currentDate) && isDayAvailable(currentDate) ? 'cursor-pointer' : 'cursor-default'">
-                  @for (time of timeSlots; track $index) {
-                    <div class="h-20 border-b border-white/10"></div>
-                  }
-                  @for (event of getEventsByWeek(currentDate); track $index) {
-                  
-                    <div class="absolute rounded-md p-2 text-white text-xs shadow-md cursor-pointer transition-all duration-200 ease-in-out hover:translate-y-[-2px] hover:shadow-lg overflow-hidden"
-                      [class]="getStatusColor(event.status)"
-                      [ngStyle]="calculateEventStyle(event.start_time, event.end_time)"
-                      (click)="openEvent(event)"
-                      >
-                        
-                      <div class="font-medium truncate">{{event.treatment}}</div>
-                      <div class="opacity-80 text-[10px] mt-1 truncate">{{event.start_time | date:'hh:mm a'}} - {{event.end_time | date:'hh:mm a'}}</div>
-                      <div class="mt-1 text-[10px] bg-black/20 rounded px-1 inline-block">Pcte: {{event.patient.name}}</div>
-                    </div>
-                  }
-                
-                </div>
-              </div>
-            </div>
-          }          
-          @if(currentView === 'week'){
-            <div class="bg-white/20 backdrop-blur-2xl rounded-xl border border-white/20 shadow-xl h-full calendar-container">
-              <div class="grid grid-cols-8 border-b border-white/20">
-                <div class="p-2 text-center text-white/50 text-xs"></div>
-                @for (date of diasemanas; track $index) {
-                  <div class="p-2 text-center border-l border-white/20">
-                    <div class="text-md text-white/70 font-medium">{{formatWeekDay(date)}}</div>
-                    <div
-                  class='text-lg font-medium mt-1 text-white' 
-                  [class]="compareDate(date) ? 'bg-blue-500 rounded-full w-8 h-8 flex items-center justify-center mx-auto' : ''"
-                    >
-                      {{date.getDate()}}
-                    </div>
-                  </div>
-                }
-              </div>
-              <div class="grid grid-cols-8">
-                <div class="text-white/70">
-                  
-                  @for (time of timeSlots; track $index) {
-                    <div  class="h-20 border-b border-white/10 pr-2 text-right text-md">
-                      
-                      @if(time > 12){
-                        {{time - 12}} PM
-                      }@else if( time === 12){
-                        {{time}} PM
-                     
-                      }@else {
-                        {{time}} AM
-                      }
-                    </div>
-                  }
-                </div>
-                @for (date of diasemanas; track $index) {
-                  <div class="border-l border-white/20 relative"
-                    [ngClass]="{
-                      'bg-gray-800/30': !isDayAvailable(date),                      
-                      'cursor-pointer': isDayAvailable(date),
-                      'cursor-not-allowed': !isDayAvailable(date)
-                    }"
-                  >
-                    @for (time of timeSlots; track $index) {
-                      <div class="h-20 border-b border-white/10"></div>
+<div class="relative min-h-screen w-full overflow-hidden bg-slate-50">
+    <div class="relative flex h-full w-full items-start pb-4 pt-1">
+        <!-- Sidebar -->
+        <div
+            class="z-10 flex h-full w-72 flex-col items-start justify-between border-r border-gray-200 bg-white p-6 shadow-lg"
+        >
+            <div class="mb-6 w-full">
+                <label
+                    class="mb-2 block text-sm font-semibold uppercase tracking-wide text-gray-700"
+                    >Odontólogo</label
+                >
+                <mat-select
+                    [formControl]="selectDentist"
+                    class="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-gray-900 transition-all focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                    @for (dentist of dentists; track dentist.id) {
+                        <mat-option [value]="dentist">
+                            {{ dentist.name }}
+                        </mat-option>
                     }
-                    @if(isDayAvailable(date)){
-                      @for (event of getEventsByWeek(date); track $index) {
-                        <div [title]="'Pcte:' + event.patient.name" class=" absolute rounded-md p-2 text-white text-xs shadow-md cursor-pointer transition-all duration-200 ease-in-out hover:translate-y-[-2px] hover:shadow-lg overflow-hidden"
-                          [class]="getStatusColor(event.status)"
-                          [ngStyle]="calculateEventStyle(event.start_time, event.end_time)"
-                          (click)="openEvent(event)"
-                          >
-                          <div class="font-medium truncate">{{event.treatment}}</div>
-                          <div class="opacity-80 text-[10px] mt-1 truncate">
-                            {{event.start_time | date:'hh:mm a'}} - {{event.end_time | date:'hh:mm a'}}
-                          </div>
-                          <div class="mt-1 text-[10px] bg-black/20 rounded px-1 inline-block">Pcte: {{event.patient.name}}</div>
+                </mat-select>
+            </div>
+
+            <button
+                [disabled]="!dentist"
+                (click)="crearCita()"
+                class="mb-8 flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 py-3 text-white shadow-md transition-all hover:bg-blue-700 active:scale-95"
+                [ngClass]="{ 'cursor-not-allowed opacity-50': !dentist }"
+            >
+                <mat-icon
+                    class="text-white icon-size-5"
+                    svgIcon="feather:plus"
+                ></mat-icon>
+                <span class="font-medium">Nueva Cita</span>
+            </button>
+
+            <div class="mb-8">
+                <div class="mb-4 flex items-center justify-between">
+                    <h3 class="text-lg font-bold capitalize text-gray-900">
+                        {{ getFormattedDate() }}
+                    </h3>
+                    <div class="flex items-center gap-1">
+                        <button
+                            mat-icon-button
+                            class="flex h-8 w-8 items-center justify-center rounded-full text-gray-600 transition-colors hover:bg-gray-100"
+                            (click)="changeMonth(-1)"
+                        >
+                            <mat-icon
+                                class="icon-size-5"
+                                svgIcon="feather:chevron-left"
+                            ></mat-icon>
+                        </button>
+                        <button
+                            mat-icon-button
+                            class="flex h-8 w-8 items-center justify-center rounded-full text-gray-600 transition-colors hover:bg-gray-100"
+                            (click)="changeMonth(1)"
+                        >
+                            <mat-icon
+                                class="icon-size-5"
+                                svgIcon="feather:chevron-right"
+                            ></mat-icon>
+                        </button>
+                    </div>
+                </div>
+                <div class="mb-2 grid grid-cols-7 gap-1 text-center">
+                    @for (item of diasMini; track $index) {
+                        <div class="py-1 text-xs font-semibold text-gray-400">
+                            {{ item === 'X' ? 'Mi' : item }}
                         </div>
-                      }
                     }
-                  </div>
-
-                  
-
-                }
-
-              </div>
-            </div>
-          }
-          @if(currentView === 'month'){
-            <div class="bg-white/20 backdrop-blur-2xl rounded-xl border border-white/20 shadow-xl h-full calendar-container">
-            
-              <div class="grid grid-cols-7 border-b border-white/20">          
-              @for (day of diasHeaderMes; track $index) {
-                <div class="p-2 text-center text-white/70 font-medium">
-                  {{day}}
-                </div>
-              }
-              </div>
-
-                <div class="grid grid-rows-6 h-[calc(100%-40px)] ">
-                @for (week of weeks; track $index; ) {
-                  <div 
-                  class="grid grid-cols-7 h-full"
-                  [ngClass]="{'border-b border-white/20': $index !== weeks.length - 1}"
-                  >
-                  @for (day of week; track $index) {
-                    @if (day === null) {
-                    <div class="p-2 border-r border-white/20 min-h-44 max-h-44"></div>
-                    } @else {
-                      <!-- 'opacity-50': getPastDay(day), -->
-                      <div class="p-2 border-r border-white/20 relative min-h-44 max-h-44 flex flex-col"
-                        [ngClass]="{
-                        'bg-gray-800/30': !isWeekDayAvailable(day) ,
-                        
-                        'cursor-pointer': isWeekDayAvailable(day)  && !getPastDay(day),
-                        'cursor-not-allowed': !isWeekDayAvailable(day) 
-                        }"
-                        (click)="isWeekDayAvailable(day) && !getPastDay(day) ? crearCita(day) : null"
-                      >
+                    @for (day of getMiniCalendarData(); track $index) {
                         <div
-                          class='mb-1'
-                            [ngClass]="{
-                              'text-white': isWeekDayAvailable(day),
-                              'text-gray-400': !isWeekDayAvailable(day),
-                              'bg-blue-500 rounded-full w-8 h-8 flex items-center justify-center': day === currentDate.getDate()
-                            }"
-                          >
-                          {{day}}
+                            class="flex h-8 w-8 items-center justify-center rounded-full text-xs font-medium transition-all duration-200"
+                            [class]="
+                                day === currentDate.getDate()
+                                    ? 'bg-blue-600 text-white shadow-md'
+                                    : 'text-gray-700 hover:bg-gray-100'
+                            "
+                            [ngClass]="
+                                getPastDay(day)
+                                    ? 'cursor-not-allowed opacity-30'
+                                    : 'cursor-pointer'
+                            "
+                        >
+                            {{ day }}
                         </div>
-                        <div class="flex-1 space-y-1 overflow-y-auto">
-                        @for (event of getEventsByMonth(day); track $index) {
-                          @if ($index < 2) {
-                          <div class='rounded px-1 py-0.5 text-white text-xs truncate cursor-pointer flex flex-col transition-all duration-200 ease-in-out hover:translate-y-[-2px] hover:shadow-lg'
-                            [class]="getStatusColor(event.status)"
-                            (click)="openEvent(event); $event.stopPropagation()"
-                            >
-                            {{event.treatment}}
-                            <div class="text-[10px] truncate">
-                              {{event.start_time | date:'hh:mm a'}} - {{event.end_time | date:'hh:mm a'}}
-                            </div>
-                            <span class="text-[10px] bg-black/20 rounded">Pcte: {{event.patient.name}}</span>
-                          
-                          </div>
-                        }
-                          
-                        }
-                        
-                        </div>
-                        @if(getEventsByMonth(day).length > 2) {                         
-                            <div (click)="openMoreEvents(day); $event.stopPropagation()" class="text-xs text-white/70 text-center hover:cursor-pointer hover:bg-black/20 rounded hover:font-bold text-white">+{{getEventsByMonth(day).length - 2}} mas</div>
-                          }
-
-                        <div *ngIf="showMore && moreDay === day" class="absolute inset-0 z-50 bg-black/50 flex items-center justify-center w-60">
-                            <div class="  text-black rounded-3xl bg-slate-400 shadow-lg p-3  w-60"
-                                (click)="$event.stopPropagation()">
-                              
-                                <div class="flex items-center justify-between mb-2">
-                                 
-                                      <span class="w-10 "></span>
-                                   
-                                  <div class="flex flex-col text-center items-center gap-1">
-                                    <h4 class="text-center">
-                                      {{ getDayHeader(currentDate.getFullYear(), currentDate.getMonth(), day+1) }} 
-                                    </h4>
-                                    <h1 class="text-3xl font-semibold text-center">
-                                      {{ day }}
-                                    </h1>
-                                  </div>
-                                  
-                                  <button mat-icon-button (click)="closeMore(); $event.stopPropagation()" class=" " type="button">
-                                      <mat-icon svgIcon="feather:x" class="text-neutral-900" />
-                                    </button>
-
-                                </div>
-                               
-                                <div class="max-h-64 overflow-auto space-y-1">
-                                  @for (event of getEventsByMonth(day); track $index) {
-                                  
-                                  <div class='rounded px-1 py-0.5 text-white text-xs truncate cursor-pointer flex flex-col'
-                                    [class]="getStatusColor(event.status)"
-                                    (click)="openEvent(event); $event.stopPropagation()"
-                                    >
-                                    {{event.treatment}}
-                                    <div class="text-[10px] truncate">
-                                      {{event.start_time | date:'hh:mm a'}} - {{event.end_time | date:'hh:mm a'}}
-                                    </div>
-                                    <span class="text-[10px] bg-black/20 rounded">Pcte: {{event.patient.name}}</span>
-                                  
-                                  </div>
-                                  }
-                                </div>
-                             
-                              
-                            </div>
-                        </div>
-
-
-                      </div>
                     }
-                  }
-                  </div>
-                }
+                </div>
+            </div>
+
+            <div class="w-full flex-1">
+                <h3
+                    class="mb-4 text-sm font-bold uppercase tracking-wide text-gray-900"
+                >
+                    Resumen de Citas
+                </h3>
+                <div class="w-full space-y-3">
+                    <div
+                        class="group flex cursor-default items-center justify-between"
+                    >
+                        <span
+                            class="flex items-center gap-3 text-sm text-gray-600"
+                        >
+                            <div
+                                class="h-2.5 w-2.5 rounded-full bg-yellow-400 shadow-sm ring-2 ring-yellow-100"
+                            ></div>
+                            Sin confirmar
+                        </span>
+                        <span
+                            class="rounded-md bg-gray-100 px-2 py-0.5 text-sm font-semibold text-gray-900"
+                            >{{ totByStatus('Sin confirmar') }}</span
+                        >
+                    </div>
+                    <div
+                        class="group flex cursor-default items-center justify-between"
+                    >
+                        <span
+                            class="flex items-center gap-3 text-sm text-gray-600"
+                        >
+                            <div
+                                class="h-2.5 w-2.5 rounded-full bg-green-500 shadow-sm ring-2 ring-green-100"
+                            ></div>
+                            Confirmada
+                        </span>
+                        <span
+                            class="rounded-md bg-gray-100 px-2 py-0.5 text-sm font-semibold text-gray-900"
+                            >{{ totByStatus('Confirmada') }}</span
+                        >
+                    </div>
+                    <div
+                        class="group flex cursor-default items-center justify-between"
+                    >
+                        <span
+                            class="flex items-center gap-3 text-sm text-gray-600"
+                        >
+                            <div
+                                class="h-2.5 w-2.5 rounded-full bg-purple-500 shadow-sm ring-2 ring-purple-100"
+                            ></div>
+                            En consulta
+                        </span>
+                        <span
+                            class="rounded-md bg-gray-100 px-2 py-0.5 text-sm font-semibold text-gray-900"
+                            >{{ totByStatus('En consulta') }}</span
+                        >
+                    </div>
+                    <div
+                        class="group flex cursor-default items-center justify-between"
+                    >
+                        <span
+                            class="flex items-center gap-3 text-sm text-gray-600"
+                        >
+                            <div
+                                class="h-2.5 w-2.5 rounded-full bg-red-500 shadow-sm ring-2 ring-red-100"
+                            ></div>
+                            Cancelada
+                        </span>
+                        <span
+                            class="rounded-md bg-gray-100 px-2 py-0.5 text-sm font-semibold text-gray-900"
+                            >{{ totByStatus('Cancelada') }}</span
+                        >
+                    </div>
+                    <div
+                        class="group flex cursor-default items-center justify-between"
+                    >
+                        <span
+                            class="flex items-center gap-3 text-sm text-gray-600"
+                        >
+                            <div
+                                class="h-2.5 w-2.5 rounded-full bg-gray-500 shadow-sm ring-2 ring-gray-100"
+                            ></div>
+                            Finalizada
+                        </span>
+                        <span
+                            class="rounded-md bg-gray-100 px-2 py-0.5 text-sm font-semibold text-gray-900"
+                            >{{ totByStatus('Finalizada') }}</span
+                        >
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-8 w-full border-t border-gray-100 pt-6">
+                <h3
+                    class="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-gray-900"
+                >
+                    <mat-icon
+                        svgIcon="feather:alert-circle"
+                        class="text-orange-500 icon-size-4"
+                    />
+                    Pendientes de documentar
+                </h3>
+                <div
+                    class="custom-scrollbar max-h-40 space-y-2 overflow-y-auto pr-1"
+                >
+                    @for (event of allEvents; track $index) {
+                        @if (event.status === 'Finalizada (Pendiente)') {
+                            <div
+                                (click)="eventDetails(event)"
+                                class="group cursor-pointer rounded-lg border border-orange-100 bg-orange-50 p-3 transition-colors hover:bg-orange-100"
+                            >
+                                <div
+                                    class="text-sm font-semibold text-gray-800 group-hover:text-orange-800"
+                                >
+                                    {{ event.treatment }}
+                                </div>
+                                <div class="mt-1 text-xs text-gray-500">
+                                    {{ event.patientName }}
+                                    {{ event.patientLastName }}
+                                </div>
+                                <div
+                                    class="mt-2 flex items-center text-xs text-gray-400"
+                                >
+                                    <mat-icon
+                                        svgIcon="feather:calendar"
+                                        class="mr-1.5 icon-size-3"
+                                    />
+                                    {{
+                                        event.start_time.toLocaleDateString(
+                                            'es-ES',
+                                            { month: 'short', day: 'numeric' }
+                                        )
+                                    }}
+                                </div>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex h-full flex-1 flex-col overflow-hidden bg-slate-50">
+            <div class="flex items-center justify-between px-8 py-6">
+                <div class="flex items-center gap-6">
+                    <button
+                        class="rounded-lg bg-blue-50 px-4 py-2 font-medium text-blue-600 transition-colors hover:bg-blue-100"
+                        (click)="getCurrentDate()"
+                    >
+                        Hoy
+                    </button>
+                    <div
+                        class="flex items-center rounded-lg border border-gray-200 bg-white p-0.5 shadow-sm"
+                    >
+                        <button
+                            mat-button
+                            class="rounded-md p-2 text-gray-600 transition-colors hover:bg-gray-50"
+                            (click)="goToPrevious()"
+                        >
+                            <mat-icon
+                                class="icon-size-5"
+                                svgIcon="feather:chevron-left"
+                            ></mat-icon>
+                        </button>
+                        <div class="h-6 w-px bg-gray-200"></div>
+                        <button
+                            mat-button
+                            class="rounded-md p-2 text-gray-600 transition-colors hover:bg-gray-50"
+                            (click)="goToNext()"
+                        >
+                            <mat-icon
+                                class="icon-size-5"
+                                svgIcon="feather:chevron-right"
+                            ></mat-icon>
+                        </button>
+                    </div>
+                    <h2 class="text-2xl font-bold capitalize text-gray-900">
+                        {{
+                            currentDate.toLocaleDateString('es-ES', {
+                                month: 'long',
+                                day: 'numeric',
+                                year: 'numeric',
+                            })
+                        }}
+                    </h2>
                 </div>
 
-          </div>
-          }
-        </div>      
+                <div
+                    class="flex items-center rounded-lg border border-gray-200 bg-white p-1 shadow-sm"
+                >
+                    <button
+                        (click)="onViewChange('day')"
+                        class="rounded-md px-4 py-1.5 text-sm font-medium transition-all"
+                        [ngClass]="
+                            currentView === 'day'
+                                ? 'bg-gray-900 text-white shadow-md'
+                                : 'text-gray-600 hover:bg-gray-50'
+                        "
+                    >
+                        Día
+                    </button>
+                    <button
+                        (click)="onViewChange('week')"
+                        class="rounded-md px-4 py-1.5 text-sm font-medium transition-all"
+                        [ngClass]="
+                            currentView === 'week'
+                                ? 'bg-gray-900 text-white shadow-md'
+                                : 'text-gray-600 hover:bg-gray-50'
+                        "
+                    >
+                        Semana
+                    </button>
+                    <button
+                        (click)="onViewChange('month')"
+                        class="rounded-md px-4 py-1.5 text-sm font-medium transition-all"
+                        [ngClass]="
+                            currentView === 'month'
+                                ? 'bg-gray-900 text-white shadow-md'
+                                : 'text-gray-600 hover:bg-gray-50'
+                        "
+                    >
+                        Mes
+                    </button>
+                </div>
+            </div>
+
+            <div class="flex-1 overflow-hidden px-8 pb-8">
+                @if (currentView === 'day') {
+                    <div
+                        class="flex h-full flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm"
+                    >
+                        <div
+                            class="grid grid-cols-[80px_1fr] border-b border-gray-200 bg-gray-50/50"
+                        >
+                            <div
+                                class="border-r border-gray-100 p-4 text-center text-xs font-medium uppercase tracking-wider text-gray-400"
+                            >
+                                Hora
+                            </div>
+                            <div class="p-4 text-center">
+                                <div
+                                    class="text-sm font-medium uppercase tracking-wide text-gray-500"
+                                >
+                                    {{ formatWeekDay(currentDate) }}
+                                </div>
+                                <div
+                                    class="mt-1 text-2xl font-bold text-blue-600"
+                                >
+                                    {{ currentDate.getDate() }}
+                                </div>
+                            </div>
+                        </div>
+                        <div
+                            class="custom-scrollbar grid flex-1 grid-cols-[80px_1fr] overflow-y-auto"
+                        >
+                            <div
+                                class="border-r border-gray-100 bg-gray-50/30 text-gray-400"
+                            >
+                                @for (time of timeSlots; track $index) {
+                                    <div
+                                        class="relative flex h-20 items-center justify-end border-b border-gray-100 pr-3 text-right text-xs font-medium"
+                                    >
+                                        <span class="-translate-y-1/2">{{
+                                            time > 12
+                                                ? time - 12 + ' PM'
+                                                : time === 12
+                                                  ? time + ' PM'
+                                                  : time + ' AM'
+                                        }}</span>
+                                    </div>
+                                }
+                            </div>
+                            <div
+                                class="relative bg-white"
+                                [class]="
+                                    !isPastDate(currentDate) &&
+                                    isDayAvailable(currentDate)
+                                        ? 'cursor-pointer'
+                                        : 'cursor-default'
+                                "
+                            >
+                                @for (time of timeSlots; track $index) {
+                                    <div
+                                        class="h-20 border-b border-gray-100"
+                                    ></div>
+                                }
+                                @for (
+                                    event of getEventsByWeek(currentDate);
+                                    track $index
+                                ) {
+                                    <div
+                                        class="absolute cursor-pointer rounded-lg border-l-4 border-white/20 p-3 text-white shadow-sm transition-all duration-200 ease-in-out hover:z-10 hover:scale-[1.02] hover:shadow-md"
+                                        [class]="getStatusColor(event.status)"
+                                        [ngStyle]="
+                                            calculateEventStyle(
+                                                event.start_time,
+                                                event.end_time
+                                            )
+                                        "
+                                        (click)="openEvent(event)"
+                                    >
+                                        <div
+                                            class="truncate text-sm font-bold shadow-sm"
+                                        >
+                                            {{ event.treatment }}
+                                        </div>
+                                        <div
+                                            class="mt-0.5 truncate text-xs font-medium opacity-90"
+                                        >
+                                            {{
+                                                event.start_time
+                                                    | date: 'hh:mm a'
+                                            }}
+                                            -
+                                            {{
+                                                event.end_time | date: 'hh:mm a'
+                                            }}
+                                        </div>
+                                        <div
+                                            class="mt-1.5 inline-block rounded bg-black/10 px-1.5 py-0.5 text-[10px] font-medium"
+                                        >
+                                            Pcte: {{ event.patient.name }}
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+                @if (currentView === 'week') {
+                    <div
+                        class="flex h-full flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm"
+                    >
+                        <div
+                            class="grid grid-cols-8 border-b border-gray-200 bg-gray-50/50"
+                        >
+                            <div
+                                class="border-r border-gray-100 p-3 text-center text-xs font-medium uppercase tracking-wider text-gray-400"
+                            >
+                                Hora
+                            </div>
+                            @for (date of diasemanas; track $index) {
+                                <div
+                                    class="border-l border-gray-100 p-3 text-center"
+                                >
+                                    <div
+                                        class="text-xs font-medium uppercase tracking-wide text-gray-500"
+                                    >
+                                        {{ formatWeekDay(date) }}
+                                    </div>
+                                    <div
+                                        class="mt-1 text-xl font-bold transition-colors"
+                                        [class]="
+                                            compareDate(date)
+                                                ? 'text-blue-600'
+                                                : 'text-gray-900'
+                                        "
+                                    >
+                                        {{ date.getDate() }}
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                        <div
+                            class="custom-scrollbar grid flex-1 grid-cols-8 overflow-y-auto"
+                        >
+                            <div
+                                class="border-r border-gray-100 bg-gray-50/30 text-gray-400"
+                            >
+                                @for (time of timeSlots; track $index) {
+                                    <div
+                                        class="relative flex h-20 items-center justify-end border-b border-gray-100 pr-3 text-right text-xs font-medium"
+                                    >
+                                        <span class="-translate-y-1/2">{{
+                                            time > 12
+                                                ? time - 12 + ' PM'
+                                                : time === 12
+                                                  ? time + ' PM'
+                                                  : time + ' AM'
+                                        }}</span>
+                                    </div>
+                                }
+                            </div>
+                            @for (date of diasemanas; track $index) {
+                                <div
+                                    class="relative border-l border-gray-100"
+                                    [ngClass]="{
+                                        'bg-gray-50/50': !isDayAvailable(date),
+                                        'cursor-pointer hover:bg-blue-50/10':
+                                            isDayAvailable(date),
+                                        'cursor-not-allowed':
+                                            !isDayAvailable(date),
+                                    }"
+                                >
+                                    @for (time of timeSlots; track $index) {
+                                        <div
+                                            class="h-20 border-b border-gray-100"
+                                        ></div>
+                                    }
+                                    @if (isDayAvailable(date)) {
+                                        @for (
+                                            event of getEventsByWeek(date);
+                                            track $index
+                                        ) {
+                                            <div
+                                                [title]="
+                                                    'Pcte:' + event.patient.name
+                                                "
+                                                class="absolute cursor-pointer rounded-md border-l-2 border-white/20 p-2 text-white shadow-sm transition-all duration-200 ease-in-out hover:z-10 hover:scale-[1.02] hover:shadow-md"
+                                                [class]="
+                                                    getStatusColor(event.status)
+                                                "
+                                                [ngStyle]="
+                                                    calculateEventStyle(
+                                                        event.start_time,
+                                                        event.end_time
+                                                    )
+                                                "
+                                                (click)="openEvent(event)"
+                                            >
+                                                <div
+                                                    class="truncate text-xs font-bold"
+                                                >
+                                                    {{ event.treatment }}
+                                                </div>
+                                                <div
+                                                    class="mt-0.5 truncate text-[10px] font-medium opacity-90"
+                                                >
+                                                    {{
+                                                        event.start_time
+                                                            | date: 'hh:mm a'
+                                                    }}
+                                                    -
+                                                    {{
+                                                        event.end_time
+                                                            | date: 'hh:mm a'
+                                                    }}
+                                                </div>
+                                            </div>
+                                        }
+                                    }
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+                @if (currentView === 'month') {
+                    <div
+                        class="flex h-full flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm"
+                    >
+                        <div
+                            class="grid grid-cols-7 border-b border-gray-200 bg-gray-50/50"
+                        >
+                            @for (day of diasHeaderMes; track $index) {
+                                <div
+                                    class="p-3 text-center text-xs font-semibold uppercase tracking-wider text-gray-500"
+                                >
+                                    {{ day }}
+                                </div>
+                            }
+                        </div>
+
+                        <div class="grid flex-1 grid-rows-6">
+                            @for (week of weeks; track $index) {
+                                <div
+                                    class="grid h-full grid-cols-7"
+                                    [ngClass]="{
+                                        'border-b border-gray-100':
+                                            $index !== weeks.length - 1,
+                                    }"
+                                >
+                                    @for (day of week; track $index) {
+                                        @if (day === null) {
+                                            <div
+                                                class="border-r border-gray-100 bg-gray-50/30 p-2"
+                                            ></div>
+                                        } @else {
+                                            <div
+                                                class="relative flex flex-col border-r border-gray-100 p-2 transition-colors"
+                                                [ngClass]="{
+                                                    'bg-gray-50/50':
+                                                        !isWeekDayAvailable(
+                                                            day
+                                                        ),
+                                                    'hover:bg-blue-50/30':
+                                                        isWeekDayAvailable(
+                                                            day
+                                                        ) && !getPastDay(day),
+                                                    'cursor-pointer':
+                                                        isWeekDayAvailable(
+                                                            day
+                                                        ) && !getPastDay(day),
+                                                    'cursor-not-allowed':
+                                                        !isWeekDayAvailable(
+                                                            day
+                                                        ),
+                                                }"
+                                                (click)="
+                                                    isWeekDayAvailable(day) &&
+                                                    !getPastDay(day)
+                                                        ? crearCita(day)
+                                                        : null
+                                                "
+                                            >
+                                                <div
+                                                    class="mb-1 flex h-7 w-7 items-center justify-center rounded-full text-sm font-medium transition-colors"
+                                                    [ngClass]="{
+                                                        'text-gray-700':
+                                                            isWeekDayAvailable(
+                                                                day
+                                                            ) &&
+                                                            day !==
+                                                                currentDate.getDate(),
+                                                        'text-gray-400':
+                                                            !isWeekDayAvailable(
+                                                                day
+                                                            ),
+                                                        'bg-blue-600 text-white shadow-sm':
+                                                            day ===
+                                                            currentDate.getDate(),
+                                                    }"
+                                                >
+                                                    {{ day }}
+                                                </div>
+                                                <div
+                                                    class="flex-1 space-y-1 overflow-hidden"
+                                                >
+                                                    @for (
+                                                        event of getEventsByMonth(
+                                                            day
+                                                        );
+                                                        track $index
+                                                    ) {
+                                                        @if ($index < 2) {
+                                                            <div
+                                                                class="flex cursor-pointer flex-col truncate rounded-md px-1.5 py-1 text-[10px] font-medium text-white transition-all hover:opacity-90"
+                                                                [class]="
+                                                                    getStatusColor(
+                                                                        event.status
+                                                                    )
+                                                                "
+                                                                (click)="
+                                                                    openEvent(
+                                                                        event
+                                                                    );
+                                                                    $event.stopPropagation()
+                                                                "
+                                                            >
+                                                                <span
+                                                                    class="truncate"
+                                                                    >{{
+                                                                        event.treatment
+                                                                    }}</span
+                                                                >
+                                                            </div>
+                                                        }
+                                                    }
+                                                </div>
+                                                @if (
+                                                    getEventsByMonth(day)
+                                                        .length > 2
+                                                ) {
+                                                    <div
+                                                        (click)="
+                                                            openMoreEvents(day);
+                                                            $event.stopPropagation()
+                                                        "
+                                                        class="mt-auto cursor-pointer rounded py-0.5 text-center text-[10px] font-medium text-blue-600 transition-colors hover:bg-blue-50 hover:text-blue-800"
+                                                    >
+                                                        +{{
+                                                            getEventsByMonth(
+                                                                day
+                                                            ).length - 2
+                                                        }}
+                                                        más
+                                                    </div>
+                                                }
+
+                                                <div
+                                                    *ngIf="
+                                                        showMore &&
+                                                        moreDay === day
+                                                    "
+                                                    class="absolute inset-0 z-50 flex items-center justify-center"
+                                                >
+                                                    <div
+                                                        class="fixed inset-0 z-40 bg-black/20 backdrop-blur-sm"
+                                                        (click)="
+                                                            closeMore();
+                                                            $event.stopPropagation()
+                                                        "
+                                                    ></div>
+                                                    <div
+                                                        class="animate-in fade-in zoom-in relative z-50 w-64 rounded-xl border border-gray-200 bg-white p-4 shadow-xl duration-200"
+                                                        (click)="
+                                                            $event.stopPropagation()
+                                                        "
+                                                    >
+                                                        <div
+                                                            class="mb-4 flex items-center justify-between border-b border-gray-100 pb-2"
+                                                        >
+                                                            <div
+                                                                class="flex flex-col"
+                                                            >
+                                                                <span
+                                                                    class="text-xs font-medium uppercase text-gray-500"
+                                                                    >{{
+                                                                        getDayHeader(
+                                                                            currentDate.getFullYear(),
+                                                                            currentDate.getMonth(),
+                                                                            day +
+                                                                                1
+                                                                        )
+                                                                    }}</span
+                                                                >
+                                                                <span
+                                                                    class="text-2xl font-bold text-gray-900"
+                                                                    >{{
+                                                                        day
+                                                                    }}</span
+                                                                >
+                                                            </div>
+
+                                                            <button
+                                                                mat-icon-button
+                                                                (click)="
+                                                                    closeMore();
+                                                                    $event.stopPropagation()
+                                                                "
+                                                                class="flex h-8 w-8 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
+                                                                type="button"
+                                                            >
+                                                                <mat-icon
+                                                                    svgIcon="feather:x"
+                                                                    class="icon-size-4"
+                                                                />
+                                                            </button>
+                                                        </div>
+
+                                                        <div
+                                                            class="custom-scrollbar max-h-60 space-y-1.5 overflow-y-auto pr-1"
+                                                        >
+                                                            @for (
+                                                                event of getEventsByMonth(
+                                                                    day
+                                                                );
+                                                                track $index
+                                                            ) {
+                                                                <div
+                                                                    class="flex cursor-pointer flex-col rounded-md p-2 text-xs text-white shadow-sm transition-all hover:shadow-md"
+                                                                    [class]="
+                                                                        getStatusColor(
+                                                                            event.status
+                                                                        )
+                                                                    "
+                                                                    (click)="
+                                                                        openEvent(
+                                                                            event
+                                                                        );
+                                                                        $event.stopPropagation()
+                                                                    "
+                                                                >
+                                                                    <div
+                                                                        class="truncate font-bold"
+                                                                    >
+                                                                        {{
+                                                                            event.treatment
+                                                                        }}
+                                                                    </div>
+                                                                    <div
+                                                                        class="mt-0.5 flex items-center gap-1 text-[10px] opacity-90"
+                                                                    >
+                                                                        <mat-icon
+                                                                            svgIcon="feather:clock"
+                                                                            class="icon-size-3"
+                                                                        />
+                                                                        {{
+                                                                            event.start_time
+                                                                                | date
+                                                                                    : 'hh:mm a'
+                                                                        }}
+                                                                        -
+                                                                        {{
+                                                                            event.end_time
+                                                                                | date
+                                                                                    : 'hh:mm a'
+                                                                        }}
+                                                                    </div>
+                                                                    <div
+                                                                        class="mt-1 inline-block truncate rounded bg-black/10 px-1.5 py-0.5 text-[10px]"
+                                                                    >
+                                                                        Pcte:
+                                                                        {{
+                                                                            event
+                                                                                .patient
+                                                                                .name
+                                                                        }}
+                                                                    </div>
+                                                                </div>
+                                                            }
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        }
+                                    }
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+                @if (selectedEvent) {
+                    <div
+                        class="animate-in fade-in zoom-in-95 duration-200"
+                        style="
+                            --tw-enter-opacity: initial;
+                            --tw-enter-scale: initial;
+                        "
+                    >
+                        <app-modal-evento-sidebar
+                            [selectedEvent]="selectedEvent"
+                            (isClosed)="selectedEvent = null"
+                            (changedEvent)="getAppointments()"
+                        />
+                    </div>
+                }
+
+                @if (registerEvent && dentist) {
+                    <modal-registro
+                        [selectedDate]="selectedDate"
+                        [dentist]="dentist"
+                        (isClosed)="selectedDate = null"
+                    />
+                }
+
+                @if (eventPending) {
+                    <modal-detalle
+                        [appointment]="eventPending"
+                        (isClosed)="eventPending = null"
+                    />
+                }
+            </div>
+        </div>
     </div>
-  </div>
 </div>
-
-@if(selectedEvent){
-  <modal-evento [selectedEvent]="selectedEvent" (isClosed)="selectedEvent = null"  (changedEvent)="getAppointments()"/>
-}
-
-
-
-@if(registerEvent && dentist){ 
-  <modal-registro [selectedDate]="selectedDate" [dentist]="dentist" (isClosed)="selectedDate = null"/>
-}
-
-@if(eventPending){
-  <modal-detalle [appointment]="eventPending" (isClosed)="eventPending = null"/>
-}

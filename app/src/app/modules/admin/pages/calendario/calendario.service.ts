@@ -58,4 +58,10 @@ export class CalendarioService {
             })
             .pipe(map((response) => response.message));
     }
+
+    updateAppointment(id: string, appointment: any): Observable<string> {
+        return this._http
+            .put<Mensaje>(`${this.baseUrl}/appointments/${id}`, appointment)
+            .pipe(map((response) => response.message));
+    }
 }
