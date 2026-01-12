@@ -36,7 +36,7 @@ export class TablaComponent implements OnInit {
     public initialPatients: Paciente[] = [];
     isOpenModalRegistro = false;
     ngOnInit(): void {
-        this._getPatients();
+        this.getPatients();
     }
 
     public abrirModalRegistro(): void {
@@ -45,7 +45,7 @@ export class TablaComponent implements OnInit {
     public irPerfil(id: number): void {
         this._router.navigate([`admin/pacientes/perfil/${id}`]);
     }
-    private _getPatients(): void {
+    public getPatients(): void {
         this._patientService.getPatients().subscribe({
             next: (patients) => {
                 this.initialPatients = patients;

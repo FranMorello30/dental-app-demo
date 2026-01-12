@@ -1,73 +1,71 @@
 <div class="relative min-h-screen w-full overflow-hidden">
     <div class="relative pt-1 px-8 pb-8">
-         <div class="w-full flex justify-end items-center mb-6">
-            <button (click)="abrirModalRegistro()" class="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-black px-4 py-2 rounded-lg transition-colors">
-              <mat-icon svgIcon="feather:plus" class="h-5 w-5 text-black" />
-              Añadir Nuevo Paciente
+        <div class="w-full flex justify-end items-center mb-6">
+            <button (click)="abrirModalRegistro()" class="primary-btn">
+                <mat-icon svgIcon="feather:plus" class="h-5 w-5" />
+                Añadir Nuevo Paciente
             </button>
-         </div>
-         <div class="bg-white backdrop-blur-2xl rounded-xl border border-white/20  overflow-hidden calendar-container">
+        </div>
+        <div class="surface-card overflow-hidden">
             <div class="overflow-x-auto">
                 <table class="w-full">
-                  <thead>
-                    <tr class="border-b border-white/20 bg-cyan-400">
-                      <th class="px-6 py-3 text-left text-md font-medium text-black uppercase tracking-wider">
-                        Nombre
-                      </th>
-                      <th class="px-6 py-3 text-left text-md font-medium text-black uppercase tracking-wider">
-                        Email
-                      </th>
-                      <th class="px-6 py-3 text-left text-md font-medium text-black uppercase tracking-wider">
-                        Teléfono
-                      </th>
-                      <th class="px-6 py-3 text-left text-md font-medium text-black uppercase tracking-wider">
-                        Fecha de Nacimiento
-                      </th>
-                      <th class="px-6 py-3 text-left text-md font-medium text-black uppercase tracking-wider">
-                        Última Consulta
-                      </th>
-                      <th class="px-6 py-3 text-left text-md font-medium text-black uppercase tracking-wider">
-                        Próxima Consulta
-                      </th>
-                      <th class="px-6 py-3 text-left text-md font-medium text-black uppercase tracking-wider">
-                        Acciones
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody class="divide-y divide-white/10">
-                    @for (patient of initialPatients; track patient.id) {
-                      <tr class="hover:bg-white/10 transition-colors bg-white/10">
-
-                        <td class="px-6 py-4 whitespace-nowrap text-md text-black">{{patient.name}}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-md text-black">{{patient.email}}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-md text-black">{{patient.phone}}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-md text-black">{{patient.date_of_birth}}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-md text-black">
-                          {{(patient.last_appointment)}}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-md text-black">
-                           <span class="text-black/50">No agendada</span>
-                        </td>
-                         <td class="px-6 py-4 whitespace-nowrap text-md text-black">
-                            <div class="flex gap-2">
-                              <button (click)="irPerfil(patient.id)" mat-icon-button class="rounded-full hover:bg-white/20 transition-colors" title="Ver perfil completo">
-                                <mat-icon svgIcon="feather:user" class="h-4 w-4 text-black" />
-                              </button>
-                              <button mat-icon-button class="rounded-full hover:bg-white/20 transition-colors" title="Ver historial de citas">
-                                <mat-icon svgIcon="feather:calendar" class="h-4 w-4 text-black" />
-                              </button>
-                              <button mat-icon-button class="rounded-full hover:bg-white/20 transition-colors" title="Borrar paciente">
-                                <mat-icon svgIcon="feather:trash" class="h-4 w-4 text-black" />
-                              </button>
-                            </div>
-                        </td>
-                      </tr>
-                    }
-                  
-                  </tbody>
+                    <thead class="table-head">
+                        <tr>
+                            <th class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide">
+                                Nombre
+                            </th>
+                            <th class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide">
+                                Email
+                            </th>
+                            <th class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide">
+                                Teléfono
+                            </th>
+                            <th class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide">
+                                Fecha de Nacimiento
+                            </th>
+                            <th class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide">
+                                Última Consulta
+                            </th>
+                            <th class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide">
+                                Próxima Consulta
+                            </th>
+                            <th class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide">
+                                Acciones
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (patient of initialPatients; track patient.id) {
+                            <tr class="table-row">
+                                <td class="table-cell">{{patient.name}}</td>
+                                <td class="table-cell">{{patient.email}}</td>
+                                <td class="table-cell">{{patient.phone}}</td>
+                                <td class="table-cell">{{patient.date_of_birth}}</td>
+                                <td class="table-cell">
+                                    {{(patient.last_appointment)}}
+                                </td>
+                                <td class="table-cell">
+                                    <span class="text-gray-500 dark:text-gray-400">No agendada</span>
+                                </td>
+                                <td class="table-cell">
+                                    <div class="flex gap-2">
+                                        <button (click)="irPerfil(patient.id)" mat-icon-button class="ghost-icon-btn" title="Ver perfil completo">
+                                            <mat-icon svgIcon="feather:user" class="h-4 w-4" />
+                                        </button>
+                                        <button mat-icon-button class="ghost-icon-btn" title="Ver historial de citas">
+                                            <mat-icon svgIcon="feather:calendar" class="h-4 w-4" />
+                                        </button>
+                                        <button mat-icon-button class="ghost-icon-btn" title="Borrar paciente">
+                                            <mat-icon svgIcon="feather:trash" class="h-4 w-4" />
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
                 </table>
             </div>
-         </div>
+        </div>
     </div>
 </div>
 

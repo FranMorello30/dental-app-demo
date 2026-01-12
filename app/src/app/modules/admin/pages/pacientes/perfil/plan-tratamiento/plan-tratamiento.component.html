@@ -1,34 +1,34 @@
  <div class="space-y-6">
     <div class="flex justify-between items-center">
-        <h2 class="text-xl font-semibold text-white">Planes de Tratamiento</h2>
-        <button (click)="openForm()" class="flex items-center gap-1 bg-blue-500 hover:bg-blue-600 text-white px-3 py-1.5 rounded-lg transition-colors text-sm">
+        <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Planes de Tratamiento</h2>
+        <button (click)="openForm()" class="primary-btn">
             <mat-icon svgIcon="feather:plus-circle" class="h-4 w-4" />
             Nuevo plan de tratamiento
         </button>
     </div>
 
     @for (plan of treatmentPlansData; track $index) {
-        <div class="bg-white/10 backdrop-blur-xl rounded-xl border border-white/10 shadow-md p-6">
+        <div class="surface-card p-6">
             <div class="flex flex-col md:flex-row md:justify-between md:items-start gap-4 mb-4">
                     <div>
-                      <h3 class="text-lg font-medium text-white">{{plan.name}}</h3>
-                      <p class="text-white/70">{{plan.description}}</p>
-                      <div class="flex flex-wrap gap-4 mt-2">
-                        <div class="flex items-center text-white/80 text-sm">
-                                <mat-icon svgIcon="feather:calendar" class="h-4 w-4 mr-1 text-white" />
+                      <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{plan.name}}</h3>
+                      <p class="text-gray-600 dark:text-gray-300">{{plan.description}}</p>
+                      <div class="flex flex-wrap gap-4 mt-2 text-sm text-gray-600 dark:text-gray-300">
+                        <div class="flex items-center">
+                                <mat-icon svgIcon="feather:calendar" class="h-4 w-4 mr-1 text-gray-500 dark:text-gray-300" />
                           Inicio: {{formatDate(plan.startDate)}}
                         </div>
-                        <div class="flex items-center text-white/80 text-sm">
-                          <mat-icon svgIcon="feather:calendar" class="h-4 w-4 mr-1 text-white" />
+                        <div class="flex items-center">
+                          <mat-icon svgIcon="feather:calendar" class="h-4 w-4 mr-1 text-gray-500 dark:text-gray-300" />
                           Fin estimado: {{formatDate(plan.estimatedEndDate)}}
                         </div>
                         <div class="flex items-center">
                         <span
                             [ngClass]="{
-                                'px-2 py-0.5 rounded-full text-xs': true,
-                                'bg-green-500/20 text-green-300 border border-green-400/30': plan.status === 'Completado',
-                                'bg-blue-500/20 text-blue-300 border border-blue-400/30': plan.status === 'En progreso',
-                                'bg-amber-500/20 text-amber-300 border border-amber-400/30': plan.status !== 'Completado' && plan.status !== 'En progreso'
+                                'px-2 py-0.5 rounded-full text-xs border': true,
+                                'bg-green-50 text-green-700 border-green-200 dark:bg-green-500/20 dark:text-green-200 dark:border-green-500/40': plan.status === 'Completado',
+                                'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-500/20 dark:text-blue-200 dark:border-blue-500/40': plan.status === 'En progreso',
+                                'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/20 dark:text-amber-200 dark:border-amber-500/40': plan.status !== 'Completado' && plan.status !== 'En progreso'
                             }">
                             {{plan.status}}
                           </span>
@@ -36,74 +36,73 @@
                       </div>
                     </div>
                     <div class="flex gap-2">
-                      <button class="flex items-center gap-1 bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-lg transition-colors text-sm">
+                      <button class="secondary-btn">
                         <mat-icon  svgIcon="feather:edit" class="h-4 w-4" />
                         Editar
                       </button>
-                      <button class="flex items-center gap-1 bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-lg transition-colors text-sm">
+                      <button class="secondary-btn">
                         <mat-icon svgIcon="feather:printer" class="h-4 w-4" />
                         Imprimir
                       </button>
                     </div>
             </div>
             <div class="mb-5">
-                <div class="flex justify-between mb-1">
-                    <p class="text-white ">Progreso del tratamiento</p>
-                    <p class="text-white ">{{plan.progress}}%</p>
+                <div class="flex justify-between mb-1 text-sm text-gray-700 dark:text-gray-200">
+                    <p>Progreso del tratamiento</p>
+                    <p>{{plan.progress}}%</p>
                 </div>
-                <div class="h-2 bg-white/10 rounded-full overflow-hidden">
-                    <div class="h-full bg-blue-500 rounded-full" [style.width.%]="plan.progress"></div>
-                </div>
-            </div>
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-5 bg-white/5 rounded-lg p-3">
-                <div>
-                    <p class="text-white/70 text-sm">Costo total</p>
-                    <p class="text-white text-lg">${{plan.totalCost | number}}</p>
-                </div>
-                <div>
-                    <!-- plan.paidAmount.toFixed(2) -->
-                    <p class="text-white/70 text-sm">Pagado hasta la fecha</p>
-                    <p class="text-white text-lg">${{plan.paidAmount | number}}</p>
-                </div>
-                <div>
-                    <p class="text-white/70 text-sm">Pendiente</p>
-                    <p class="text-white text-lg">${{(plan.totalCost - plan.paidAmount) | number}}</p>
+                <div class="h-2 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+                    <div class="h-full bg-primary-600 rounded-full" [style.width.%]="plan.progress"></div>
                 </div>
             </div>
-            <h4 class="text-white font-medium mb-3">Procedimientos del tratamiento</h4>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-5 bg-gray-50 dark:bg-gray-900 rounded-lg p-3">
+                <div>
+                    <p class="text-gray-500 dark:text-gray-400 text-sm">Costo total</p>
+                    <p class="text-gray-900 dark:text-white text-lg font-semibold">${{plan.totalCost | number}}</p>
+                </div>
+                <div>
+                    <p class="text-gray-500 dark:text-gray-400 text-sm">Pagado hasta la fecha</p>
+                    <p class="text-gray-900 dark:text-white text-lg font-semibold">${{plan.paidAmount | number}}</p>
+                </div>
+                <div>
+                    <p class="text-gray-500 dark:text-gray-400 text-sm">Pendiente</p>
+                    <p class="text-gray-900 dark:text-white text-lg font-semibold">${{(plan.totalCost - plan.paidAmount) | number}}</p>
+                </div>
+            </div>
+            <h4 class="text-gray-900 dark:text-white font-semibold mb-3">Procedimientos del tratamiento</h4>
                 <div class="space-y-2">
                     @for(treatment of plan.treatments; track $index) {
                 
-                    <div key={treatment.id} class="flex items-center p-3 bg-white/5 rounded-lg">
+                    <div class="flex items-center p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
                     <div class="flex-shrink-0 h-6 w-6 rounded-full flex items-center justify-center mr-3">
-                        @if(treatment.status === "Completado"){ 
-                        <div class="h-6 w-6 rounded-full bg-green-500/20 flex items-center justify-center">
-                            <mat-icon svgIcon="feather:check" class="h-4 w-4 text-green-400" />
+                        @if(treatment.status === "Completado"){
+                        <div class="h-6 w-6 rounded-full bg-green-50 dark:bg-green-500/20 flex items-center justify-center">
+                            <mat-icon svgIcon="feather:check" class="h-4 w-4 text-green-500 dark:text-green-200" />
                         </div>
                         }
                         @else if(treatment.status === "Programado") {
-                        <div class="h-6 w-6 rounded-full bg-blue-500/20 flex items-center justify-center">
-                            <mat-icon svgIcon="feather:calendar" class="h-4 w-4 text-blue-400" />
+                        <div class="h-6 w-6 rounded-full bg-blue-50 dark:bg-blue-500/20 flex items-center justify-center">
+                            <mat-icon svgIcon="feather:calendar" class="h-4 w-4 text-blue-500 dark:text-blue-200" />
                         </div>
                         }@else {
-                        <div class="h-6 w-6 rounded-full bg-white/10 flex items-center justify-center">
-                            <mat-icon svgIcon="feather:clock" class="h-4 w-4 text-white/60" />
+                        <div class="h-6 w-6 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                            <mat-icon svgIcon="feather:clock" class="h-4 w-4 text-gray-500 dark:text-gray-300" />
                         </div>
                         }
                     </div>
                     <div class="flex-1">
-                        <p class="text-white">{{treatment.name}}</p>
-                        <p class="text-white/70 text-sm">
+                        <p class="text-gray-900 dark:text-white font-medium">{{treatment.name}}</p>
+                        <p class="text-gray-600 dark:text-gray-300 text-sm">
                         {{treatment.date ? formatDate(treatment.date) : "Sin fecha programada"}}
                         </p>
                     </div>
                     <div>
                         <span
                             [ngClass]="{
-                                'px-2 py-0.5 rounded-full text-xs': true,
-                                'bg-green-500/20 text-green-300': treatment.status === 'Completado',
-                                'bg-blue-500/20 text-blue-300': treatment.status === 'Programado',
-                                'bg-white/20 text-white/70': treatment.status !== 'Completado' && treatment.status !== 'Programado'
+                                'px-2 py-0.5 rounded-full text-xs border': true,
+                                'bg-green-50 text-green-700 border-green-200 dark:bg-green-500/20 dark:text-green-200 dark:border-green-500/40': treatment.status === 'Completado',
+                                'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-500/20 dark:text-blue-200 dark:border-blue-500/40': treatment.status === 'Programado',
+                                'bg-gray-100 text-gray-600 border-gray-200 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700': treatment.status !== 'Completado' && treatment.status !== 'Programado'
                             }"
                         >
                             {{treatment.status}}

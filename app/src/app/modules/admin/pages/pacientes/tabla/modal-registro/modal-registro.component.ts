@@ -82,6 +82,26 @@ export class ModalRegistroPatientComponent implements OnInit {
         this.isClosed.emit(true);
     }
 
+    grabarCita() {
+        if (this.formulario.invalid) {
+            this.formulario.markAllAsTouched();
+            return;
+        }
+
+        this._patientService
+            .createPatient(this.formulario.value as unknown)
+            .subscribe({
+                next: (response) => {
+                    console.log('Paciente creado exitosamente:', response);
+                    this.cerrarFormCita();
+                    this.padre.getPatients(); // Actualiza la lista de pacientes
+                },
+                error: (error) => {
+                    console.error('Error al crear el paciente:', error);
+                },
+            });
+    }
+
     private _createForm() {
         this.formulario = this._formBuilder.group({
             address: [''],
@@ -96,16 +116,4 @@ export class ModalRegistroPatientComponent implements OnInit {
             phone: ['', [Validators.required, Validators.minLength(10)]],
         });
     }
-
-    // private _getTreatments() {
-    //     this._calendarioService.getAllTreatments().subscribe({
-    //         next: (response) => {
-    //             this.tratamientos = response;
-    //             this._detectChange.detectChanges();
-    //         },
-    //         error: (error) => {
-    //             console.error('Error fetching Treatments:', error);
-    //         },
-    //     });
-    // }
 }

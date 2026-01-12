@@ -34,6 +34,12 @@ export class CreatePatientDto {
   @IsString()
   insurance: string;
 
+  @IsString()
+  insurance_id: string;
+
+  @IsString()
+  dni: string;
+
   @IsNumber()
   balance: number;
 

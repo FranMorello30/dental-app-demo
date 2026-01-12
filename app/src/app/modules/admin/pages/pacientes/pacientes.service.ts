@@ -16,4 +16,8 @@ export class PacienteService {
             .get<PacientesResponse>(`${this.baseUrl}/patients`)
             .pipe(map((response) => response.patients));
     }
+
+    createPatient(patient: Partial<Paciente>): Observable<Paciente> {
+        return this._http.post<Paciente>(`${this.baseUrl}/patients`, patient);
+    }
 }
