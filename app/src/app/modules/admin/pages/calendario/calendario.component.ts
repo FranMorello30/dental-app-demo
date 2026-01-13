@@ -4,16 +4,27 @@ import {
     ChangeDetectorRef,
     Component,
     inject,
+    OnDestroy,
     OnInit,
+    viewChild,
 } from '@angular/core';
 import { MatDialogModule } from '@angular/material/dialog';
 
 import { format } from 'date-fns';
 
+import {
+    animate,
+    group,
+    query,
+    style,
+    transition,
+    trigger,
+} from '@angular/animations';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
+import { MatDrawer, MatSidenavModule } from '@angular/material/sidenav';
 import { Appointment } from '@shared/models/appointement.model';
 import { Dentist } from '@shared/models/dentist.model';
 import { AppointmentStatus } from './calendario.model';
@@ -22,6 +33,7 @@ import { ModalDetalleComponent } from './components/modal-detalle/modal-detalle.
 import { ModalEventoSidebarComponent } from './components/modal-evento-sidebar/modal-evento-sidebar.component';
 import { ModalEventoComponent } from './components/modal-evento/modal-evento.component';
 import { ModalRegistroComponent } from './components/modal-registro/modal-registro.component';
+import { SidebarRegistroComponent } from './components/sidebar-registro/sidebar-registro.component';
 
 @Component({
     selector: 'app-calendario',
@@ -29,6 +41,7 @@ import { ModalRegistroComponent } from './components/modal-registro/modal-regist
     imports: [
         CommonModule,
         ReactiveFormsModule,
+        MatSidenavModule,
         MatDialogModule,
         MatIconModule,
         MatButtonModule,
@@ -37,19 +50,45 @@ import { ModalRegistroComponent } from './components/modal-registro/modal-regist
         ModalEventoComponent,
         ModalDetalleComponent,
         ModalEventoSidebarComponent,
+        SidebarRegistroComponent,
     ],
     templateUrl: './calendario.component.html',
-    styles: `
-        select {
-            appearance: none;
-        }
 
-        .show-more {
-        }
-    `,
+    // calendario.component.ts
+    animations: [
+        trigger('slideInOut', [
+            transition(':enter', [
+                // Estado inicial: Panel fuera a la derecha y fondo transparente
+                style({ opacity: 0 }),
+                group([
+                    animate('300ms ease-out', style({ opacity: 1 })),
+                    query('.sidebar-panel', [
+                        style({ transform: 'translateX(100%)' }),
+                        animate(
+                            '300ms ease-out',
+                            style({ transform: 'translateX(0%)' })
+                        ),
+                    ]),
+                ]),
+            ]),
+            transition(':leave', [
+                group([
+                    animate('300ms ease-in', style({ opacity: 0 })),
+                    query('.sidebar-panel', [
+                        animate(
+                            '300ms ease-in',
+                            style({ transform: 'translateX(100%)' })
+                        ),
+                    ]),
+                ]),
+            ]),
+        ]),
+    ],
     changeDetection: ChangeDetectionStrategy.Default,
 })
-export class CalendarioComponent implements OnInit {
+export class CalendarioComponent implements OnInit, OnDestroy {
+    readonly matDrawer = viewChild<MatDrawer>('matDrawer');
+
     private readonly _detectChange = inject(ChangeDetectorRef);
     private readonly _calendarioService = inject(CalendarioService);
 
@@ -109,6 +148,7 @@ export class CalendarioComponent implements OnInit {
             },
         },
     };
+    wSidebar = 'w-160'; // Clase CSS para el ancho del sidebar
     // Extended time slots from 7 AM to 5 PM
     timeSlots = Array.from({ length: 10 }, (_, i) => i + 8); // 8 AM to 5 PM
     public diasMini = ['D', 'L', 'M', 'X', 'J', 'V', 'S'];
@@ -118,6 +158,7 @@ export class CalendarioComponent implements OnInit {
     public dayEvents: Appointment[] = [];
     public diasemanas: any[] = [];
     public selectedEvent: Appointment = null;
+    public editingEvent: Appointment = null;
     public eventPending: Appointment = null;
     public editingStatus = false;
     public edoCitas: AppointmentStatus[] = [
@@ -167,6 +208,10 @@ export class CalendarioComponent implements OnInit {
         });
 
         // this.getFilteredEvents();
+    }
+
+    ngOnDestroy(): void {
+        this._toggleBodyScroll(false);
     }
     getCurrentDate() {
         this.currentDate = new Date();
@@ -462,18 +507,90 @@ export class CalendarioComponent implements OnInit {
             right: '4px',
         };
     }
-    /*************************************************************** */
-    crearCita(day?) {
-        if (day) {
-            const newDate = new Date(this.currentDate);
-            newDate.setDate(day);
 
-            this.selectedDate = newDate;
-        } else {
-            this.selectedDate = new Date(this.currentDate);
+    getEventDurationMinutes(event: Appointment): number {
+        return (
+            (new Date(event.end_time).getTime() -
+                new Date(event.start_time).getTime()) /
+            60000
+        );
+    }
+
+    hasSpaceForPatient(event: Appointment): boolean {
+        return this.getEventDurationMinutes(event) >= 60;
+    }
+    /*************************************************************** */
+    onSlotHourClick(date: Date, hour: number, event?: MouseEvent) {
+        if (event) {
+            event.stopPropagation();
         }
 
+        if (!this.dentist) {
+            return;
+        }
+
+        const targetDate = new Date(date);
+        targetDate.setHours(hour, 0, 0, 0);
+
+        if (this.isPastDate(targetDate) || !this.isDayAvailable(targetDate)) {
+            return;
+        }
+
+        this.crearCita(targetDate);
+    }
+
+    crearCita(day?: number | Date) {
+        if (!this.dentist) {
+            return;
+        }
+
+        let targetDate: Date;
+
+        if (day instanceof Date) {
+            targetDate = new Date(day);
+        } else if (typeof day === 'number') {
+            targetDate = new Date(this.currentDate);
+            targetDate.setDate(day);
+        } else {
+            targetDate = new Date(this.currentDate);
+        }
+
+        this.selectedDate = targetDate;
         this.registerEvent = true;
+    }
+
+    handleMiniDayClick(day: number | null) {
+        if (!day || !this.dentist) {
+            return;
+        }
+
+        const date = new Date(
+            this.currentDate.getFullYear(),
+            this.currentDate.getMonth(),
+            day
+        );
+
+        if (this.isPastDate(date) || !this.isDayAvailable(date)) {
+            return;
+        }
+
+        this.crearCita(date);
+    }
+
+    onSlotClick(date: Date, event: MouseEvent) {
+        if (event) {
+            event.stopPropagation();
+        }
+
+        if (!this.dentist) {
+            return;
+        }
+
+        if (this.isPastDate(date) || !this.isDayAvailable(date)) {
+            return;
+        }
+
+        this.crearCita(date);
     }
 
     onViewChange(view: 'day' | 'week' | 'month'): void {
@@ -511,8 +628,31 @@ export class CalendarioComponent implements OnInit {
         return this.dentistAvailability;
     }
     openEvent(event: Appointment) {
+        this.editingEvent = null;
         this.selectedEvent = event;
         console.log('Selected Event:', event);
+        this._toggleBodyScroll(true);
+        this._detectChange.detectChanges();
+        // this.matDrawer().open();
+    }
+    mostrarSubSidebar(isExpanded: boolean) {
+        console.warn('Sidebar expanded:', isExpanded);
+        if (isExpanded) {
+            this.wSidebar = 'w-240'; // Ancho ampliado
+        } else {
+            this.wSidebar = 'w-160'; // Ancho original
+        }
+        this._detectChange.detectChanges();
+    }
+    closeDrawer() {
+        this.matDrawer().close();
+        this.selectedEvent = null;
+        this._toggleBodyScroll(false);
+    }
+
+    startEditEvent(event: Appointment) {
+        this.closeSelectedEvent();
+        this.editingEvent = event;
     }
 
     eventDetails(event: Appointment) {
@@ -575,7 +715,20 @@ export class CalendarioComponent implements OnInit {
         this.moreDay = null;
         this.selectedDate = null;
         this.registerEvent = false;
-        this.selectedEvent = null;
+        this.closeSelectedEvent();
+    }
+
+    closeRegisterSidebar(): void {
+        this.registerEvent = false;
+        this.selectedDate = null;
+        this._toggleBodyScroll(false);
+    }
+
+    handleAppointmentCreated(): void {
+        this.registerEvent = false;
+        this.selectedDate = null;
+        this.getAppointments();
+        this._toggleBodyScroll(false);
     }
 
     getDayHeader(year: number, month: number, day: number): string {
@@ -583,5 +736,16 @@ export class CalendarioComponent implements OnInit {
         const date = new Date(year, month, day);
         const index = (date.getDay() + 6) % 7;
         return this.diasHeaderMes[index];
+    }
+
+    closeSelectedEvent(): void {
+        if (this.selectedEvent) {
+            this._toggleBodyScroll(false);
+        }
+        this.selectedEvent = null;
+    }
+
+    private _toggleBodyScroll(disable: boolean): void {
+        document.body.style.overflow = disable ? 'hidden' : '';
     }
 }

@@ -64,4 +64,16 @@ export class CalendarioService {
             .put<Mensaje>(`${this.baseUrl}/appointments/${id}`, appointment)
             .pipe(map((response) => response.message));
     }
+
+    rescheduleAppointment(
+        id: string,
+        payload: { start_time: string; end_time: string }
+    ): Observable<string> {
+        return this._http
+            .patch<Mensaje>(
+                `${this.baseUrl}/appointments/reschedule/${id}`,
+                payload
+            )
+            .pipe(map((response) => response.message));
+    }
 }

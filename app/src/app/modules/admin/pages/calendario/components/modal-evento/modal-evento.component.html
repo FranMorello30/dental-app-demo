@@ -117,7 +117,7 @@
                                         (click)="toggleReprogramming()"
                                         class="rounded px-2 py-1 text-xs font-medium text-orange-600 transition-colors hover:bg-orange-50 hover:text-orange-800"
                                     >
-                                        Reprogramar
+                                        Reprogramar / Editar
                                     </button>
                                     <button
                                         (click)="editingStatus = true"
@@ -197,7 +197,7 @@
                                 <h4
                                     class="mb-2 text-sm font-bold text-gray-900"
                                 >
-                                    Reprogramar Cita
+                                    Editar Cita
                                 </h4>
 
                                 <div>
@@ -216,12 +216,40 @@
                                 <div>
                                     <label
                                         class="mb-1 block text-xs font-medium text-gray-600"
-                                        >Nueva Hora</label
+                                        >Hora inicio</label
                                     >
                                     <input
                                         [formControl]="newTimeControl"
                                         type="time"
                                         class="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label
+                                        class="mb-1 block text-xs font-medium text-gray-600"
+                                        >Hora fin (opcional)</label
+                                    >
+                                    <input
+                                        [formControl]="newEndTimeControl"
+                                        type="time"
+                                        class="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                                    />
+                                    <p class="mt-1 text-[11px] text-gray-500">
+                                        Si lo dejas vacío, se mantendrá la duración original.
+                                    </p>
+                                </div>
+
+                                <div>
+                                    <label
+                                        class="mb-1 block text-xs font-medium text-gray-600"
+                                        >Tratamiento</label
+                                    >
+                                    <input
+                                        [formControl]="treatmentControl"
+                                        type="text"
+                                        class="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                                        placeholder="Actualizar tratamiento"
                                     />
                                 </div>
 

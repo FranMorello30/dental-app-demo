@@ -2,6 +2,7 @@
     class="fixed inset-0 z-50 flex justify-end bg-black/50 backdrop-blur-sm"
     (click)="close()"
 >
+<!-- animate-in slide-in-from-right -->
     <div
         class="animate-in slide-in-from-right flex h-full w-full flex-col overflow-hidden bg-white shadow-2xl transition-all duration-300 ease-in-out"
         [ngClass]="isExpanded ? 'max-w-5xl' : 'max-w-2xl'"
@@ -19,8 +20,10 @@
                     <h3 class="font-bold text-gray-900">
                         @if (activeView === 'habits') {
                             Oral Hygiene Habits
-                        } @else {
+                        } @else if (activeView === 'odontogram') {
                             Odontograma
+                        } @else {
+                            Subida de archivos
                         }
                     </h3>
                     <button mat-icon-button (click)="toggleExpand()">
@@ -103,8 +106,10 @@
                                 </div>
                             </div>
                         </div>
-                    } @else {
+                    } @else if (activeView === 'odontogram') {
                         <app-odontograma-sidebar></app-odontograma-sidebar>
+                    } @else {
+                        <upload-archivo (uploadAdjuntos)="uploadFiles($event)"></upload-archivo>
                     }
                 </div>
             </div>
@@ -149,7 +154,12 @@
                         ></mat-icon>
                     </button>
                     <button
+                        (click)="setView('uploads')"
                         class="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-gray-400 shadow-sm transition-colors hover:text-blue-600"
+                        [ngClass]="{
+                            'text-blue-600 ring-2 ring-blue-100':
+                                isExpanded && activeView === 'uploads',
+                        }"
                     >
                         <mat-icon
                             class="icon-size-5"
@@ -180,7 +190,8 @@
                     <div class="flex items-center gap-2">
                         <button
                             mat-icon-button
-                            class="text-gray-400 hover:text-gray-600"
+                            class="text-gray-400 hover:text-blue-600"
+                            (click)="startEdit()"
                         >
                             <mat-icon
                                 svgIcon="heroicons_outline:pencil"
@@ -225,15 +236,55 @@
                                 >Change Status</span
                             >
                             <div
-                                class="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium text-gray-700"
+                                class="relative flex w-56 items-center rounded-lg border border-gray-200 bg-white px-2 py-1.5 text-sm font-medium text-gray-700 shadow-sm"
                             >
-                                <div
-                                    class="h-2 w-2 rounded-full bg-green-500"
-                                ></div>
-                                {{ selectedEvent().status }}
+                                <mat-select
+                                    class="flex-1 text-sm font-medium text-gray-800"
+                                    [value]="selectedEvent().status"
+                                    (valueChange)="changeStatus($event)"
+                                    [disabled]="updatingStatus"
+                                    disableOptionCentering
+                                    panelClass="status-select-panel"
+                                >
+                                    <mat-select-trigger>
+                                        <div class="flex items-center gap-2">
+                                            <span
+                                                class="h-2 w-2 rounded-full"
+                                                [ngClass]="
+                                                    getStatusColorClass(
+                                                        selectedEvent().status
+                                                    )
+                                                "
+                                            ></span>
+                                            <span class="text-sm font-semibold text-gray-900">
+                                                {{ selectedEvent().status }}
+                                            </span>
+                                        </div>
+                                    </mat-select-trigger>
+
+                                    @for (status of getAvailableStatuses(); track $index) {
+                                        <mat-option [value]="status">
+                                            <div class="flex items-center gap-2">
+                                                <span
+                                                    class="h-2 w-2 rounded-full"
+                                                    [ngClass]="
+                                                        getStatusColorClass(
+                                                            status
+                                                        )
+                                                    "
+                                                ></span>
+                                                <span class="text-sm font-medium text-gray-900">
+                                                    {{ status }}
+                                                </span>
+                                            </div>
+                                        </mat-option>
+                                    }
+                                </mat-select>
+
                                 <mat-icon
-                                    class="text-gray-400 icon-size-4"
-                                    svgIcon="heroicons_mini:chevron-down"
+                                    *ngIf="updatingStatus"
+                                    class="absolute right-2 animate-spin text-gray-300 icon-size-4"
+                                    svgIcon="heroicons_mini:arrow-path"
                                 ></mat-icon>
                             </div>
                         </div>
@@ -344,6 +395,119 @@
 
                     <div class="mb-8 h-px w-full bg-gray-100"></div>
 
+                    <!-- Reschedule -->
+                    <div class="mb-8 rounded-2xl border border-gray-100 p-4 shadow-sm">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <div class="text-xs font-semibold uppercase text-gray-500">
+                                    Reprogramar cita
+                                </div>
+                                <div class="text-sm text-gray-600">
+                                    Ajusta fecha y hora de la cita.
+                                </div>
+                            </div>
+                            <button
+                                class="rounded-lg border border-gray-200 px-3 py-1.5 text-sm font-medium text-blue-600 hover:bg-blue-50"
+                                (click)="rescheduleMode ? cancelReschedule() : startReschedule()"
+                                [disabled]="rescheduling"
+                            >
+                                {{ rescheduleMode ? 'Cancelar' : 'Editar' }}
+                            </button>
+                        </div>
+
+                        @if (rescheduleMode) {
+                            <div class="mt-4 grid grid-cols-2 gap-4">
+                                <div class="rounded-xl border border-gray-100 bg-gray-50/60 p-3">
+                                    <div class="mb-2 flex items-center justify-between">
+                                        <button
+                                            type="button"
+                                            class="flex h-8 w-8 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-600 hover:bg-gray-100"
+                                            (click)="goToPrevious()"
+                                            [disabled]="rescheduling"
+                                        >
+                                            <mat-icon svgIcon="feather:chevron-left" class="icon-size-4" />
+                                        </button>
+                                    <div class="text-sm font-semibold text-gray-900">
+                                            {{ getFormattedMonth() }}
+                                        </div>
+                                        <button
+                                            type="button"
+                                            class="flex h-8 w-8 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-600 hover:bg-gray-100"
+                                            (click)="goToNext()"
+                                            [disabled]="rescheduling"
+                                        >
+                                            <mat-icon svgIcon="feather:chevron-right" class="icon-size-4" />
+                                        </button>
+                                    </div>
+                                    <div class="mb-1 grid grid-cols-7 gap-1 text-center text-[11px] font-semibold uppercase text-gray-400">
+                                        @for (day of weekDays; track $index) {
+                                            <div>{{ day }}</div>
+                                        }
+                                    </div>
+                                    <div class="grid grid-cols-7 gap-1">
+                                        @for (day of getMiniCalendarData(); track $index) {
+                                            @if (!day) {
+                                                <div class="h-10 rounded-lg"></div>
+                                            } @else {
+                                                <button
+                                                    type="button"
+                                                    class="flex h-10 w-full items-center justify-center rounded-lg text-sm font-semibold transition-all"
+                                                    [ngClass]="{
+                                                        'bg-blue-600 text-white shadow-md': isSelectedDay(day),
+                                                        'text-gray-900 hover:bg-blue-50': !isPastOrUnavailable(day) && !isSelectedDay(day),
+                                                        'bg-gray-100 text-gray-400 cursor-not-allowed opacity-60': isPastOrUnavailable(day)
+                                                    }"
+                                                    (click)="selectDate(day)"
+                                                    [disabled]="isPastOrUnavailable(day) || rescheduling"
+                                                >
+                                                    {{ day }}
+                                                </button>
+                                            }
+                                        }
+                                    </div>
+                                </div>
+
+                                <div class="space-y-3">
+                                    <div class="flex flex-col gap-1.5">
+                                        <label class="text-xs font-semibold uppercase text-gray-500">Hora de inicio</label>
+                                        <div class="relative">
+                                            <select
+                                                class="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-800 focus:border-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-100"
+                                                [(ngModel)]="rescheduleData.startTime"
+                                                name="rescheduleStart"
+                                                [disabled]="rescheduling"
+                                            >
+                                                <option value="" disabled>Selecciona hora</option>
+                                                @for (time of timeSlots; track $index) {
+                                                    <option [value]="time">{{ time }}</option>
+                                                }
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="flex flex-col gap-1.5">
+                                        <label class="text-xs font-semibold uppercase text-gray-500">Hora de fin</label>
+                                        <div class="relative">
+                                            <select
+                                                class="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-800 focus:border-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-100"
+                                                [(ngModel)]="rescheduleData.endTime"
+                                                name="rescheduleEnd"
+                                                [disabled]="rescheduling"
+                                            >
+                                                <option value="" disabled>Selecciona hora</option>
+                                                @for (time of timeSlots; track $index) {
+                                                    <option [value]="time">{{ time }}</option>
+                                                }
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="mt-2 text-xs text-gray-500">
+                                Selecciona la fecha y horarios para reprogramar la cita.
+                            </p>
+                        }
+                    </div>
+
                     <!-- General Info -->
                     <div>
                         <h3 class="mb-4 font-bold text-gray-900">
@@ -430,10 +594,16 @@
                         Cancel
                     </button>
                     <button
-                        (click)="reschedule()"
                         class="rounded-xl border border-gray-200 bg-white px-6 py-2.5 text-sm font-medium text-blue-600 hover:bg-blue-50"
+                        [disabled]="rescheduling"
+                        (click)="rescheduleMode ? confirmReschedule() : startReschedule()"
                     >
-                        Reschedule
+                        {{ rescheduleMode ? 'Guardar cambios' : 'Reprogramar' }}
+                        <mat-icon
+                            *ngIf="rescheduling"
+                            class="ml-2 animate-spin text-gray-300 icon-size-4"
+                            svgIcon="heroicons_mini:arrow-path"
+                        ></mat-icon>
                     </button>
                 </div>
             </div>

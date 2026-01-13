@@ -7,7 +7,7 @@ import {
     OnInit,
     output,
 } from '@angular/core';
-import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { Appointment } from '@shared/models/appointement.model';
@@ -48,12 +48,24 @@ export class ModalEventoComponent implements OnInit {
     reprogramming = false;
     newDateControl = new FormControl('');
     newTimeControl = new FormControl('');
+    newEndTimeControl = new FormControl('');
+    treatmentControl = new FormControl('', {
+        nonNullable: false,
+        validators: [Validators.required],
+    });
     minDate: string;
 
     ngOnInit(): void {
         this.inputEstado.setValue(this.selectedEvent().status);
         const today = new Date();
         this.minDate = today.toISOString().split('T')[0];
+
+        const start = new Date(this.selectedEvent().start_time);
+        const end = new Date(this.selectedEvent().end_time);
+        this.newDateControl.setValue(start.toISOString().split('T')[0]);
+        this.newTimeControl.setValue(this.formatTime(start));
+        this.newEndTimeControl.setValue(this.formatTime(end));
+        this.treatmentControl.setValue(this.selectedEvent().treatment || '');
 
         // this.inputEstado.valueChanges.subscribe((value) => {
         //     if (value) {
@@ -97,6 +109,12 @@ export class ModalEventoComponent implements OnInit {
                 return 'bg-blue-500';
         }
     }
+
+    private formatTime(date: Date): string {
+        const hours = date.getHours().toString().padStart(2, '0');
+        const minutes = date.getMinutes().toString().padStart(2, '0');
+        return `${hours}:${minutes}`;
+    }
     closedEvent() {
         this.isClosed.emit(true);
     }
@@ -130,17 +148,29 @@ export class ModalEventoComponent implements OnInit {
             // Initialize with current values
             const start = new Date(this.selectedEvent().start_time);
             this.newDateControl.setValue(start.toISOString().split('T')[0]);
-            const hours = start.getHours().toString().padStart(2, '0');
-            const minutes = start.getMinutes().toString().padStart(2, '0');
-            this.newTimeControl.setValue(`${hours}:${minutes}`);
+            this.newTimeControl.setValue(this.formatTime(start));
+
+            const end = new Date(this.selectedEvent().end_time);
+            this.newEndTimeControl.setValue(this.formatTime(end));
+            this.treatmentControl.setValue(
+                this.selectedEvent().treatment || ''
+            );
         }
     }
 
     saveReschedule() {
-        if (this.newDateControl.invalid || this.newTimeControl.invalid) return;
+        if (
+            this.newDateControl.invalid ||
+            this.newTimeControl.invalid ||
+            this.treatmentControl.invalid
+        ) {
+            return;
+        }
 
         const dateStr = this.newDateControl.value;
         const timeStr = this.newTimeControl.value;
+        const endTimeStr = this.newEndTimeControl.value;
+        const treatment = this.treatmentControl.value?.trim();
 
         // Validation: Past date check
         const selectedDate = new Date(dateStr + 'T00:00:00');
@@ -154,12 +184,22 @@ export class ModalEventoComponent implements OnInit {
 
         // Combine date and time
         const startDateTime = new Date(`${dateStr}T${timeStr}:00`);
+        let endDateTime: Date;
 
-        // Calculate end time (preserve duration)
-        const originalStart = new Date(this.selectedEvent().start_time);
-        const originalEnd = new Date(this.selectedEvent().end_time);
-        const durationMs = originalEnd.getTime() - originalStart.getTime();
-        const endDateTime = new Date(startDateTime.getTime() + durationMs);
+        if (endTimeStr) {
+            endDateTime = new Date(`${dateStr}T${endTimeStr}:00`);
+        } else {
+            // Preserve duration if no end time provided
+            const originalStart = new Date(this.selectedEvent().start_time);
+            const originalEnd = new Date(this.selectedEvent().end_time);
+            const durationMs = originalEnd.getTime() - originalStart.getTime();
+            endDateTime = new Date(startDateTime.getTime() + durationMs);
+        }
+
+        if (endDateTime <= startDateTime) {
+            alert('La hora fin debe ser mayor a la hora de inicio.');
+            return;
+        }
 
         // Format for backend (YYYY-MM-DD HH:mm:ss)
         const formatDateTime = (date: Date) => {
@@ -175,6 +215,8 @@ export class ModalEventoComponent implements OnInit {
         const payload = {
             start_time: formatDateTime(startDateTime),
             end_time: formatDateTime(endDateTime),
+            treatment: treatment,
+            description: this.selectedEvent().description,
             dentistId: this.selectedEvent().dentist.id, // Ensure dentist is preserved
             patientId: this.selectedEvent().patient.id,
         };

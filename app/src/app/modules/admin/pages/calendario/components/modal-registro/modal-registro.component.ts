@@ -288,8 +288,18 @@ export class ModalRegistroComponent implements OnInit, OnChanges {
                     this._calculateEndTime(s)
                 );
 
-                // valores por defecto y filtrado de endSlots
-                const defaultStart = this.timeInitSlots[0] || '';
+                // preferencia de hora según el slot clickeado
+                const selectedTime24 = this._formatDateTo24(
+                    this.selectedDate()
+                );
+                const preferredSlot24 = availableRawSlots.find(
+                    (slot) => slot === selectedTime24
+                );
+
+                const defaultStart = preferredSlot24
+                    ? this._formatTo12Hour(preferredSlot24)
+                    : this.timeInitSlots[0] || '';
+
                 this.formulario.get('startTime')?.setValue(defaultStart);
                 const defaultEnd = defaultStart
                     ? this._calculateEndTime(defaultStart)
@@ -378,6 +388,12 @@ export class ModalRegistroComponent implements OnInit, OnChanges {
             hour = 12;
         }
         return `${hour.toString().padStart(2, '0')}:${minuteStr} ${period}`;
+    }
+
+    private _formatDateTo24(date: Date): string {
+        const hours = date.getHours().toString().padStart(2, '0');
+        const minutes = date.getMinutes().toString().padStart(2, '0');
+        return `${hours}:${minutes}`;
     }
 
     // Parsea un tiempo en formato 12 horas (hh:mm AM/PM) y lo convierte a minutos

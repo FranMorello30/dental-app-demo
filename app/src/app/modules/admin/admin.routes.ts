@@ -24,6 +24,11 @@ export default [
                     ),
             },
             {
+                path: 'inventario',
+                loadChildren: () =>
+                    import('@modules/admin/pages/inventario/inventario.routes'),
+            },
+            {
                 path: 'configuraciones',
                 loadChildren: () =>
                     import(

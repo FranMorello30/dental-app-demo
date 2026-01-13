@@ -98,6 +98,31 @@ export class AppointmentsService {
     return this.appointmentRepository.save(appointment);
   }
 
+  async reschedule(
+    id: string,
+    start_time: Date,
+    end_time: Date,
+  ): Promise<{ message: string }> {
+    const appointment = await this.findOne(id);
+
+    const start = new Date(start_time);
+    const end = new Date(end_time);
+
+    if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+      throw new BadRequestException('Invalid start or end time');
+    }
+
+    if (end.getTime() <= start.getTime()) {
+      throw new BadRequestException('End time must be after start time');
+    }
+
+    appointment.start_time = start;
+    appointment.end_time = end;
+    await this.appointmentRepository.save(appointment);
+
+    return { message: 'Appointment rescheduled successfully' };
+  }
+
   async remove(id: string): Promise<void> {
     const appointment = await this.findOne(id);
     appointment.is_deleted = true;

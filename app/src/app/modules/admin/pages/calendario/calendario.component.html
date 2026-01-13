@@ -1,6 +1,6 @@
 <div class="relative min-h-screen w-full overflow-hidden bg-slate-50">
     <div class="relative flex h-full w-full items-start pb-4 pt-1">
-        <!-- Sidebar -->
+       
         <div
             class="z-10 flex h-full w-72 flex-col items-start justify-between border-r border-gray-200 bg-white p-6 shadow-lg"
         >
@@ -81,6 +81,7 @@
                                     ? 'cursor-not-allowed opacity-30'
                                     : 'cursor-pointer'
                             "
+                            (click)="handleMiniDayClick(day)"
                         >
                             {{ day }}
                         </div>
@@ -227,7 +228,6 @@
             </div>
         </div>
 
-        <!-- Main Content -->
         <div class="flex h-full flex-1 flex-col overflow-hidden bg-slate-50">
             <div class="flex items-center justify-between px-8 py-6">
                 <div class="flex items-center gap-6">
@@ -362,14 +362,17 @@
                                 class="relative bg-white"
                                 [class]="
                                     !isPastDate(currentDate) &&
-                                    isDayAvailable(currentDate)
+                                    isDayAvailable(currentDate) &&
+                                    dentist
                                         ? 'cursor-pointer'
-                                        : 'cursor-default'
+                                        : 'cursor-not-allowed'
                                 "
+                                (click)="onSlotClick(currentDate, $event)"
                             >
                                 @for (time of timeSlots; track $index) {
                                     <div
                                         class="h-20 border-b border-gray-100"
+                                        (click)="onSlotHourClick(currentDate, time, $event)"
                                     ></div>
                                 }
                                 @for (
@@ -385,30 +388,32 @@
                                                 event.end_time
                                             )
                                         "
-                                        (click)="openEvent(event)"
+                                        (click)="openEvent(event); $event.stopPropagation()"
                                     >
                                         <div
                                             class="truncate text-sm font-bold shadow-sm"
                                         >
                                             {{ event.treatment }}
                                         </div>
-                                        <div
-                                            class="mt-0.5 truncate text-xs font-medium opacity-90"
-                                        >
-                                            {{
-                                                event.start_time
-                                                    | date: 'hh:mm a'
-                                            }}
-                                            -
-                                            {{
-                                                event.end_time | date: 'hh:mm a'
-                                            }}
-                                        </div>
-                                        <div
-                                            class="mt-1.5 inline-block rounded bg-black/10 px-1.5 py-0.5 text-[10px] font-medium"
-                                        >
-                                            Pcte: {{ event.patient.name }}
-                                        </div>
+                                        @if (getEventDurationMinutes(event) > 30) {
+                                            <div
+                                                class="mt-0.5 truncate text-xs font-medium opacity-90"
+                                            >
+                                                {{
+                                                    event.start_time
+                                                        | date: 'hh:mm a'
+                                                }}
+                                                -
+                                                {{
+                                                    event.end_time | date: 'hh:mm a'
+                                                }}
+                                            </div>
+                                            <div
+                                                class="mt-1.5 inline-block rounded bg-black/10 px-1.5 py-0.5 text-[10px] font-medium"
+                                            >
+                                                Pcte: {{ event.patient.name }}
+                                            </div>
+                                        }
                                     </div>
                                 }
                             </div>
@@ -473,16 +478,18 @@
                                 <div
                                     class="relative border-l border-gray-100"
                                     [ngClass]="{
-                                        'bg-gray-50/50': !isDayAvailable(date),
+                                        'bg-gray-400/50': !isDayAvailable(date),
                                         'cursor-pointer hover:bg-blue-50/10':
                                             isDayAvailable(date),
                                         'cursor-not-allowed':
                                             !isDayAvailable(date),
                                     }"
+                                    (click)="onSlotClick(date, $event)"
                                 >
                                     @for (time of timeSlots; track $index) {
                                         <div
                                             class="h-20 border-b border-gray-100"
+                                            (click)="onSlotHourClick(date, time, $event)"
                                         ></div>
                                     }
                                     @if (isDayAvailable(date)) {
@@ -504,7 +511,7 @@
                                                         event.end_time
                                                     )
                                                 "
-                                                (click)="openEvent(event)"
+                                                (click)="openEvent(event); $event.stopPropagation()"
                                             >
                                                 <div
                                                     class="truncate text-xs font-bold"
@@ -524,6 +531,13 @@
                                                             | date: 'hh:mm a'
                                                     }}
                                                 </div>
+                                                @if (hasSpaceForPatient(event)) {
+                                                    <div
+                                                        class="mt-1 inline-block rounded bg-black/10 px-1.5 py-0.5 text-[10px] font-semibold"
+                                                    >
+                                                        Pcte: {{ event.patient.name }}
+                                                    </div>
+                                                }
                                             </div>
                                         }
                                     }
@@ -533,9 +547,7 @@
                     </div>
                 }
                 @if (currentView === 'month') {
-                    <div
-                        class="flex h-full flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm"
-                    >
+                    <div class="flex h-full flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
                         <div
                             class="grid grid-cols-7 border-b border-gray-200 bg-gray-50/50"
                         >
@@ -566,7 +578,7 @@
                                             <div
                                                 class="relative flex flex-col border-r border-gray-100 p-2 transition-colors"
                                                 [ngClass]="{
-                                                    'bg-gray-50/50':
+                                                    'bg-gray-400/50':
                                                         !isWeekDayAvailable(
                                                             day
                                                         ),
@@ -585,7 +597,8 @@
                                                 }"
                                                 (click)="
                                                     isWeekDayAvailable(day) &&
-                                                    !getPastDay(day)
+                                                    !getPastDay(day) &&
+                                                    dentist
                                                         ? crearCita(day)
                                                         : null
                                                 "
@@ -672,7 +685,7 @@
                                                     class="absolute inset-0 z-50 flex items-center justify-center"
                                                 >
                                                     <div
-                                                        class="fixed inset-0 z-40 bg-black/20 backdrop-blur-sm"
+                                                        class="fixed inset-0 z-40 bg-black/20"
                                                         (click)="
                                                             closeMore();
                                                             $event.stopPropagation()
@@ -760,7 +773,7 @@
                                                                     >
                                                                         <mat-icon
                                                                             svgIcon="feather:clock"
-                                                                            class="icon-size-3"
+                                                                            class="icon-size-3 text-white"
                                                                         />
                                                                         {{
                                                                             event.start_time
@@ -797,20 +810,49 @@
                         </div>
                     </div>
                 }
-                @if (selectedEvent) {
-                    <div
-                        class="animate-in fade-in zoom-in-95 duration-200"
-                        style="
-                            --tw-enter-opacity: initial;
-                            --tw-enter-scale: initial;
-                        "
-                    >
-                        <app-modal-evento-sidebar
+                
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (selectedEvent) {
+    <div class="fixed inset-0 z-50 flex justify-end  backdrop-blur-sm" 
+         @slideInOut 
+         (click)="closeSelectedEvent()">
+        
+        <app-modal-evento-sidebar
+            class="sidebar-panel w-160 h-full" 
+            [selectedEvent]="selectedEvent"
+            (isClosed)="closeSelectedEvent()"
+            (changedEvent)="getAppointments()"
+            (editEvent)="startEditEvent($event)"
+            (click)="$event.stopPropagation()"
+        />
+    </div>
+}
+
+<!-- @if (selectedEvent) {
+                    <div class="relative z-50" @slideInOut>
+                    <app-modal-evento-sidebar
                             [selectedEvent]="selectedEvent"
                             (isClosed)="selectedEvent = null"
                             (changedEvent)="getAppointments()"
+                            (editEvent)="startEditEvent($event)"
                         />
                     </div>
+                  
+                    
+                       
+                   
+                } -->
+
+                @if (editingEvent) {
+                    <modal-evento
+                        [selectedEvent]="editingEvent"
+                        (isClosed)="editingEvent = null"
+                        (changedEvent)="editingEvent = null; getAppointments()"
+                    />
                 }
 
                 @if (registerEvent && dentist) {
@@ -819,6 +861,10 @@
                         [dentist]="dentist"
                         (isClosed)="selectedDate = null"
                     />
+                    <!-- <sidebar-registro [selectedDate]="selectedDate"
+                        [dentist]="dentist"
+                        (isClosed)="closeRegisterSidebar()"
+                        (appointmentCreated)="handleAppointmentCreated()"></sidebar-registro> -->
                 }
 
                 @if (eventPending) {
@@ -827,7 +873,24 @@
                         (isClosed)="eventPending = null"
                     />
                 }
-            </div>
-        </div>
-    </div>
-</div>
+
+<!-- 
+ <mat-drawer-container class="relative min-h-screen w-full overflow-hidden bg-slate-50">
+    <mat-drawer [class]="wSidebar" [mode]="'over'" [opened]="false" [position]="'end'" [disableClose]="true" #matDrawer>
+         @if (selectedEvent) {
+                   
+                        <app-modal-evento-sidebar
+                            [selectedEvent]="selectedEvent"
+                          (isClosed)="closeDrawer($event)"
+                            (changedEvent)="getAppointments()"
+                            (editEvent)="startEditEvent($event)"
+                        />
+                    
+                }
+    </mat-drawer>
+    <mat-drawer-content class="relative flex h-full w-full items-start pb-4 pt-1">
+
+    </mat-drawer-content>
+ </mat-drawer-container> -->
+
+  <!--   (isClosed)="closeDrawer($event)"  (isExpandedSidebar)="mostrarSubSidebar($event)" -->

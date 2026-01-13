@@ -49,6 +49,15 @@ export class NavigationService {
                 link: '/admin/configuraciones',
                 disabled: false,
             },
+            {
+                id: 'inventario',
+                title: 'Inventario',
+
+                type: 'basic',
+                icon: 'feather:box',
+                link: '/admin/inventario',
+                disabled: false,
+            },
         ],
     };
 
