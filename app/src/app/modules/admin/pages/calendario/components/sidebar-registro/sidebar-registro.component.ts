@@ -30,6 +30,7 @@ import { Dentist } from '@shared/models/dentist.model';
 import { Paciente } from '@shared/models/pacientes.model';
 import { Treatment } from '@shared/models/treatment.model';
 import { DefinicionesService } from '@shared/services/definiciones.service';
+import { PacienteService } from '../../../pacientes/pacientes.service';
 import { AppointmentStatus } from '../../calendario.model';
 import { CalendarioService } from '../../calendario.service';
 
@@ -55,12 +56,14 @@ export class SidebarRegistroComponent implements OnInit, OnChanges, OnDestroy {
     private readonly _calendarioService = inject(CalendarioService);
     private readonly _definicionService = inject(DefinicionesService);
     private readonly _cdr = inject(ChangeDetectorRef);
+    private readonly _pacienteService = inject(PacienteService);
 
     public selectedDate = input.required<Date>();
     public dentist = input.required<Dentist>();
 
     public isClosed = output<void>();
     public appointmentCreated = output<void>();
+    public onRegisterPatient = output<void>();
 
     public formulario!: FormGroup<{
         estado: FormControl<string>;
@@ -70,6 +73,28 @@ export class SidebarRegistroComponent implements OnInit, OnChanges, OnDestroy {
         paciente: FormControl<string | Paciente>;
         dentist: FormControl<Dentist>;
     }>;
+
+    public patientForm!: FormGroup;
+
+    // Stepper & Sidebar Logic
+    showExtraSidebar = false;
+    currentStep = 1;
+    steps = [
+        {
+            number: 1,
+            title: 'Datos Personales',
+            icon: 'heroicons_outline:user',
+        },
+        { number: 2, title: 'Hábitos', icon: 'heroicons_outline:heart' },
+        {
+            number: 3,
+            title: 'Historial',
+            icon: 'heroicons_outline:clipboard-document-list',
+        },
+        { number: 4, title: 'Adjuntos', icon: 'heroicons_outline:paper-clip' },
+    ];
+    public uploadedFiles: File[] = [];
+
     isExpanded = false;
     public tratamientos: Treatment[] = [];
     public edoCitas: AppointmentStatus[] = [
@@ -80,7 +105,8 @@ export class SidebarRegistroComponent implements OnInit, OnChanges, OnDestroy {
         'Finalizada',
         'Finalizada (Pendiente)',
     ];
-    activeView: 'form' | 'search' = 'form';
+    isSaving = false;
+    activeView: 'form' | 'search' | 'new-patient' = 'form';
     public patients: Paciente[] = [];
     public pacienteSeleccionado: Paciente | null = null;
     public searchControl = new FormControl('');
@@ -97,6 +123,7 @@ export class SidebarRegistroComponent implements OnInit, OnChanges, OnDestroy {
     ngOnInit(): void {
         document.body.style.overflow = 'hidden';
         this._createForm();
+        this._createPatientForm();
         this._loadTreatments();
         this._loadPatients();
         this._listenSearch();
@@ -108,7 +135,7 @@ export class SidebarRegistroComponent implements OnInit, OnChanges, OnDestroy {
         this.isExpanded = !this.isExpanded;
         // this.isExpandedSidebar.emit(this.isExpanded);
     }
-    setView(view: 'search' | 'form') {
+    setView(view: 'search' | 'form' | 'new-patient') {
         this.activeView = view;
         if (!this.isExpanded) {
             this.isExpanded = true;
@@ -132,6 +159,94 @@ export class SidebarRegistroComponent implements OnInit, OnChanges, OnDestroy {
         this._resetState();
         this._restoreBodyScroll();
         this.isClosed.emit();
+    }
+
+    // Navigation methods
+    nextStep(): void {
+        if (this.currentStep < this.steps.length) {
+            this.currentStep++;
+        }
+    }
+
+    prevStep(): void {
+        if (this.currentStep > 1) {
+            this.currentStep--;
+        }
+    }
+
+    registerNewPatient(): void {
+        this.showExtraSidebar = true;
+        this.currentStep = 1;
+        this.isExpanded = true; // Ensure main sidebar is wide enough or just overlays
+    }
+
+    cancelNewPatient(): void {
+        this.showExtraSidebar = false;
+        this.patientForm.reset();
+        this.currentStep = 1;
+        this.uploadedFiles = [];
+    }
+
+    onFileSelected(event: any): void {
+        const files: FileList = event.target.files;
+        if (files) {
+            for (let i = 0; i < files.length; i++) {
+                this.uploadedFiles.push(files[i]);
+            }
+        }
+    }
+
+    removeFile(index: number): void {
+        this.uploadedFiles.splice(index, 1);
+    }
+
+    savePatient(): void {
+        if (this.patientForm.invalid) {
+            this.patientForm.markAllAsTouched();
+            // If invalid in step 1, go back
+            if (
+                this.patientForm.get('dni')?.invalid ||
+                this.patientForm.get('name')?.invalid
+            ) {
+                this.currentStep = 1;
+            }
+            return;
+        }
+
+        this.isSaving = true;
+        this._cdr.markForCheck();
+
+        // Prepare data - In a real app, habits and history would be separate entities
+        // For now, we will append them to notes or just log them as 'UI Mock'
+        const patientData = { ...this.patientForm.value };
+        const metaData = {
+            habits: this.patientForm.get('habits')?.value,
+            history: this.patientForm.get('history')?.value,
+        };
+        // Hack: Append to notes so we don't lose the data
+        patientData.notes =
+            (patientData.notes || '') +
+            '\n\n[METADATA]\n' +
+            JSON.stringify(metaData);
+
+        this._pacienteService.createPatient(patientData as any).subscribe({
+            next: (response: any) => {
+                this.isSaving = false;
+                const pacienteCreado = response.data ? response.data : response;
+
+                this._loadPatients();
+                this.selectPaciente(pacienteCreado);
+                this.cancelNewPatient();
+                this.setView('form');
+                this._cdr.markForCheck();
+            },
+            error: (error) => {
+                this.isSaving = false;
+                this.currentErrors =
+                    error?.error?.message || 'Error al crear el paciente';
+                this._cdr.markForCheck();
+            },
+        });
     }
 
     createAppointment(): void {
@@ -206,6 +321,39 @@ export class SidebarRegistroComponent implements OnInit, OnChanges, OnDestroy {
     hidePatientsList(): void {
         this.showPatientsList = false;
         this._cdr.markForCheck();
+    }
+
+    private _createPatientForm(): void {
+        this.patientForm = this._fb.group({
+            // Step 1: Registro
+            address: [''],
+            dni: ['', [Validators.required, Validators.minLength(7)]],
+            balance: [0],
+            date_of_birth: ['', [Validators.required]],
+            email: ['', [Validators.required, Validators.email]],
+            insurance: [''],
+            insurance_id: [''],
+            name: ['', [Validators.required, Validators.minLength(3)]],
+            notes: [''],
+            phone: ['', [Validators.required, Validators.minLength(10)]],
+
+            // Step 2: Habitos (Mock fields)
+            habits: this._fb.group({
+                smoking: [false],
+                alcohol: [false],
+                bruxism: [false],
+                flossing: ['never'], // daily, weekly, never
+                brushingFrequency: ['2'],
+            }),
+
+            // Step 3: Historial (Mock fields)
+            history: this._fb.group({
+                allergies: [''],
+                medications: [''],
+                surgeries: [''],
+                illnesses: [''],
+            }),
+        });
     }
 
     private _createForm(): void {

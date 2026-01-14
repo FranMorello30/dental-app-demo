@@ -1,5 +1,4 @@
-<div
-    class="fixed inset-0 z-50 flex items-start justify-end bg-black/40 px-6 py-8 backdrop-blur-md"
+<div class="fixed inset-0 z-50 flex items-start justify-end bg-black/40 px-6 py-8 backdrop-blur-md"
     @slideInOut
     (click)="close()"
 >
@@ -8,12 +7,246 @@
         [ngClass]="isExpanded ? 'max-w-5xl' : 'max-w-2xl'"
         (click)="$event.stopPropagation()"
     >
-        <div class="flex h-full">
-            <div #subSidebar class="flex flex-col overflow-hidden border-r border-gray-100 bg-white transition-all duration-300 ease-in-out" [ngClass]="isExpanded ? 'w-80 opacity-100' : 'w-0 opacity-0'">
+        <div class="flex h-full relative bg-white">
+            
+    <div
+    #nuevoPacienteSidebar
+    class="relative z-30 h-full border-r border-gray-100 bg-gray-50 transition-all duration-300 ease-in-out overflow-hidden"
+    [ngClass]="showExtraSidebar ? 'w-[480px] opacity-100 translate-x-0' : 'w-0 opacity-0 -translate-x-full'"
+    >
+        <div class="flex h-full flex-col overflow-hidden">
+            <!-- Header Extra Sidebar -->
+            <div class="flex items-center justify-between border-b border-gray-200 bg-white px-6 py-4">
+                <div>
+                     <h3 class="font-bold text-gray-900">Nuevo Paciente</h3>
+                     <p class="text-xs text-gray-500">Completa la información requerida</p>
+                </div>
+               
+                <button mat-icon-button (click)="cancelNewPatient()">
+                    <mat-icon svgIcon="heroicons_outline:x-mark" class="text-gray-400"></mat-icon>
+                </button>
+            </div>
+
+             <!-- Stepper Header -->
+            <div class="border-b border-gray-200 bg-white px-6 py-4">
+                <div class="flex items-center justify-between">
+                    @for (step of steps; track step.number) {
+                        <div class="flex flex-col items-center gap-2">
+                             <div 
+                                class="flex h-8 w-8 items-center justify-center rounded-full border-2 transition-colors duration-200"
+                                [ngClass]="{
+                                    'border-blue-600 bg-blue-600 text-white': currentStep >= step.number,
+                                    'border-gray-300 text-gray-400': currentStep < step.number
+                                }"
+                             >
+                                @if(currentStep > step.number) {
+                                    <mat-icon class="icon-size-4" svgIcon="heroicons_outline:check"></mat-icon>
+                                } @else {
+                                    <span class="text-xs font-bold">{{ step.number }}</span>
+                                }
+                             </div>
+                             <span class="text-[10px] font-medium uppercase" [ngClass]="currentStep >= step.number ? 'text-blue-600' : 'text-gray-400'">
+                                 {{ step.title }}
+                             </span>
+                        </div>
+                        @if ($index !== steps.length - 1) {
+                            <div class="flex-1 border-t border-gray-200 mx-2 mb-4"></div>
+                        }
+                    }
+                </div>
+            </div>
+
+
+            <!-- Body Form -->
+            <div class="flex-1 overflow-y-auto bg-gray-50 p-6">
+                <form [formGroup]="patientForm" class="space-y-6">
+                    
+                    <!-- STEP 1: REGISTRO -->
+                    @if (currentStep === 1) {
+                        <div class="animate-in fade-in slide-in-from-right-4 duration-300 space-y-4 rounded-xl bg-white p-6 shadow-sm border border-gray-100">
+                             <div>
+                                <label class="mb-1.5 block text-sm font-semibold text-gray-700">Cedula <span class="text-red-500">*</span></label>
+                                <div class="relative">
+                                    <mat-icon class="absolute left-3 top-1/2 icon-size-5 -translate-y-1/2 text-gray-400" svgIcon="heroicons_outline:identification"></mat-icon>
+                                    <input formControlName="dni" class="w-full rounded-lg border border-gray-200 bg-gray-50 py-2.5 pl-10 pr-4 text-gray-900 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100 transition-all placeholder:text-gray-400">
+                                </div>
+                                @if(patientForm.get('dni')?.hasError('required') && patientForm.get('dni')?.touched) {
+                                    <p class="mt-1 text-xs text-red-500">Campo requerido</p>
+                                }
+                            </div>
+                            
+                             <div>
+                                <label class="mb-1.5 block text-sm font-semibold text-gray-700">Nombre Completo <span class="text-red-500">*</span></label>
+                                <div class="relative">
+                                     <mat-icon class="absolute left-3 top-1/2 icon-size-5 -translate-y-1/2 text-gray-400" svgIcon="heroicons_outline:user"></mat-icon>
+                                     <input formControlName="name" class="w-full rounded-lg border border-gray-200 bg-gray-50 py-2.5 pl-10 pr-4 text-gray-900 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100 transition-all placeholder:text-gray-400">
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="mb-1.5 block text-sm font-semibold text-gray-700">Teléfono</label>
+                                    <input formControlName="phone" class="w-full rounded-lg border border-gray-200 bg-gray-50 py-2.5 px-4 text-gray-900 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100 transition-all">
+                                </div>
+                                <div>
+                                    <label class="mb-1.5 block text-sm font-semibold text-gray-700">Fecha Nac.</label>
+                                    <input type="date" formControlName="date_of_birth" class="w-full rounded-lg border border-gray-200 bg-gray-50 py-2.5 px-4 text-gray-900 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100 transition-all">
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <label class="mb-1.5 block text-sm font-semibold text-gray-700">Email</label>
+                                <input type="email" formControlName="email" class="w-full rounded-lg border border-gray-200 bg-gray-50 py-2.5 px-4 text-gray-900 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100 transition-all">
+                            </div>
+
+                             <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="mb-1.5 block text-sm font-semibold text-gray-700">Seguro</label>
+                                    <input formControlName="insurance" class="w-full rounded-lg border border-gray-200 bg-gray-50 py-2.5 px-4 text-gray-900 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100 transition-all">
+                                </div>
+                                <div>
+                                    <label class="mb-1.5 block text-sm font-semibold text-gray-700">Póliza</label>
+                                    <input formControlName="insurance_id" class="w-full rounded-lg border border-gray-200 bg-gray-50 py-2.5 px-4 text-gray-900 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100 transition-all">
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                    <!-- STEP 2: HABITOS -->
+                    @if (currentStep === 2) {
+                        <div class="animate-in fade-in slide-in-from-right-4 duration-300 space-y-4 rounded-xl bg-white p-6 shadow-sm border border-gray-100" formGroupName="habits">
+                             <div class="space-y-4">
+                                <label class="flex items-center gap-3 rounded-lg border border-gray-200 p-4 transition-colors hover:bg-gray-50 cursor-pointer">
+                                    <input type="checkbox" formControlName="smoking" class="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-600">
+                                    <div class="flex-1">
+                                        <span class="block font-medium text-gray-900">Fumador</span>
+                                        <span class="text-xs text-gray-500">¿El paciente fuma regularmente?</span>
+                                    </div>
+                                </label>
+                                
+                                <label class="flex items-center gap-3 rounded-lg border border-gray-200 p-4 transition-colors hover:bg-gray-50 cursor-pointer">
+                                    <input type="checkbox" formControlName="alcohol" class="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-600">
+                                    <div class="flex-1">
+                                        <span class="block font-medium text-gray-900">Consumo de Alcohol</span>
+                                        <span class="text-xs text-gray-500">¿Consume alcohol frecuentemente?</span>
+                                    </div>
+                                </label>
+
+                                <label class="flex items-center gap-3 rounded-lg border border-gray-200 p-4 transition-colors hover:bg-gray-50 cursor-pointer">
+                                    <input type="checkbox" formControlName="bruxism" class="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-600">
+                                    <div class="flex-1">
+                                        <span class="block font-medium text-gray-900">Bruxismo</span>
+                                        <span class="text-xs text-gray-500">¿Rechina los dientes al dormir?</span>
+                                    </div>
+                                </label>
+                             </div>
+
+                             <div class="pt-4 border-t border-gray-100">
+                                 <label class="mb-2 block text-sm font-semibold text-gray-700">Frecuencia de cepillado (veces al día)</label>
+                                 <div class="grid grid-cols-3 gap-3">
+                                     @for (freq of ['1', '2', '3+']; track freq) {
+                                         <label class="cursor-pointer">
+                                             <input type="radio" formControlName="brushingFrequency" [value]="freq" class="peer sr-only">
+                                             <div class="flex items-center justify-center rounded-lg border border-gray-200 py-2.5 peer-checked:bg-blue-50 peer-checked:border-blue-200 peer-checked:text-blue-700 hover:bg-gray-50 transition-all">
+                                                 {{ freq }}
+                                             </div>
+                                         </label>
+                                     }
+                                 </div>
+                             </div>
+                        </div>
+                    }
+
+                    <!-- STEP 3: HISTORIAL -->
+                    @if (currentStep === 3) {
+                         <div class="animate-in fade-in slide-in-from-right-4 duration-300 space-y-4 rounded-xl bg-white p-6 shadow-sm border border-gray-100" formGroupName="history">
+                            <div>
+                                <label class="mb-1.5 block text-sm font-semibold text-gray-700">Alergias</label>
+                                <textarea formControlName="allergies" rows="3" class="w-full rounded-lg border border-gray-200 bg-gray-50 p-3 text-gray-900 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100 transition-all resize-none" placeholder="Medicamentos, alimentos, látex..."></textarea>
+                            </div>
+                            
+                            <div>
+                                <label class="mb-1.5 block text-sm font-semibold text-gray-700">Medicamentos actuales</label>
+                                <textarea formControlName="medications" rows="3" class="w-full rounded-lg border border-gray-200 bg-gray-50 p-3 text-gray-900 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100 transition-all resize-none" placeholder="Listado de medicamentos..."></textarea>
+                            </div>
+
+                            <div>
+                                <label class="mb-1.5 block text-sm font-semibold text-gray-700">Enfermedades / Cirugías</label>
+                                <textarea formControlName="illnesses" rows="3" class="w-full rounded-lg border border-gray-200 bg-gray-50 p-3 text-gray-900 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100 transition-all resize-none" placeholder="Diabetes, hipertensión, cirugías previas..."></textarea>
+                            </div>
+                         </div>
+                    }
+
+                    <!-- STEP 4: ADJUNTOS -->
+                    @if (currentStep === 4) {
+                         <div class="animate-in fade-in slide-in-from-right-4 duration-300 space-y-4 rounded-xl bg-white p-6 shadow-sm border border-gray-100">
+                             <div class="relative flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 p-8 transition-colors hover:border-blue-400 hover:bg-blue-50">
+                                 <input type="file" multiple (change)="onFileSelected($event)" class="absolute inset-0 cursor-pointer opacity-0">
+                                 <div class="flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 text-blue-600 mb-3">
+                                     <mat-icon svgIcon="heroicons_outline:cloud-arrow-up"></mat-icon>
+                                 </div>
+                                 <p class="font-semibold text-gray-900">Click para subir archivos</p>
+                                 <p class="text-xs text-gray-500 mt-1">PNG, JPG, PDF hasta 10MB</p>
+                             </div>
+
+                             @if (uploadedFiles.length > 0) {
+                                 <div class="space-y-2">
+                                     <p class="text-xs font-semibold uppercase text-gray-500">Archivos seleccionados</p>
+                                     @for (file of uploadedFiles; track file.name; let i = $index) {
+                                         <div class="flex items-center justify-between rounded-lg border border-gray-100 bg-white p-3 shadow-sm">
+                                             <div class="flex items-center gap-3">
+                                                 <mat-icon class="text-blue-500" svgIcon="heroicons_outline:document"></mat-icon>
+                                                 <div class="flex flex-col">
+                                                      <span class="text-sm font-medium text-gray-900 truncate max-w-[150px]">{{ file.name }}</span>
+                                                      <span class="text-xs text-gray-500">{{ (file.size / 1024).toFixed(1) }} KB</span>
+                                                 </div>
+                                             </div>
+                                             <button mat-icon-button color="warn" (click)="removeFile(i)">
+                                                 <mat-icon class="icon-size-4" svgIcon="heroicons_outline:trash"></mat-icon>
+                                             </button>
+                                         </div>
+                                     }
+                                 </div>
+                             }
+                         </div>
+                    }
+
+                </form>
+            </div>
+
+            <!-- Footer: Navigation Buttons -->
+            <div class="border-t border-gray-200 bg-white px-6 py-4">
+                <div class="flex items-center justify-between gap-4">
+                    @if (currentStep > 1) {
+                        <button mat-stroked-button (click)="prevStep()">
+                            Atrás
+                        </button>
+                    } @else {
+                        <div></div> <!-- Spacer -->
+                    }
+
+                    @if (currentStep < steps.length) {
+                         <button mat-raised-button color="primary" (click)="nextStep()">
+                            Siguiente
+                        </button>
+                    } @else {
+                         <button mat-raised-button color="primary" (click)="savePatient()" [disabled]="isSaving">
+                            @if(isSaving) { Guardando... } @else { Finalizar Registro }
+                        </button>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+        
+            <div #subSidebar class="flex flex-col h-full overflow-hidden border-r border-gray-100 bg-white transition-all duration-300 ease-in-out" [ngClass]="isExpanded ? 'w-80 opacity-100' : 'w-0 opacity-0'">
                 <div class="flex items-center justify-between border-b border-gray-100 p-4">
                     <h3 class="font-bold text-gray-900">
                         @if (activeView === 'search') {
                             Pacientes registrados
+                        } @else if (activeView === 'new-patient') {
+                            Nuevo Paciente
                         } @else {
                             Resumen de cita
                         }
@@ -35,6 +268,19 @@
                                 [formControl]="searchControl"
                             />
                         </mat-form-field>
+
+                        <button
+                            mat-stroked-button
+                            color="primary"
+                            class="mb-4 w-full rounded-xl border-dashed py-6"
+                            (click)="registerNewPatient()"
+                        >
+                            <mat-icon
+                                class="icon-size-5 mr-2"
+                                svgIcon="heroicons_outline:plus"
+                            ></mat-icon>
+                            Registrar nuevo paciente
+                        </button>
 
                         <ul class="divide-y divide-gray-100 rounded-xl border border-gray-100 bg-white shadow-sm">
                             @if (showResults) {
@@ -121,7 +367,7 @@
                 </div>
             </div>
 
-            <div class="flex flex-1 flex-col overflow-hidden bg-white">
+            <div #NuevaCita class="flex flex-1 flex-col overflow-hidden bg-white transition-all duration-300" [ngClass]="{'hidden': showExtraSidebar}">
                 <div class="flex items-center justify-between border-b border-gray-100 px-8 py-4">
                     <div class="flex items-center gap-3">
                         <div class="rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-600">
@@ -190,7 +436,7 @@
                                         (click)="setView('search'); isExpanded = true"
                                         class="whitespace-nowrap"
                                     >
-                                        Cambiar
+                                    @if(pacienteSeleccionado) { Cambiar } @else{ Seleccionar}
                                     </button>
                                 </div>
                                 <div class="flex items-center justify-between rounded-xl bg-gray-50 px-3 py-2 text-sm">
@@ -286,6 +532,7 @@
                     </div>
                 </form>
             </div>
+
         </div>
     </div>
 </div>
