@@ -70,7 +70,7 @@ export class SidebarRegistroComponent implements OnInit, OnChanges, OnDestroy {
         paciente: FormControl<string | Paciente>;
         dentist: FormControl<Dentist>;
     }>;
-
+    isExpanded = false;
     public tratamientos: Treatment[] = [];
     public edoCitas: AppointmentStatus[] = [
         'Sin confirmar',
@@ -80,12 +80,13 @@ export class SidebarRegistroComponent implements OnInit, OnChanges, OnDestroy {
         'Finalizada',
         'Finalizada (Pendiente)',
     ];
-
+    activeView: 'form' | 'search' = 'form';
     public patients: Paciente[] = [];
     public pacienteSeleccionado: Paciente | null = null;
     public searchControl = new FormControl('');
     public searchResults: Paciente[] = [];
     public showResults = false;
+    public showPatientsList = false;
 
     public timeInitSlots: string[] = [];
     public timeEndSlots: string[] = [];
@@ -102,7 +103,18 @@ export class SidebarRegistroComponent implements OnInit, OnChanges, OnDestroy {
         this._listenStartTime();
         this._initSlots();
     }
-
+    toggleExpand() {
+        //console.log('Toggling sidebar expansion');
+        this.isExpanded = !this.isExpanded;
+        // this.isExpandedSidebar.emit(this.isExpanded);
+    }
+    setView(view: 'search' | 'form') {
+        this.activeView = view;
+        if (!this.isExpanded) {
+            this.isExpanded = true;
+        }
+        //  this.isExpandedSidebar.emit(this.isExpanded);
+    }
     ngOnDestroy(): void {
         this._restoreBodyScroll();
     }
@@ -176,12 +188,24 @@ export class SidebarRegistroComponent implements OnInit, OnChanges, OnDestroy {
         this.formulario.get('paciente')?.setValue(paciente);
         this.showResults = false;
         this.searchControl.setValue('');
+        this.showPatientsList = false;
     }
 
     clearPaciente(): void {
         this.pacienteSeleccionado = null;
         this.formulario.get('paciente')?.setValue('');
         this.searchControl.setValue('');
+    }
+
+    togglePatientsList(): void {
+        this.showPatientsList = !this.showPatientsList;
+        this.showResults = false;
+        this._cdr.markForCheck();
+    }
+
+    hidePatientsList(): void {
+        this.showPatientsList = false;
+        this._cdr.markForCheck();
     }
 
     private _createForm(): void {
@@ -437,6 +461,10 @@ export class SidebarRegistroComponent implements OnInit, OnChanges, OnDestroy {
         this.searchControl.reset();
         this.searchResults = [];
         this.showResults = false;
+        this.showPatientsList = false;
+        this.timeInitSlots = [];
+        this.timeEndSlots = [];
+        this.filteredEndSlots = [];
     }
 
     private _restoreBodyScroll(): void {
