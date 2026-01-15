@@ -450,26 +450,26 @@
                     <div class="mb-8 h-px w-full bg-gray-100"></div>
 
                     <!-- Reschedule -->
-                    <div class="mb-8 rounded-2xl border border-gray-100 p-4 shadow-sm">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <div class="text-xs font-semibold uppercase text-gray-500">
-                                    Reprogramar cita
+                    @if (rescheduleMode) {
+                        <div class="mb-8 rounded-2xl border border-gray-100 p-4 shadow-sm">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <div class="text-xs font-semibold uppercase text-gray-500">
+                                        Reprogramar cita
+                                    </div>
+                                    <div class="text-sm text-gray-600">
+                                        Ajusta fecha y hora de la cita.
+                                    </div>
                                 </div>
-                                <div class="text-sm text-gray-600">
-                                    Ajusta fecha y hora de la cita.
-                                </div>
+                                <button
+                                    class="rounded-lg border border-gray-200 px-3 py-1.5 text-sm font-medium text-blue-600 hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    (click)="cancelReschedule()"
+                                    [disabled]="rescheduling || isFinalized"
+                                >
+                                    Cancelar
+                                </button>
                             </div>
-                            <button
-                                class="rounded-lg border border-gray-200 px-3 py-1.5 text-sm font-medium text-blue-600 hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                                (click)="rescheduleMode ? cancelReschedule() : startReschedule()"
-                                [disabled]="rescheduling || isFinalized"
-                            >
-                                {{ rescheduleMode ? 'Cancelar' : 'Editar' }}
-                            </button>
-                        </div>
 
-                        @if (rescheduleMode) {
                             <div class="mt-4 grid grid-cols-2 gap-4">
                                 <div class="rounded-xl border border-gray-100 bg-gray-50/60 p-3">
                                     <div class="mb-2 flex items-center justify-between">
@@ -481,7 +481,7 @@
                                         >
                                             <mat-icon svgIcon="feather:chevron-left" class="icon-size-4" />
                                         </button>
-                                    <div class="text-sm font-semibold text-gray-900">
+                                        <div class="text-sm font-semibold text-gray-900">
                                             {{ getFormattedMonth() }}
                                         </div>
                                         <button
@@ -559,96 +559,98 @@
                             <p class="mt-2 text-xs text-gray-500">
                                 Selecciona la fecha y horarios para reprogramar la cita.
                             </p>
-                        }
-                    </div>
+                        </div>
+                    }
 
                     <!-- General Info -->
-                    <div>
-                        <h3 class="mb-4 font-bold text-gray-900">
-                            General info
-                        </h3>
-                        <div class="grid grid-cols-2 gap-x-8 gap-y-6">
-                            <div>
-                                <div
-                                    class="mb-1 text-xs font-medium uppercase text-gray-500"
-                                >
-                                    FULL NAME
-                                </div>
-                                <div class="text-gray-900">
-                                    {{ selectedEvent().patient.name }}
-                                </div>
-                            </div>
-                            <div>
-                                <div
-                                    class="mb-1 text-xs font-medium uppercase text-gray-500"
-                                >
-                                    PHONE NUMBER
-                                </div>
-                                <div class="flex items-center gap-2 text-gray-900">
-                                    <span>
-                                        {{
-                                            selectedEvent().patient.phone ||
-                                                '+1 (555) 000-0000'
-                                        }}
-                                    </span>
-                                    <button
-                                        *ngIf="selectedEvent().patient.phone"
-                                        mat-icon-button
-                                        class="h-6 w-6 text-green-600 hover:bg-green-50"
-                                        (click)="sendMessageToPatient()"
-                                        title="Enviar mensaje por WhatsApp"
+                    @if (!rescheduleMode) {
+                        <div>
+                            <h3 class="mb-4 font-bold text-gray-900">
+                                General info
+                            </h3>
+                            <div class="grid grid-cols-2 gap-x-8 gap-y-6">
+                                <div>
+                                    <div
+                                        class="mb-1 text-xs font-medium uppercase text-gray-500"
                                     >
-                                        <mat-icon
-                                            class="icon-size-4"
-                                            svgIcon="heroicons_outline:chat-bubble-left-right"
-                                        ></mat-icon>
-                                    </button>
+                                        FULL NAME
+                                    </div>
+                                    <div class="text-gray-900">
+                                        {{ selectedEvent().patient.name }}
+                                    </div>
                                 </div>
-                            </div>
-                            <div>
-                                <div
-                                    class="mb-1 text-xs font-medium uppercase text-gray-500"
-                                >
-                                    AGE
+                                <div>
+                                    <div
+                                        class="mb-1 text-xs font-medium uppercase text-gray-500"
+                                    >
+                                        PHONE NUMBER
+                                    </div>
+                                    <div class="flex items-center gap-2 text-gray-900">
+                                        <span>
+                                            {{
+                                                selectedEvent().patient.phone ||
+                                                    '+1 (555) 000-0000'
+                                            }}
+                                        </span>
+                                        <button
+                                            *ngIf="selectedEvent().patient.phone"
+                                            mat-icon-button
+                                            class="h-6 w-6 text-green-600 hover:bg-green-50"
+                                            (click)="sendMessageToPatient()"
+                                            title="Enviar mensaje por WhatsApp"
+                                        >
+                                            <mat-icon
+                                                class="icon-size-4"
+                                                svgIcon="heroicons_outline:chat-bubble-left-right"
+                                            ></mat-icon>
+                                        </button>
+                                    </div>
                                 </div>
-                                <div class="text-gray-900">24</div>
-                            </div>
-                            <div>
-                                <div
-                                    class="mb-1 text-xs font-medium uppercase text-gray-500"
-                                >
-                                    EMAIL
+                                <div>
+                                    <div
+                                        class="mb-1 text-xs font-medium uppercase text-gray-500"
+                                    >
+                                        AGE
+                                    </div>
+                                    <div class="text-gray-900">24</div>
                                 </div>
-                                <div class="text-gray-900">
-                                    {{
-                                        selectedEvent().patient.email ||
-                                            'No email'
-                                    }}
+                                <div>
+                                    <div
+                                        class="mb-1 text-xs font-medium uppercase text-gray-500"
+                                    >
+                                        EMAIL
+                                    </div>
+                                    <div class="text-gray-900">
+                                        {{
+                                            selectedEvent().patient.email ||
+                                                'No email'
+                                        }}
+                                    </div>
                                 </div>
-                            </div>
-                            <div>
-                                <div
-                                    class="mb-1 text-xs font-medium uppercase text-gray-500"
-                                >
-                                    GENDER
+                                <div>
+                                    <div
+                                        class="mb-1 text-xs font-medium uppercase text-gray-500"
+                                    >
+                                        GENDER
+                                    </div>
+                                    <div class="text-gray-900">Male</div>
                                 </div>
-                                <div class="text-gray-900">Male</div>
-                            </div>
-                            <div>
-                                <div
-                                    class="mb-1 text-xs font-medium uppercase text-gray-500"
-                                >
-                                    ADDRESS
-                                </div>
-                                <div class="text-gray-900">
-                                    {{
-                                        selectedEvent().patient.address ||
-                                            'No address'
-                                    }}
+                                <div>
+                                    <div
+                                        class="mb-1 text-xs font-medium uppercase text-gray-500"
+                                    >
+                                        ADDRESS
+                                    </div>
+                                    <div class="text-gray-900">
+                                        {{
+                                            selectedEvent().patient.address ||
+                                                'No address'
+                                        }}
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    }
                 </div>
 
                 <!-- Footer -->
@@ -663,6 +665,7 @@
                         Cancel
                     </button>
                     <button
+                        #btnAction
                         class="rounded-xl border border-gray-200 bg-white px-6 py-2.5 text-sm font-medium text-blue-600 hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed"
                         [disabled]="rescheduling || isFinalized"
                         (click)="rescheduleMode ? confirmReschedule() : startReschedule()"

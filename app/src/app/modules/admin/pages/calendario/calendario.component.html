@@ -624,7 +624,7 @@
                                                     <div 
                                                         @popoverAnimation
                                                         class="absolute top-0 z-50 w-64 cursor-default rounded-xl bg-white p-3 shadow-xl ring-1 ring-gray-200"
-                                                        [ngClass]="date.getDay() === 6 ? 'right-full mr-2' : 'left-full ml-2'"
+                                                        [ngClass]="(date.getDay() === 5 || date.getDay() === 6) ? 'right-full mr-2' : 'left-full ml-2'"
                                                         (click)="$event.stopPropagation()"
                                                     >
                                                         <div class="mb-2 text-xs font-semibold text-gray-900">Mensaje para {{event.patient.name}}</div>
@@ -706,7 +706,7 @@
                                             $index !== weeks.length - 1,
                                     }"
                                 >
-                                    @for (day of week; track $index) {
+                                    @for (day of week; track $index; let colIndex = $index) {
                                         @if (day === null) {
                                             <div
                                                 class="border-r border-gray-100 bg-gray-50/30 p-2"
@@ -755,7 +755,7 @@
                                                     {{ day }}
                                                 </div>
                                                 <div
-                                                    class="flex-1 space-y-1 overflow-hidden"
+                                                    class="flex-1 space-y-1"
                                                 >
                                                     @for (
                                                         event of getEventsByMonth(
@@ -764,26 +764,68 @@
                                                         track $index
                                                     ) {
                                                         @if ($index < 2) {
-                                                            <div
-                                                                class="flex cursor-pointer flex-col truncate rounded-md px-1.5 py-1 text-[10px] font-medium text-white transition-all hover:opacity-90"
-                                                                [class]="
-                                                                    getStatusColor(
-                                                                        event.status
-                                                                    )
-                                                                "
-                                                                (click)="
-                                                                    openEvent(
-                                                                        event
-                                                                    );
-                                                                    $event.stopPropagation()
-                                                                "
-                                                            >
-                                                                <span
-                                                                    class="truncate"
-                                                                    >{{
-                                                                        event.treatment
-                                                                    }}</span
+                                                            <div class="relative">
+                                                                <div
+                                                                    class="group flex cursor-pointer flex-col rounded-md px-1.5 py-1 text-[10px] font-medium text-white transition-all hover:shadow-md hover:brightness-105"
+                                                                    [class]="
+                                                                        getStatusColor(
+                                                                            event.status
+                                                                        )
+                                                                    "
+                                                                    (click)="
+                                                                        openEvent(
+                                                                            event
+                                                                        );
+                                                                        $event.stopPropagation()
+                                                                    "
                                                                 >
+                                                                    <div class="flex items-center justify-between gap-1 text-white">
+                                                                        <span class="truncate">{{ event.treatment }}</span>
+                                                                        <button 
+                                                                            class="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-white/20 transition-colors hover:bg-white/40 opacity-0 group-hover:opacity-100"
+                                                                            (click)="toggleMessageInput(event.id, $event)"
+                                                                            title="Enviar mensaje"
+                                                                            *ngIf="event.patient.phone"
+                                                                        >
+                                                                            <mat-icon
+                                                                                class="text-white icon-size-3"
+                                                                                svgIcon="heroicons_outline:chat-bubble-left-right"
+                                                                            ></mat-icon>
+                                                                        </button>
+                                                                    </div>
+                                                                </div>
+
+                                                                @if (activeMessageEventId === event.id) {
+                                                                    <div 
+                                                                        class="absolute z-50 w-64 cursor-default rounded-xl bg-white p-3 shadow-xl ring-1 ring-gray-200"
+                                                                        [ngClass]="(colIndex >= 5) ? 'right-full mr-2' : 'left-full ml-2'"
+                                                                        style="top: 0; min-height: 150px;"
+                                                                        (click)="$event.stopPropagation()"
+                                                                        @popoverAnimation
+                                                                    >
+                                                                        <div class="mb-2 text-xs font-semibold text-gray-900">Mensaje para {{event.patient.name}}</div>
+                                                                        <textarea 
+                                                                            [(ngModel)]="customMessage"
+                                                                            class="mb-2 h-20 w-full resize-none rounded-md border border-gray-200 p-2 text-xs text-gray-700 focus:border-blue-500 focus:outline-none"
+                                                                            placeholder="Escribe tu mensaje aquí..."
+                                                                            (click)="$event.stopPropagation()"
+                                                                        ></textarea>
+                                                                        <div class="flex justify-end gap-2">
+                                                                            <button 
+                                                                                class="rounded px-2 py-1 text-xs font-medium text-gray-500 hover:bg-gray-100"
+                                                                                (click)="closeMessageInput($event)"
+                                                                            >
+                                                                                Cancelar
+                                                                            </button>
+                                                                            <button 
+                                                                                class="rounded bg-green-500 px-2 py-1 text-xs font-medium text-white hover:bg-green-600"
+                                                                                (click)="sendCustomMessage(event)"
+                                                                            >
+                                                                                Enviar
+                                                                            </button>
+                                                                        </div>
+                                                                    </div>
+                                                                }
                                                             </div>
                                                         }
                                                     }
