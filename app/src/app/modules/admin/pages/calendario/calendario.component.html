@@ -405,8 +405,9 @@
                                     event of getEventsByWeek(currentDate);
                                     track $index
                                 ) {
+                                    <!-- transition-all duration-200 ease-in-out hover:z-10 hover:scale-[1.02] hover:shadow-md -->
                                     <div
-                                        class="absolute cursor-pointer rounded-lg border-l-4 border-white/20 p-3 text-white shadow-sm transition-all duration-200 ease-in-out hover:z-10 hover:scale-[1.02] hover:shadow-md"
+                                        class="absolute cursor-pointer rounded-lg border-l-4 border-white/20 p-3 text-white shadow-sm "
                                         [class]="getStatusColor(event.status)"
                                         [ngStyle]="
                                             calculateEventStyle(
@@ -416,6 +417,47 @@
                                         "
                                         (click)="openEvent(event); $event.stopPropagation()"
                                     >
+                                        <button 
+                                            class="absolute top-1 right-1 flex h-6 w-6 items-center justify-center rounded-full bg-white/20 transition-colors hover:bg-white/40 z-20"
+                                            (click)="toggleMessageInput(event.id, $event)"
+                                            title="Enviar mensaje"
+                                            *ngIf="event.patient.phone"
+                                        >
+                                            <mat-icon
+                                                class="text-white icon-size-3.5"
+                                                svgIcon="heroicons_outline:chat-bubble-left-right"
+                                            ></mat-icon>
+                                        </button>
+
+                                        @if (activeMessageEventId === event.id) {
+                                            <div 
+                                                @popoverAnimation
+                                                class="absolute left-full top-0 z-50 ml-2 w-64 cursor-default rounded-xl bg-white p-3 shadow-xl ring-1 ring-gray-200"
+                                                (click)="$event.stopPropagation()"
+                                            >
+                                                <div class="mb-2 text-xs font-semibold text-gray-900">Mensaje para {{event.patient.name}}</div>
+                                                <textarea 
+                                                    [(ngModel)]="customMessage"
+                                                    class="mb-2 h-20 w-full resize-none rounded-md border border-gray-200 p-2 text-xs text-gray-700 focus:border-blue-500 focus:outline-none"
+                                                    placeholder="Escribe tu mensaje aquí..."
+                                                ></textarea>
+                                                <div class="flex justify-end gap-2">
+                                                    <button 
+                                                        class="rounded px-2 py-1 text-xs font-medium text-gray-500 hover:bg-gray-100"
+                                                        (click)="closeMessageInput($event)"
+                                                    >
+                                                        Cancelar
+                                                    </button>
+                                                    <button 
+                                                        class="rounded bg-green-500 px-2 py-1 text-xs font-medium text-white hover:bg-green-600"
+                                                        (click)="sendCustomMessage(event)"
+                                                    >
+                                                        Enviar
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        }
+
                                         <div
                                             class="truncate text-sm font-bold shadow-sm"
                                         >
@@ -549,11 +591,12 @@
                                             event of getEventsByWeek(date);
                                             track $index
                                         ) {
+                                            <!-- transition-all duration-200 ease-in-out hover:z-10 hover:scale-[1.02] hover:shadow-md -->
                                             <div
                                                 [title]="
                                                     'Pcte:' + event.patient.name
                                                 "
-                                                class="absolute cursor-pointer rounded-md border-l-2 border-white/20 p-2 text-white shadow-sm transition-all duration-200 ease-in-out hover:z-10 hover:scale-[1.02] hover:shadow-md"
+                                                class="absolute cursor-pointer rounded-md border-l-2 border-white/20 p-2 text-white shadow-sm "
                                                 [class]="
                                                     getStatusColor(event.status)
                                                 "
@@ -565,6 +608,48 @@
                                                 "
                                                 (click)="openEvent(event); $event.stopPropagation()"
                                             >
+                                                <button 
+                                                    class="absolute top-1 right-1 flex h-5 w-5 items-center justify-center rounded-full bg-white/20 transition-colors hover:bg-white/40 z-20"
+                                                    (click)="toggleMessageInput(event.id, $event)"
+                                                    title="Enviar mensaje"
+                                                    *ngIf="event.patient.phone"
+                                                >
+                                                    <mat-icon
+                                                        class="text-white icon-size-3"
+                                                        svgIcon="heroicons_outline:chat-bubble-left-right"
+                                                    ></mat-icon>
+                                                </button>
+
+                                                @if (activeMessageEventId === event.id) {
+                                                    <div 
+                                                        @popoverAnimation
+                                                        class="absolute top-0 z-50 w-64 cursor-default rounded-xl bg-white p-3 shadow-xl ring-1 ring-gray-200"
+                                                        [ngClass]="date.getDay() === 6 ? 'right-full mr-2' : 'left-full ml-2'"
+                                                        (click)="$event.stopPropagation()"
+                                                    >
+                                                        <div class="mb-2 text-xs font-semibold text-gray-900">Mensaje para {{event.patient.name}}</div>
+                                                        <textarea 
+                                                            [(ngModel)]="customMessage"
+                                                            class="mb-2 h-20 w-full resize-none rounded-md border border-gray-200 p-2 text-xs text-gray-700 focus:border-blue-500 focus:outline-none"
+                                                            placeholder="Escribe tu mensaje aquí..."
+                                                        ></textarea>
+                                                        <div class="flex justify-end gap-2">
+                                                            <button 
+                                                                class="rounded px-2 py-1 text-xs font-medium text-gray-500 hover:bg-gray-100"
+                                                                (click)="closeMessageInput($event)"
+                                                            >
+                                                                Cancelar
+                                                            </button>
+                                                            <button 
+                                                                class="rounded bg-green-500 px-2 py-1 text-xs font-medium text-white hover:bg-green-600"
+                                                                (click)="sendCustomMessage(event)"
+                                                            >
+                                                                Enviar
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                }
+
                                                 <div
                                                     class="truncate text-xs font-bold"
                                                 >

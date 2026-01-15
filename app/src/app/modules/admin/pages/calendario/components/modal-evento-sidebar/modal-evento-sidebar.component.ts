@@ -462,6 +462,19 @@ export class ModalEventoSidebarComponent implements OnInit {
             });
     }
 
+    sendMessageToPatient() {
+        const phone = this.selectedEvent().patient.phone;
+        if (!phone) return;
+
+        // Limpiar número y asegurar formato para WhatsApp (asumiendo código de país si no está)
+        // Por ahora usamos el número tal cual, quitando caracteres no numéricos excepto el +
+        const cleanPhone = phone.replace(/[^\d+]/g, '');
+        const message = `Hola ${this.selectedEvent().patient.name}, le escribimos de Dental Care acerca de su cita programada para el ${this.selectedEvent().start_time}.`;
+
+        const url = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
+        window.open(url, '_blank');
+    }
+
     private _toInputDateTime(date: Date): string {
         const year = date.getFullYear();
         const month = `${date.getMonth() + 1}`.padStart(2, '0');

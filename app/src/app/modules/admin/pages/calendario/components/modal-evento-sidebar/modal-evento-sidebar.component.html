@@ -584,11 +584,25 @@
                                 >
                                     PHONE NUMBER
                                 </div>
-                                <div class="text-gray-900">
-                                    {{
-                                        selectedEvent().patient.phone ||
-                                            '+1 (555) 000-0000'
-                                    }}
+                                <div class="flex items-center gap-2 text-gray-900">
+                                    <span>
+                                        {{
+                                            selectedEvent().patient.phone ||
+                                                '+1 (555) 000-0000'
+                                        }}
+                                    </span>
+                                    <button
+                                        *ngIf="selectedEvent().patient.phone"
+                                        mat-icon-button
+                                        class="h-6 w-6 text-green-600 hover:bg-green-50"
+                                        (click)="sendMessageToPatient()"
+                                        title="Enviar mensaje por WhatsApp"
+                                    >
+                                        <mat-icon
+                                            class="icon-size-4"
+                                            svgIcon="heroicons_outline:chat-bubble-left-right"
+                                        ></mat-icon>
+                                    </button>
                                 </div>
                             </div>
                             <div>

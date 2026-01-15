@@ -20,7 +20,7 @@ import {
     transition,
     trigger,
 } from '@angular/animations';
-import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
@@ -51,6 +51,7 @@ import { SidebarRegistroComponent } from './components/sidebar-registro/sidebar-
         ModalDetalleComponent,
         ModalEventoSidebarComponent,
         SidebarRegistroComponent,
+        FormsModule,
     ],
     templateUrl: './calendario.component.html',
 
@@ -83,6 +84,21 @@ import { SidebarRegistroComponent } from './components/sidebar-registro/sidebar-
                 ]),
             ]),
         ]),
+        trigger('popoverAnimation', [
+            transition(':enter', [
+                style({ opacity: 0, transform: 'scale(0.95)' }),
+                animate(
+                    '100ms ease-out',
+                    style({ opacity: 1, transform: 'scale(1)' })
+                ),
+            ]),
+            transition(':leave', [
+                animate(
+                    '75ms ease-in',
+                    style({ opacity: 0, transform: 'scale(0.95)' })
+                ),
+            ]),
+        ]),
     ],
     changeDetection: ChangeDetectionStrategy.Default,
 })
@@ -94,6 +110,10 @@ export class CalendarioComponent implements OnInit, OnDestroy {
 
     currentView: 'day' | 'week' | 'month' = 'week';
     currentDate: Date = new Date();
+
+    // Message popup state
+    activeMessageEventId: string | null = null;
+    customMessage: string = '';
 
     dentistAvailability = {
         availableDays: [0, 1, 2, 3, 4, 5, 6], // Lunes a Viernes
@@ -766,6 +786,36 @@ export class CalendarioComponent implements OnInit, OnDestroy {
             this._toggleBodyScroll(false);
         }
         this.selectedEvent = null;
+    }
+
+    toggleMessageInput(eventId: string, event: Event) {
+        event.stopPropagation();
+        if (this.activeMessageEventId === eventId) {
+            this.activeMessageEventId = null;
+            this.customMessage = '';
+        } else {
+            this.activeMessageEventId = eventId;
+            this.customMessage = '';
+        }
+    }
+
+    sendCustomMessage(appointment: Appointment) {
+        if (!appointment.patient.phone) return;
+        const cleanPhone = appointment.patient.phone.replace(/[^\d+]/g, '');
+        const message =
+            this.customMessage ||
+            `Hola ${appointment.patient.name}, le escribimos de Dental Care acerca de su cita programada para el ${appointment.start_time}.`;
+
+        const url = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
+        window.open(url, '_blank');
+        this.activeMessageEventId = null;
+        this.customMessage = '';
+    }
+
+    closeMessageInput(event: Event) {
+        event.stopPropagation();
+        this.activeMessageEventId = null;
+        this.customMessage = '';
     }
 
     private _toggleBodyScroll(disable: boolean): void {
