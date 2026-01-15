@@ -34,7 +34,7 @@
                     </button>
                 </div>
                 <div class="flex-1 space-y-4 overflow-y-auto p-4">
-                    @if (activeView === 'habits') {
+                    <div [style.display]="activeView === 'habits' ? 'block' : 'none'">
                         <!-- Mock Content -->
                         <div class="rounded-xl bg-gray-50 p-4">
                             <div class="flex items-start gap-3">
@@ -106,11 +106,51 @@
                                 </div>
                             </div>
                         </div>
-                    } @else if (activeView === 'odontogram') {
-                        <app-odontograma-sidebar></app-odontograma-sidebar>
-                    } @else {
-                        <upload-archivo (uploadAdjuntos)="uploadFiles($event)"></upload-archivo>
-                    }
+                    </div>
+                    <div [style.display]="activeView === 'odontogram' ? 'block' : 'none'">
+                        <app-odontograma-sidebar [(selectedTeeth)]="teethSelection"></app-odontograma-sidebar>
+                    </div>
+                    <div [style.display]="activeView === 'uploads' ? 'block' : 'none'">
+                        <upload-archivo (filesUploaded)="uploadFiles($event)"></upload-archivo>
+                    </div>
+                    <div [style.display]="activeView === 'finish' ? 'block' : 'none'">
+                        <div class="space-y-4 rounded-xl bg-gray-50 p-4">
+                             <div class="mb-2 rounded-lg bg-blue-50 p-3 text-sm text-blue-700">
+                                 <p class="font-bold">Finalizando Cita</p>
+                                 <p>Por favor complete el registro médico para cerrar la cita.</p>
+                             </div>
+
+                             <div>
+                                <label class="mb-1 block text-sm font-medium text-gray-700">Diagnóstico <span class="text-red-500">*</span></label>
+                                <textarea [(ngModel)]="finishForm.diagnosis" rows="3" class="w-full rounded-lg border border-gray-200 p-2 text-sm focus:border-blue-500 focus:outline-none" placeholder="Diagnóstico principal..."></textarea>
+                             </div>
+
+                             <div>
+                                <label class="mb-1 block text-sm font-medium text-gray-700">Tratamiento Realizado <span class="text-red-500">*</span></label>
+                                <textarea [(ngModel)]="finishForm.treatment" rows="3" class="w-full rounded-lg border border-gray-200 p-2 text-sm focus:border-blue-500 focus:outline-none" placeholder="Procedimientos realizados..."></textarea>
+                             </div>
+                             
+                             <div>
+                                <label class="mb-1 block text-sm font-medium text-gray-700">Receta / Medicamentos</label>
+                                <textarea [(ngModel)]="finishForm.medications" rows="2" class="w-full rounded-lg border border-gray-200 p-2 text-sm focus:border-blue-500 focus:outline-none" placeholder="Medicamentos recetados..."></textarea>
+                             </div>
+
+                             <div>
+                                <label class="mb-1 block text-sm font-medium text-gray-700">Notas Adicionales</label>
+                                <textarea [(ngModel)]="finishForm.notes" rows="2" class="w-full rounded-lg border border-gray-200 p-2 text-sm focus:border-blue-500 focus:outline-none" placeholder="Notas internas..."></textarea>
+                             </div>
+
+                             <button 
+                                mat-raised-button 
+                                color="primary" 
+                                class="w-full !rounded-xl !py-6"
+                                (click)="saveMedicalRecord()" 
+                                [disabled]="isSavingHistory"
+                             >
+                                {{ isSavingHistory ? 'Guardando...' : 'Guardar y Finalizar' }}
+                             </button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -166,6 +206,19 @@
                             svgIcon="heroicons_outline:document-text"
                         ></mat-icon>
                     </button>
+                    <button
+                        (click)="setView('finish')"
+                        class="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-gray-400 shadow-sm transition-colors hover:text-blue-600"
+                        [ngClass]="{
+                            'text-blue-600 ring-2 ring-blue-100':
+                                isExpanded && activeView === 'finish',
+                        }"
+                    >
+                        <mat-icon
+                            class="icon-size-5"
+                            svgIcon="heroicons_outline:check-circle"
+                        ></mat-icon>
+                    </button>
                 </div>
             </div>
 
@@ -190,8 +243,9 @@
                     <div class="flex items-center gap-2">
                         <button
                             mat-icon-button
-                            class="text-gray-400 hover:text-blue-600"
+                            class="text-gray-400 hover:text-blue-600 disabled:opacity-30"
                             (click)="startEdit()"
+                            [disabled]="isFinalized"
                         >
                             <mat-icon
                                 svgIcon="heroicons_outline:pencil"
@@ -242,7 +296,7 @@
                                     class="flex-1 text-sm font-medium text-gray-800"
                                     [value]="selectedEvent().status"
                                     (valueChange)="changeStatus($event)"
-                                    [disabled]="updatingStatus"
+                                    [disabled]="updatingStatus || isFinalized"
                                     disableOptionCentering
                                     panelClass="status-select-panel"
                                 >
@@ -407,9 +461,9 @@
                                 </div>
                             </div>
                             <button
-                                class="rounded-lg border border-gray-200 px-3 py-1.5 text-sm font-medium text-blue-600 hover:bg-blue-50"
+                                class="rounded-lg border border-gray-200 px-3 py-1.5 text-sm font-medium text-blue-600 hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed"
                                 (click)="rescheduleMode ? cancelReschedule() : startReschedule()"
-                                [disabled]="rescheduling"
+                                [disabled]="rescheduling || isFinalized"
                             >
                                 {{ rescheduleMode ? 'Cancelar' : 'Editar' }}
                             </button>
@@ -589,13 +643,14 @@
                 >
                     <button
                         (click)="cancelAppointment()"
-                        class="rounded-xl border border-red-200 bg-white px-6 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50"
+                        [disabled]="isFinalized"
+                        class="rounded-xl border border-red-200 bg-white px-6 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         Cancel
                     </button>
                     <button
-                        class="rounded-xl border border-gray-200 bg-white px-6 py-2.5 text-sm font-medium text-blue-600 hover:bg-blue-50"
-                        [disabled]="rescheduling"
+                        class="rounded-xl border border-gray-200 bg-white px-6 py-2.5 text-sm font-medium text-blue-600 hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                        [disabled]="rescheduling || isFinalized"
                         (click)="rescheduleMode ? confirmReschedule() : startReschedule()"
                     >
                         {{ rescheduleMode ? 'Guardar cambios' : 'Reprogramar' }}

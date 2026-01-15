@@ -38,6 +38,6 @@ export class MedicalAttachment {
   })
   updated_at: Date;
 
-  @ManyToOne(() => MedicalHistory, (medical) => medical.id, { cascade: true })
+  @ManyToOne(() => MedicalHistory, (medical) => medical.attachments)
   medical: MedicalHistory;
 }

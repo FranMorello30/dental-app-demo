@@ -15,6 +15,9 @@ export class MedicalAlert {
   @Column({ type: 'text' })
   severity: string;
 
+  @Column({ type: 'text', nullable: true })
+  surgeries: string;
+
   @Column('bool', {
     default: false,
   })
@@ -35,6 +38,8 @@ export class MedicalAlert {
   })
   updated_at: Date;
 
-  @ManyToOne(() => Patient, (patient) => patient.id, { cascade: true })
+  @ManyToOne(() => Patient, (patient) => patient.medical_alerts, {
+    onDelete: 'CASCADE',
+  })
   patient: Patient;
 }

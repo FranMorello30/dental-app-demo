@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 interface Tooth {
@@ -20,11 +20,8 @@ interface Condition {
     templateUrl: './odontograma-sidebar.component.html',
 })
 export class OdontogramaSidebarComponent {
-    selectedTeeth: Record<string, string> = {
-        // '21': 'blue',
-        // '22': 'blue',
-        // '18': 'blue',
-    };
+    @Input() selectedTeeth: Record<string, string> = {};
+    @Output() selectedTeethChange = new EventEmitter<Record<string, string>>();
 
     currentCondition: string = 'blue';
 
@@ -39,16 +36,16 @@ export class OdontogramaSidebarComponent {
 
     handleToothClick(toothId: string) {
         console.log({ toothId, condicion: this.currentCondition });
+        const newState = { ...this.selectedTeeth };
+
         if (this.selectedTeeth[toothId] === this.currentCondition) {
-            const newState = { ...this.selectedTeeth };
             delete newState[toothId];
-            this.selectedTeeth = newState;
         } else {
-            this.selectedTeeth = {
-                ...this.selectedTeeth,
-                [toothId]: this.currentCondition,
-            };
+            newState[toothId] = this.currentCondition;
         }
+
+        this.selectedTeeth = newState;
+        this.selectedTeethChange.emit(this.selectedTeeth);
     }
 
     getToothFill(toothId: string) {
@@ -57,6 +54,7 @@ export class OdontogramaSidebarComponent {
 
     clearAll() {
         this.selectedTeeth = {};
+        this.selectedTeethChange.emit(this.selectedTeeth);
     }
 
     upperTeeth: Tooth[] = [

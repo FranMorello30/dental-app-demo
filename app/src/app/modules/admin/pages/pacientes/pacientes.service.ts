@@ -20,4 +20,10 @@ export class PacienteService {
     createPatient(patient: Partial<Paciente>): Observable<Paciente> {
         return this._http.post<Paciente>(`${this.baseUrl}/patients`, patient);
     }
+
+    uploadFile(file: File): Observable<any> {
+        const formData = new FormData();
+        formData.append('file', file);
+        return this._http.post(`${this.baseUrl}/uploads`, formData);
+    }
 }

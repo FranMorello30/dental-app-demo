@@ -1,6 +1,14 @@
-import { Dentist } from 'src/modules/odontologos/entities/dentist.entity';
-import { Patient } from 'src/modules/patients/entities/patient.entity';
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  OneToMany,
+} from 'typeorm';
+import { TreatedTeeth } from './treated_teeth.entity';
+import { MedicalAttachment } from './medical_attachment.entity';
+import { Dentist } from '../../odontologos/entities/dentist.entity';
+import { Patient } from '../../patients/entities/patient.entity';
 
 @Entity({ name: 'medical_history' })
 export class MedicalHistory {
@@ -42,9 +50,17 @@ export class MedicalHistory {
   })
   updated_at: Date;
 
-  @ManyToOne(() => Dentist, (dentist) => dentist.id, { cascade: true })
+  @ManyToOne(() => Dentist)
   dentist: Dentist;
 
-  @ManyToOne(() => Patient, (patient) => patient.id, { cascade: true })
+  @ManyToOne(() => Patient)
   patient: Patient;
+
+  @OneToMany(() => MedicalAttachment, (attachment) => attachment.medical, {
+    cascade: true,
+  })
+  attachments: MedicalAttachment[];
+
+  @OneToMany(() => TreatedTeeth, (tooth) => tooth.medical, { cascade: true })
+  treated_teeth: TreatedTeeth[];
 }

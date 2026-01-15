@@ -32,6 +32,6 @@ export class TreatedTeeth {
   })
   updated_at: Date;
 
-  @ManyToOne(() => MedicalHistory, (medical) => medical.id, { cascade: true })
+  @ManyToOne(() => MedicalHistory, (medical) => medical.treated_teeth)
   medical: MedicalHistory;
 }

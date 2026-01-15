@@ -1,0 +1,2 @@
+// Missing view implementation in modal-evento-sidebar
+// I will add a new view 'finish' to the sidebar

@@ -1,22 +1,84 @@
-import { Injectable } from '@nestjs/common';
 import { CreateMedicalHistoryDto } from './dto/create-medical_history.dto';
-import { UpdateMedicalHistoryDto } from './dto/update-medical_history.dto';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { DeepPartial, Repository } from 'typeorm';
+import { MedicalHistory } from './entities/medical_history.entity';
+import { TreatedTeeth } from './entities/treated_teeth.entity';
+import { MedicalAttachment } from './entities/medical_attachment.entity';
+import { Appointment } from '../appointments/entities/appointment.entity';
 
 @Injectable()
 export class MedicalHistoriesService {
-  create(createMedicalHistoryDto: CreateMedicalHistoryDto) {
-    return 'This action adds a new medicalHistory';
+  constructor(
+    @InjectRepository(MedicalHistory)
+    private readonly medicalHistoryRepository: Repository<MedicalHistory>,
+    @InjectRepository(Appointment)
+    private readonly appointmentRepository: Repository<Appointment>,
+  ) {}
+
+  async create(createMedicalHistoryDto: CreateMedicalHistoryDto) {
+    const { teeth, attachments, appointmentId, ...historyData } =
+      createMedicalHistoryDto;
+
+    // Create related entities
+    const treatedTeeth: DeepPartial<TreatedTeeth>[] = [];
+    if (teeth && teeth.length > 0) {
+      teeth.forEach((tooth) => {
+        treatedTeeth.push({
+          tooth_number: tooth.tooth_number,
+          treatment: tooth.treatment,
+        });
+      });
+    }
+
+    const medAttachments: DeepPartial<MedicalAttachment>[] = [];
+    if (attachments && attachments.length > 0) {
+      attachments.forEach((file) => {
+        medAttachments.push({
+          name: file.nombre,
+          // original_name: file.nombreOriginal, // Check entity if fields match
+          file_type: 'unknown',
+          file_path: file.ruta,
+          file_size: file.size,
+        });
+      });
+    }
+
+    // Create main entity
+    const medicalHistory = this.medicalHistoryRepository.create({
+      ...historyData,
+      notes: historyData.notes ?? '', // Ensure notes is string
+      dentist: { id: historyData.dentistId },
+      patient: { id: historyData.patientId },
+      treated_teeth: treatedTeeth,
+      attachments: medAttachments,
+    });
+
+    const savedHistory =
+      await this.medicalHistoryRepository.save(medicalHistory);
+
+    // If linked to an appointment, close it
+    if (appointmentId) {
+      await this.appointmentRepository.update(appointmentId, {
+        status: () => `'Finalizada'`,
+      });
+    }
+
+    return savedHistory;
   }
 
   findAll() {
-    return `This action returns all medicalHistories`;
+    return this.medicalHistoryRepository.find({
+      relations: ['dentist', 'patient', 'treated_teeth', 'attachments'],
+      where: { is_deleted: false },
+    });
   }
 
   findOne(id: number) {
     return `This action returns a #${id} medicalHistory`;
   }
 
-  update(id: number, updateMedicalHistoryDto: UpdateMedicalHistoryDto) {
+  update(id: number, updateMedicalHistoryDto: any) {
     return `This action updates a #${id} medicalHistory`;
   }
 

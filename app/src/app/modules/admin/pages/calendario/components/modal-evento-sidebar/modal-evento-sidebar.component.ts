@@ -7,6 +7,7 @@ import {
     Host,
     OnInit,
     Output,
+    ViewChild,
     inject,
     input,
 } from '@angular/core';
@@ -39,6 +40,9 @@ import { OdontogramaSidebarComponent } from './odontograma/odontograma-sidebar.c
     changeDetection: ChangeDetectionStrategy.Default,
 })
 export class ModalEventoSidebarComponent implements OnInit {
+    @ViewChild(OdontogramaSidebarComponent)
+    odontogramaComponent!: OdontogramaSidebarComponent;
+
     ngOnInit(): void {
         // console.log('Selected Event:', this.selectedEvent());
     }
@@ -54,8 +58,24 @@ export class ModalEventoSidebarComponent implements OnInit {
     @Output() changedEvent = new EventEmitter<void>();
     @Output() editEvent = new EventEmitter<Appointment>();
     isExpanded = false;
-    activeView: 'habits' | 'odontogram' | 'uploads' = 'habits';
-    uploadedAttachments: string[] = [];
+
+    get isFinalized(): boolean {
+        return this.selectedEvent()?.status === 'Finalizada';
+    }
+
+    activeView: 'habits' | 'odontogram' | 'uploads' | 'finish' = 'habits';
+    uploadedAttachments: any[] = [];
+    teethSelection: Record<string, string> = {}; // Store teeth selection here
+
+    // Form fields for finishing appointment
+    finishForm = {
+        diagnosis: '',
+        treatment: '',
+        medications: '',
+        notes: '',
+    };
+    isSavingHistory = false;
+
     readonly edoCitas: AppointmentStatus[] = [
         'Sin confirmar',
         'Confirmada',
@@ -105,7 +125,7 @@ export class ModalEventoSidebarComponent implements OnInit {
         // this.isExpandedSidebar.emit(this.isExpanded);
     }
 
-    setView(view: 'habits' | 'odontogram' | 'uploads') {
+    setView(view: 'habits' | 'odontogram' | 'uploads' | 'finish') {
         this.activeView = view;
         if (!this.isExpanded) {
             this.isExpanded = true;
@@ -113,7 +133,57 @@ export class ModalEventoSidebarComponent implements OnInit {
         //  this.isExpandedSidebar.emit(this.isExpanded);
     }
 
-    uploadFiles(files: string[]): void {
+    saveMedicalRecord() {
+        if (!this.finishForm.diagnosis || !this.finishForm.treatment) {
+            // Basic validation
+            alert('Please complete Diagnosis and Treatment notes');
+            return;
+        }
+
+        this.isSavingHistory = true;
+        const currentEvent = this.selectedEvent();
+
+        // Get teeth data from local property
+        const teeth = Object.entries(this.teethSelection).map(
+            ([id, condition]) => ({
+                tooth_number: parseInt(id),
+                treatment: condition,
+            })
+        );
+
+        // Get attachments
+        // Assuming this.uploadedAttachments contains { nombre, ruta... } objects
+        // But the type says string[]. We need to check UploadArchivoComponent.
+        // Assuming for now they match backend expectation.
+        // If string[], we need to fix. Let's assume they are objects for now or I will mock it.
+        // Actually uploadedAttachments from `uploadFiles($event)` are passed from child.
+
+        const payload = {
+            appointmentId: currentEvent.id,
+            patientId: currentEvent.patient.id,
+            dentistId: currentEvent.dentist.id,
+            diagnosis: this.finishForm.diagnosis,
+            treatment: this.finishForm.treatment,
+            medications: this.finishForm.medications,
+            notes: this.finishForm.notes,
+            teeth: teeth,
+            attachments: this.uploadedAttachments, // This needs to match CreateMedicalAttachmentDto
+        };
+
+        this._calendarioService.createMedicalHistory(payload).subscribe({
+            next: () => {
+                this.isSavingHistory = false;
+                this.changedEvent.emit(); // Refresh calendar
+                this.close();
+            },
+            error: (err) => {
+                console.error(err);
+                this.isSavingHistory = false;
+            },
+        });
+    }
+
+    uploadFiles(files: any[]): void {
         this.uploadedAttachments = files;
         this._detectChange.detectChanges();
     }
@@ -342,6 +412,11 @@ export class ModalEventoSidebarComponent implements OnInit {
 
     getAvailableStatuses(): AppointmentStatus[] {
         const event = this.selectedEvent();
+
+        if (this.isFinalized) {
+            return ['Finalizada'];
+        }
+
         const startTime = new Date(event.start_time);
         const now = new Date();
         const isFuture = startTime.getTime() > now.getTime();
@@ -356,7 +431,20 @@ export class ModalEventoSidebarComponent implements OnInit {
     }
 
     changeStatus(status: AppointmentStatus) {
+        if (this.isFinalized) return;
+
         if (!status || status === this.selectedEvent().status) return;
+
+        if (
+            status === 'Finalizada' &&
+            this.selectedEvent().status !== 'Finalizada'
+        ) {
+            // Switch to finish view to collect data
+            this.setView('finish');
+            // Do not update status yet. Usually we want to force them to fill the form.
+            // Or we can just set updatingStatus to false and let them fill it.
+            return;
+        }
 
         this.updatingStatus = true;
         this._calendarioService

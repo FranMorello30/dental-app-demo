@@ -92,7 +92,7 @@ export class CalendarioComponent implements OnInit, OnDestroy {
     private readonly _detectChange = inject(ChangeDetectorRef);
     private readonly _calendarioService = inject(CalendarioService);
 
-    currentView: 'day' | 'week' | 'month' = 'month';
+    currentView: 'day' | 'week' | 'month' = 'week';
     currentDate: Date = new Date();
 
     dentistAvailability = {
@@ -193,6 +193,9 @@ export class CalendarioComponent implements OnInit, OnDestroy {
     public showMore = false;
     public moreDay: number = null;
 
+    public currentTime: Date = new Date();
+    private _timeInterval: any;
+
     ngOnInit(): void {
         // this.appointmentService.getAppointments().subscribe((appointments) => {
         //     this.appointments = appointments;
@@ -207,11 +210,20 @@ export class CalendarioComponent implements OnInit, OnDestroy {
             }
         });
 
+        // Actualizar la hora cada segundo
+        this._timeInterval = setInterval(() => {
+            this.currentTime = new Date();
+            this._detectChange.markForCheck();
+        }, 1000);
+
         // this.getFilteredEvents();
     }
 
     ngOnDestroy(): void {
         this._toggleBodyScroll(false);
+        if (this._timeInterval) {
+            clearInterval(this._timeInterval);
+        }
     }
     getCurrentDate() {
         this.currentDate = new Date();
@@ -506,6 +518,17 @@ export class CalendarioComponent implements OnInit, OnDestroy {
             left: '4px',
             right: '4px',
         };
+    }
+
+    getCurrentTimePosition(): string {
+        const now = this.currentTime;
+        const startHour = 8; // Hora de inicio del calendario
+        const currentHour = now.getHours();
+        const currentMinute = now.getMinutes();
+
+        const decimal = currentHour - startHour + currentMinute / 60;
+        const top = decimal * 80; // 80px por hora
+        return `${top}px`;
     }
 
     getEventDurationMinutes(event: Appointment): number {

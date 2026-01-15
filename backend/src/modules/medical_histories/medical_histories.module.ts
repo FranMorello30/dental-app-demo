@@ -5,14 +5,18 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { MedicalHistory } from './entities/medical_history.entity';
 import { MedicalAttachment } from './entities/medical_attachment.entity';
 import { TreatedTeeth } from './entities/treated_teeth.entity';
+import { Appointment } from '../appointments/entities/appointment.entity';
 
 @Module({
   controllers: [MedicalHistoriesController],
   providers: [MedicalHistoriesService],
   imports: [
-    TypeOrmModule.forFeature([MedicalHistory, MedicalAttachment, TreatedTeeth]),
-    // OdontologosModule,
-    // PatientsModule,
+    TypeOrmModule.forFeature([
+      MedicalHistory,
+      MedicalAttachment,
+      TreatedTeeth,
+      Appointment,
+    ]),
   ],
 })
 export class MedicalHistoriesModule {}

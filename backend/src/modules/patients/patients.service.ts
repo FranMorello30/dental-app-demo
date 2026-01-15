@@ -1,9 +1,11 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DeepPartial, Repository } from 'typeorm';
 import { Patient } from './entities/patient.entity';
 import { CreatePatientDto } from './dto/create-patient.dto';
 import { UpdatePatientDto } from './dto/update-patient.dto';
+import { MedicalAlert } from './entities/medical_alert.entity';
+import { PatientAttachment } from './entities/patient_attachment.entity';
 
 @Injectable()
 export class PatientsService {
@@ -13,8 +15,56 @@ export class PatientsService {
   ) {}
 
   async create(createPatientDto: CreatePatientDto): Promise<Patient> {
-    const patient = this.patientRepository.create(createPatientDto);
+    const { habits, history, attachments, ...patientData } = createPatientDto;
+
+    // Map history DTO to MedicalAlert entities
+    const medicalAlerts: DeepPartial<MedicalAlert>[] = [];
+    if (history) {
+      if (history.allergies) {
+        medicalAlerts.push(
+          this.createAlertObject('Alergia', history.allergies),
+        );
+      }
+      if (history.medications) {
+        medicalAlerts.push(
+          this.createAlertObject('Medicamento', history.medications),
+        );
+      }
+      if (history.illnesses) {
+        medicalAlerts.push(
+          this.createAlertObject('Enfermedad', history.illnesses),
+        );
+      }
+    }
+
+    // Map attachments DTO to PatientAttachment entities
+    const patientAttachments: DeepPartial<PatientAttachment>[] = [];
+    if (attachments && attachments.length > 0) {
+      for (const file of attachments) {
+        patientAttachments.push({
+          filename: file.nombre,
+          original_name: file.nombreOriginal,
+          size: file.size,
+          path: file.ruta,
+        });
+      }
+    }
+
+    const patient = this.patientRepository.create({
+      ...patientData,
+      habit: habits,
+      medical_alerts: medicalAlerts,
+      attachments: patientAttachments,
+    });
     return this.patientRepository.save(patient);
+  }
+
+  private createAlertObject(type: string, description: string) {
+    return {
+      type,
+      description,
+      severity: 'Medium', // Default severity
+    };
   }
 
   async findAll(): Promise<{ patients: Patient[] }> {

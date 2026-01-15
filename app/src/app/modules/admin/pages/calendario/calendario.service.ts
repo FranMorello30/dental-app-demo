@@ -76,4 +76,8 @@ export class CalendarioService {
             )
             .pipe(map((response) => response.message));
     }
+
+    createMedicalHistory(payload: any): Observable<any> {
+        return this._http.post(`${this.baseUrl}/medical-histories`, payload);
+    }
 }

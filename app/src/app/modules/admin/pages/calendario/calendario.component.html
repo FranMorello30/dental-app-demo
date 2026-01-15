@@ -369,6 +369,32 @@
                                 "
                                 (click)="onSlotClick(currentDate, $event)"
                             >
+                                @if (compareDate(currentDate)) {
+                                    <div
+                                        class="absolute z-20 w-full pointer-events-none"
+                                        [ngStyle]="{
+                                            top: getCurrentTimePosition()
+                                        }"
+                                    >
+                                        <div
+                                            class="relative w-full border-t-2 border-red-500"
+                                        >
+                                            <!-- Punto rojo al inicio -->
+                                            <div
+                                                class="absolute -left-1.5 -top-1.5 h-3 w-3 rounded-full bg-red-500"
+                                            ></div>
+                                            <!-- Etiqueta con la hora -->
+                                            <div
+                                                class="absolute -top-6 left-2 rounded shadow-sm bg-red-500 px-1.5 py-0.5 text-[10px] font-bold text-white z-30"
+                                            >
+                                                {{
+                                                    currentTime
+                                                        | date: 'hh:mm a'
+                                                }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
                                 @for (time of timeSlots; track $index) {
                                     <div
                                         class="h-20 border-b border-gray-100"
@@ -480,12 +506,38 @@
                                     [ngClass]="{
                                         'bg-gray-400/50': !isDayAvailable(date),
                                         'cursor-pointer hover:bg-blue-50/10':
-                                            isDayAvailable(date),
+                                            !isPastDate(date),
                                         'cursor-not-allowed':
-                                            !isDayAvailable(date),
+                                            isPastDate(date),
                                     }"
                                     (click)="onSlotClick(date, $event)"
                                 >
+                                    @if (compareDate(date)) {
+                                        <div
+                                            class="absolute z-20 w-full pointer-events-none"
+                                            [ngStyle]="{
+                                                top: getCurrentTimePosition()
+                                            }"
+                                        >
+                                            <div
+                                                class="relative w-full border-t-2 border-red-500"
+                                            >
+                                                <!-- Punto rojo al inicio -->
+                                                <div
+                                                    class="absolute -left-1.5 -top-1.5 h-3 w-3 rounded-full bg-red-500"
+                                                ></div>
+                                                <!-- Etiqueta con la hora -->
+                                                <div
+                                                    class="absolute -top-6 left-2 rounded shadow-sm bg-red-500 px-1.5 py-0.5 text-[10px] font-bold text-white z-30"
+                                                >
+                                                    {{
+                                                        currentTime
+                                                            | date: 'hh:mm a'
+                                                    }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
                                     @for (time of timeSlots; track $index) {
                                         <div
                                             class="h-20 border-b border-gray-100"
@@ -583,17 +635,11 @@
                                                             day
                                                         ),
                                                     'hover:bg-blue-50/30':
-                                                        isWeekDayAvailable(
-                                                            day
-                                                        ) && !getPastDay(day),
+                                                        !getPastDay(day),
                                                     'cursor-pointer':
-                                                        isWeekDayAvailable(
-                                                            day
-                                                        ) && !getPastDay(day),
+                                                        !getPastDay(day),
                                                     'cursor-not-allowed':
-                                                        !isWeekDayAvailable(
-                                                            day
-                                                        ),
+                                                        getPastDay(day),
                                                 }"
                                                 (click)="
                                                     isWeekDayAvailable(day) &&

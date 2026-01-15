@@ -1,3 +1,4 @@
+import { Type } from 'class-transformer';
 import {
   IsString,
   IsEmail,
@@ -5,7 +6,62 @@ import {
   IsDateString,
   IsNumber,
   IsBoolean,
+  ValidateNested,
 } from 'class-validator';
+
+export class CreateHabitDto {
+  @IsOptional()
+  @IsBoolean()
+  smoking?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  alcohol?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  bruxism?: boolean;
+
+  @IsOptional()
+  @IsString()
+  flossing?: string;
+
+  @IsOptional()
+  @IsString()
+  brushingFrequency?: string;
+}
+
+export class CreateHistoryDto {
+  @IsOptional()
+  @IsString()
+  allergies?: string;
+
+  @IsOptional()
+  @IsString()
+  medications?: string;
+
+  @IsOptional()
+  @IsString()
+  illnesses?: string;
+
+  @IsOptional()
+  @IsString()
+  surgeries?: string;
+}
+
+export class CreateAttachmentDto {
+  @IsString()
+  nombre: string;
+
+  @IsString()
+  nombreOriginal: string;
+
+  @IsNumber()
+  size: number;
+
+  @IsString()
+  ruta: string;
+}
 
 export class CreatePatientDto {
   @IsString()
@@ -49,4 +105,19 @@ export class CreatePatientDto {
   @IsOptional()
   @IsBoolean()
   is_deleted?: boolean;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => CreateHabitDto)
+  habits?: CreateHabitDto;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => CreateHistoryDto)
+  history?: CreateHistoryDto;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => CreateAttachmentDto)
+  attachments?: CreateAttachmentDto[];
 }

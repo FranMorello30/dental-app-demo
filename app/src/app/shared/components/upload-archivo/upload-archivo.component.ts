@@ -23,7 +23,10 @@ export class UploadArchivoComponent {
     private readonly _uploadService = inject(UploadService);
     private readonly _changeDetectorRef = inject(ChangeDetectorRef);
     public uploadAdjuntos = output<string[]>();
+    public filesUploaded = output<any[]>();
+
     public filePreviewUrls: string[] = [];
+    public uploadedFilesData: any[] = [];
     public archivos: any = [];
     subiendo = false;
     public capturarFile(event): void {
@@ -54,7 +57,9 @@ export class UploadArchivoComponent {
                     }) => {
                         this.subiendo = false;
                         this.filePreviewUrls.push(archivo.nombre);
+                        this.uploadedFilesData.push(archivo);
                         this.uploadAdjuntos.emit(this.filePreviewUrls);
+                        this.filesUploaded.emit(this.uploadedFilesData);
                         this._changeDetectorRef.detectChanges();
                     },
                     (err) => {}

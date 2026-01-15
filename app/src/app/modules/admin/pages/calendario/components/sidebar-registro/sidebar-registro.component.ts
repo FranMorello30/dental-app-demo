@@ -30,6 +30,7 @@ import { Dentist } from '@shared/models/dentist.model';
 import { Paciente } from '@shared/models/pacientes.model';
 import { Treatment } from '@shared/models/treatment.model';
 import { DefinicionesService } from '@shared/services/definiciones.service';
+import { forkJoin, of, switchMap } from 'rxjs';
 import { PacienteService } from '../../../pacientes/pacientes.service';
 import { AppointmentStatus } from '../../calendario.model';
 import { CalendarioService } from '../../calendario.service';
@@ -216,37 +217,58 @@ export class SidebarRegistroComponent implements OnInit, OnChanges, OnDestroy {
         this.isSaving = true;
         this._cdr.markForCheck();
 
-        // Prepare data - In a real app, habits and history would be separate entities
-        // For now, we will append them to notes or just log them as 'UI Mock'
-        const patientData = { ...this.patientForm.value };
-        const metaData = {
-            habits: this.patientForm.get('habits')?.value,
-            history: this.patientForm.get('history')?.value,
+        const formValue = this.patientForm.getRawValue();
+
+        // 1. Prepare base data
+        const patientData: any = {
+            ...formValue,
         };
-        // Hack: Append to notes so we don't lose the data
-        patientData.notes =
-            (patientData.notes || '') +
-            '\n\n[METADATA]\n' +
-            JSON.stringify(metaData);
+        // history and habits are already correctly structured in formValue for the updated backend DTO
 
-        this._pacienteService.createPatient(patientData as any).subscribe({
-            next: (response: any) => {
-                this.isSaving = false;
-                const pacienteCreado = response.data ? response.data : response;
+        // 2. Handle File Uploads (if any)
+        let uploadObservables = [];
+        if (this.uploadedFiles.length > 0) {
+            uploadObservables = this.uploadedFiles.map((file) =>
+                this._pacienteService.uploadFile(file)
+            );
+        }
 
-                this._loadPatients();
-                this.selectPaciente(pacienteCreado);
-                this.cancelNewPatient();
-                this.setView('form');
-                this._cdr.markForCheck();
-            },
-            error: (error) => {
-                this.isSaving = false;
-                this.currentErrors =
-                    error?.error?.message || 'Error al crear el paciente';
-                this._cdr.markForCheck();
-            },
-        });
+        // 3. Execute uploads then create patient
+        const action$ =
+            uploadObservables.length > 0 ? forkJoin(uploadObservables) : of([]);
+
+        action$
+            .pipe(
+                switchMap((uploadResults: any[]) => {
+                    // Map upload results to DTO structure
+                    // Backend returns { nombre, nombreOriginal, size, ruta }
+                    // DTO expects same or similar? Check CreateAttachmentDto
+                    if (uploadResults.length > 0) {
+                        patientData.attachments = uploadResults;
+                    }
+
+                    return this._pacienteService.createPatient(patientData);
+                })
+            )
+            .subscribe({
+                next: (response: any) => {
+                    this.isSaving = false;
+                    const pacienteCreado = response.data || response;
+
+                    this._loadPatients();
+                    this.selectPaciente(pacienteCreado);
+                    this.cancelNewPatient();
+                    this.setView('form');
+                    this.onRegisterPatient.emit();
+                    this._cdr.markForCheck();
+                },
+                error: (error) => {
+                    this.isSaving = false;
+                    this.currentErrors =
+                        error?.error?.message || 'Error al crear el paciente';
+                    this._cdr.markForCheck();
+                },
+            });
     }
 
     createAppointment(): void {
@@ -304,6 +326,12 @@ export class SidebarRegistroComponent implements OnInit, OnChanges, OnDestroy {
         this.showResults = false;
         this.searchControl.setValue('');
         this.showPatientsList = false;
+
+        if (this.showExtraSidebar) {
+            this.cancelNewPatient();
+        }
+
+        this.toggleExpand();
     }
 
     clearPaciente(): void {

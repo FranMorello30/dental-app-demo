@@ -1,9 +1,29 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  OneToOne,
+  OneToMany,
+} from 'typeorm';
+import { Habit } from './habit.entity';
+import { MedicalAlert } from './medical_alert.entity';
+import { PatientAttachment } from './patient_attachment.entity';
 
 @Entity({ name: 'patients' })
 export class Patient {
   @PrimaryGeneratedColumn('uuid')
   id: string;
+
+  @OneToOne(() => Habit, (habit) => habit.patient, { cascade: true })
+  habit: Habit;
+
+  @OneToMany(() => MedicalAlert, (alert) => alert.patient, { cascade: true })
+  medical_alerts: MedicalAlert[];
+
+  @OneToMany(() => PatientAttachment, (attachment) => attachment.patient, {
+    cascade: true,
+  })
+  attachments: PatientAttachment[];
 
   @Column({ type: 'varchar' })
   name: string;
