@@ -5,6 +5,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Appointment } from './entities/appointment.entity';
 import { OdontologosModule } from '../odontologos/odontologos.module';
 import { PatientsModule } from '../patients/patients.module';
+import { SocketModule } from 'src/socket/socket-ws.module';
 
 @Module({
   controllers: [AppointmentsController],
@@ -13,6 +14,7 @@ import { PatientsModule } from '../patients/patients.module';
     TypeOrmModule.forFeature([Appointment]),
     OdontologosModule,
     PatientsModule,
+    SocketModule,
   ],
 })
 export class AppointmentsModule {}

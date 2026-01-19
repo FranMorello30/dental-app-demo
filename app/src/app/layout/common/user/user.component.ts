@@ -15,6 +15,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { Router } from '@angular/router';
 import { Usuario } from '@shared/models/usuario.model';
+import { WebsocketService } from '@shared/services/websocket.service';
 import { UserService } from 'app/core/user/user.service';
 import { Subject, takeUntil } from 'rxjs';
 
@@ -37,7 +38,7 @@ export class UserComponent implements OnInit, OnDestroy {
     /* eslint-disable @typescript-eslint/naming-convention */
     static ngAcceptInputType_showAvatar: BooleanInput;
     /* eslint-enable @typescript-eslint/naming-convention */
-
+    public wsConnected = false;
     @Input() showAvatar: boolean = true;
     user: Usuario;
 
@@ -49,7 +50,8 @@ export class UserComponent implements OnInit, OnDestroy {
     constructor(
         private _changeDetectorRef: ChangeDetectorRef,
         private _router: Router,
-        private _userService: UserService
+        private _userService: UserService,
+        private readonly _websocketService: WebsocketService
     ) {}
 
     // -----------------------------------------------------------------------------------------------------
@@ -67,6 +69,12 @@ export class UserComponent implements OnInit, OnDestroy {
                 this.user = user;
 
                 // Mark for check
+                this._changeDetectorRef.markForCheck();
+            });
+        this._websocketService.socketStatus$
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe((status) => {
+                this.wsConnected = status;
                 this._changeDetectorRef.markForCheck();
             });
     }

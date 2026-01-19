@@ -38,6 +38,9 @@ export class User {
   @Column({ type: 'char', length: 200 })
   avatar: string;
 
+  @Column({ type: 'char', length: 200 })
+  uid: string;
+
   @Column({ type: 'char', length: 20, nullable: false, default: 'OPERADOR' })
   rol: string;
 

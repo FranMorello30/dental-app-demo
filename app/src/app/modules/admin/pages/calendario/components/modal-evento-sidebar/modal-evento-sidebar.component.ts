@@ -79,7 +79,10 @@ export class ModalEventoSidebarComponent implements OnInit {
     readonly edoCitas: AppointmentStatus[] = [
         'Sin confirmar',
         'Confirmada',
+        'En espera',
         'En consulta',
+        'Ausente',
+        'Pendiente de pago',
         'Cancelada',
         'Finalizada',
         'Finalizada (Pendiente)',
@@ -397,8 +400,14 @@ export class ModalEventoSidebarComponent implements OnInit {
                 return 'bg-yellow-400';
             case 'Confirmada':
                 return 'bg-green-500';
+            case 'En espera':
+                return 'bg-teal-500';
             case 'En consulta':
                 return 'bg-purple-500';
+            case 'Ausente':
+                return 'bg-indigo-500';
+            case 'Pendiente de pago':
+                return 'bg-amber-500';
             case 'Cancelada':
                 return 'bg-red-500';
             case 'Finalizada':

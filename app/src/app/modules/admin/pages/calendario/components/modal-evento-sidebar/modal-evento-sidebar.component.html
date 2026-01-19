@@ -181,6 +181,19 @@
                         ></mat-icon>
                     </button>
                     <button
+                        (click)="setView('finish')"
+                        class="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-gray-400 shadow-sm transition-colors hover:text-blue-600"
+                        [ngClass]="{
+                            'text-blue-600 ring-2 ring-blue-100':
+                                isExpanded && activeView === 'finish',
+                        }"
+                    >
+                        <mat-icon
+                            class="icon-size-5"
+                            svgIcon="heroicons_outline:check-circle"
+                        ></mat-icon>
+                    </button>
+                    <button
                         (click)="setView('odontogram')"
                         class="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-gray-400 shadow-sm transition-colors hover:text-blue-600"
                         [ngClass]="{
@@ -206,19 +219,7 @@
                             svgIcon="heroicons_outline:document-text"
                         ></mat-icon>
                     </button>
-                    <button
-                        (click)="setView('finish')"
-                        class="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-gray-400 shadow-sm transition-colors hover:text-blue-600"
-                        [ngClass]="{
-                            'text-blue-600 ring-2 ring-blue-100':
-                                isExpanded && activeView === 'finish',
-                        }"
-                    >
-                        <mat-icon
-                            class="icon-size-5"
-                            svgIcon="heroicons_outline:check-circle"
-                        ></mat-icon>
-                    </button>
+                    
                 </div>
             </div>
 

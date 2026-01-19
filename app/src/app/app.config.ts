@@ -24,8 +24,19 @@ import { provideEnvironmentNgxMask } from 'ngx-mask';
 
 import { DatePipe, registerLocaleData } from '@angular/common';
 import localcl from '@angular/common/locales/es-CL';
+import { environment } from '@environments/environment';
+import { SocketIoConfig, provideSocketIo } from 'ngx-socket-io';
 
 registerLocaleData(localcl);
+
+const config: SocketIoConfig = {
+    url: environment.wsUrl,
+    options: {
+        extraHeaders: {
+            auth: sessionStorage.getItem('accessToken'),
+        },
+    },
+};
 
 export const appConfig: ApplicationConfig = {
     providers: [
@@ -37,7 +48,7 @@ export const appConfig: ApplicationConfig = {
             withInMemoryScrolling({ scrollPositionRestoration: 'enabled' }),
             withHashLocation()
         ),
-
+        provideSocketIo(config),
         // Material Date Adapter
 
         // {

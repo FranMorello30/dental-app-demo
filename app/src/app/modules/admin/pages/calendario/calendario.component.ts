@@ -27,6 +27,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatDrawer, MatSidenavModule } from '@angular/material/sidenav';
 import { Appointment } from '@shared/models/appointement.model';
 import { Dentist } from '@shared/models/dentist.model';
+import { WebsocketService } from '@shared/services/websocket.service';
 import { AppointmentStatus } from './calendario.model';
 import { CalendarioService } from './calendario.service';
 import { ModalDetalleComponent } from './components/modal-detalle/modal-detalle.component';
@@ -107,6 +108,7 @@ export class CalendarioComponent implements OnInit, OnDestroy {
 
     private readonly _detectChange = inject(ChangeDetectorRef);
     private readonly _calendarioService = inject(CalendarioService);
+    private readonly _websocketService = inject(WebsocketService);
 
     currentView: 'day' | 'week' | 'month' = 'week';
     currentDate: Date = new Date();
@@ -184,7 +186,10 @@ export class CalendarioComponent implements OnInit, OnDestroy {
     public edoCitas: AppointmentStatus[] = [
         'Sin confirmar',
         'Confirmada',
+        'En espera',
         'En consulta',
+        'Ausente',
+        'Pendiente de pago',
         'Cancelada',
         'Finalizada',
         'Finalizada (Pendiente)',
@@ -229,6 +234,16 @@ export class CalendarioComponent implements OnInit, OnDestroy {
                 this._getDentistAvailability(dentistId);
             }
         });
+
+        this._websocketService
+            .listen('change-status-appointment')
+            .subscribe((data) => {
+                console.log(
+                    'Socket event received: change-status-appointment',
+                    data
+                );
+                this.getAppointments();
+            });
 
         // Actualizar la hora cada segundo
         this._timeInterval = setInterval(() => {
@@ -645,8 +660,14 @@ export class CalendarioComponent implements OnInit, OnDestroy {
                 return 'bg-yellow-500';
             case 'Confirmada':
                 return 'bg-green-600';
+            case 'En espera':
+                return 'bg-teal-600';
             case 'En consulta':
                 return 'bg-purple-600';
+            case 'Ausente':
+                return 'bg-indigo-600';
+            case 'Pendiente de pago':
+                return 'bg-amber-500';
             case 'Cancelada':
                 return 'bg-red-600';
             case 'Finalizada':

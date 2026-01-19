@@ -2,6 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { environment } from '@environments/environment';
 import { Usuario } from '@shared/models/usuario.model';
+import { WebsocketService } from '@shared/services/websocket.service';
 
 import { UserService } from 'app/core/user/user.service';
 import { catchError, Observable, of, switchMap } from 'rxjs';
@@ -12,7 +13,7 @@ export class AuthService {
     private _authenticated: boolean = false;
     private _httpClient = inject(HttpClient);
     private _userService = inject(UserService);
-
+    private readonly _websocketService = inject(WebsocketService);
     // -----------------------------------------------------------------------------------------------------
     // @ Accessors
     // -----------------------------------------------------------------------------------------------------
@@ -84,6 +85,7 @@ export class AuthService {
                     this.accessToken = usuario.token;
                     this._authenticated = true;
                     this._userService.user = usuario;
+                    this._websocketService.conectarSocket();
                     return of(usuario);
                 })
             );
@@ -113,6 +115,7 @@ export class AuthService {
      * Sign out
      */
     signOut(): Observable<any> {
+        this._websocketService.desconectarSocket(); // Desconectar WebSocket
         // Remove the access token from the local storage
         sessionStorage.removeItem('accessToken');
         // Set the authenticated flag to false

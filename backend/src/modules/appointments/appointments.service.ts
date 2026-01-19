@@ -4,12 +4,14 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, LessThanOrEqual } from 'typeorm';
+import { Cron, CronExpression } from '@nestjs/schedule';
 import { Appointment, AppointmentStatus } from './entities/appointment.entity';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { UpdateAppointmentDto } from './dto/update-appointment.dto';
 import { Dentist } from 'src/modules/odontologos/entities/dentist.entity';
 import { Patient } from 'src/modules/patients/entities/patient.entity';
+import { SocketService } from 'src/socket/socket-ws.service';
 
 @Injectable()
 export class AppointmentsService {
@@ -20,6 +22,7 @@ export class AppointmentsService {
     private readonly dentistRepository: Repository<Dentist>,
     @InjectRepository(Patient)
     private readonly patientRepository: Repository<Patient>,
+    private readonly socketService: SocketService,
   ) {}
 
   async create(
@@ -42,7 +45,8 @@ export class AppointmentsService {
       patient,
       status: createAppointmentDto.status || AppointmentStatus.UNCONFIRMED,
     });
-    await this.appointmentRepository.save(appointment);
+    const savedAppointment = await this.appointmentRepository.save(appointment);
+    this.socketService.emitEvent('change-status-appointment', savedAppointment);
 
     return { message: 'Appointment created successfully' };
   }
@@ -78,7 +82,13 @@ export class AppointmentsService {
   ): Promise<Appointment> {
     const appointment = await this.findOne(id);
     Object.assign(appointment, updateAppointmentDto);
-    return this.appointmentRepository.save(appointment);
+    const updatedAppointment =
+      await this.appointmentRepository.save(appointment);
+    this.socketService.emitEvent(
+      'change-status-appointment',
+      updatedAppointment,
+    );
+    return updatedAppointment;
   }
 
   async changeStatus(
@@ -87,7 +97,12 @@ export class AppointmentsService {
   ): Promise<{ message: string }> {
     const appointment = await this.findOne(id);
     appointment.status = status;
-    await this.appointmentRepository.save(appointment);
+    const updatedAppointment =
+      await this.appointmentRepository.save(appointment);
+    this.socketService.emitEvent(
+      'change-status-appointment',
+      updatedAppointment,
+    );
     return { message: 'Appointment status updated successfully' };
   }
 
@@ -95,7 +110,13 @@ export class AppointmentsService {
     const appointment = await this.findOne(id);
     appointment.status = AppointmentStatus.CANCELED;
     appointment.cancellation_reason = reason;
-    return this.appointmentRepository.save(appointment);
+    const updatedAppointment =
+      await this.appointmentRepository.save(appointment);
+    this.socketService.emitEvent(
+      'change-status-appointment',
+      updatedAppointment,
+    );
+    return updatedAppointment;
   }
 
   async reschedule(
@@ -137,5 +158,36 @@ export class AppointmentsService {
       },
       relations: ['dentist', 'patient'],
     });
+  }
+
+  @Cron(CronExpression.EVERY_MINUTE)
+  async checkScheduledAppointments() {
+    const now = new Date();
+    const absenceThreshold = new Date(now.getTime() - 20 * 60 * 1000); // 20 minutes after scheduled start
+
+    // Mark confirmed appointments as absent if they have not been checked in within 20 minutes of the start time
+    const appointmentsMarkedAbsent = await this.appointmentRepository.find({
+      where: {
+        status: AppointmentStatus.CONFIRMED,
+        start_time: LessThanOrEqual(absenceThreshold),
+        is_deleted: false,
+      },
+    });
+
+    if (appointmentsMarkedAbsent.length > 0) {
+      console.log(
+        `[Cron] Found ${appointmentsMarkedAbsent.length} appointments still CONFIRMED 20+ minutes after start. Updating to AUSENTE.`,
+      );
+
+      for (const appointment of appointmentsMarkedAbsent) {
+        appointment.status = AppointmentStatus.AUSENTE;
+      }
+
+      await this.appointmentRepository.save(appointmentsMarkedAbsent);
+      this.socketService.emitEvent(
+        'change-status-appointment',
+        appointmentsMarkedAbsent,
+      );
+    }
   }
 }

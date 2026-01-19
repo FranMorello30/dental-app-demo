@@ -7,7 +7,11 @@
         @if (!showAvatar || !user.avatar) {
             <mat-icon [svgIcon]="'heroicons_outline:user-circle'"></mat-icon>
         }
-        
+         @if(wsConnected){
+            <span class="absolute bottom-0 right-0 h-2 w-2 rounded-full bg-green-500"></span>
+        }@else {
+            <span class="absolute bottom-0 right-0 h-2 w-2 rounded-full bg-red-500"></span>
+        }
     </span>
 </button>
 

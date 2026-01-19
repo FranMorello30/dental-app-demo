@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ScheduleModule } from '@nestjs/schedule';
 import { AuthModule } from './modules/auth/auth.module';
 
 import { OdontologosModule } from './modules/odontologos/odontologos.module';
@@ -12,6 +13,7 @@ import { AppointmentsModule } from './modules/appointments/appointments.module';
 import { MedicalHistoriesModule } from './modules/medical_histories/medical_histories.module';
 import { TreatmentPlansModule } from './modules/treatment_plans/treatment_plans.module';
 import { UploadsModule } from './uploads/uploads.module';
+import { SocketModule } from './socket/socket-ws.module';
 
 @Module({
   imports: [
@@ -32,6 +34,7 @@ import { UploadsModule } from './uploads/uploads.module';
         };
       },
     }),
+    ScheduleModule.forRoot(),
 
     AuthModule,
     AppointmentsModule,
@@ -50,6 +53,7 @@ import { UploadsModule } from './uploads/uploads.module';
 
     //ReservacionesModule,
     UploadsModule,
+    SocketModule,
   ],
   controllers: [],
   providers: [ConfigService],

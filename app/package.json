@@ -37,6 +37,7 @@
         "ngx-color-picker": "^17.0.0",
         "ngx-mask": "^18.0.4",
         "ngx-quill": "26.0.1",
+        "ngx-socket-io": "^4.10.0",
         "npm": "^10.9.0",
         "perfect-scrollbar": "1.5.5",
         "quill": "2.0.2",

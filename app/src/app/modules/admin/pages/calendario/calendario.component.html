@@ -135,6 +135,22 @@
                             class="flex items-center gap-3 text-sm text-gray-600"
                         >
                             <div
+                                class="h-2.5 w-2.5 rounded-full bg-teal-500 shadow-sm ring-2 ring-teal-100"
+                            ></div>
+                            En espera
+                        </span>
+                        <span
+                            class="rounded-md bg-gray-100 px-2 py-0.5 text-sm font-semibold text-gray-900"
+                            >{{ totByStatus('En espera') }}</span
+                        >
+                    </div>
+                    <div
+                        class="group flex cursor-default items-center justify-between"
+                    >
+                        <span
+                            class="flex items-center gap-3 text-sm text-gray-600"
+                        >
+                            <div
                                 class="h-2.5 w-2.5 rounded-full bg-purple-500 shadow-sm ring-2 ring-purple-100"
                             ></div>
                             En consulta
@@ -142,6 +158,38 @@
                         <span
                             class="rounded-md bg-gray-100 px-2 py-0.5 text-sm font-semibold text-gray-900"
                             >{{ totByStatus('En consulta') }}</span
+                        >
+                    </div>
+                    <div
+                        class="group flex cursor-default items-center justify-between"
+                    >
+                        <span
+                            class="flex items-center gap-3 text-sm text-gray-600"
+                        >
+                            <div
+                                class="h-2.5 w-2.5 rounded-full bg-indigo-500 shadow-sm ring-2 ring-indigo-100"
+                            ></div>
+                            Ausente
+                        </span>
+                        <span
+                            class="rounded-md bg-gray-100 px-2 py-0.5 text-sm font-semibold text-gray-900"
+                            >{{ totByStatus('Ausente') }}</span
+                        >
+                    </div>
+                    <div
+                        class="group flex cursor-default items-center justify-between"
+                    >
+                        <span
+                            class="flex items-center gap-3 text-sm text-gray-600"
+                        >
+                            <div
+                                class="h-2.5 w-2.5 rounded-full bg-amber-500 shadow-sm ring-2 ring-amber-100"
+                            ></div>
+                            Pendiente de pago
+                        </span>
+                        <span
+                            class="rounded-md bg-gray-100 px-2 py-0.5 text-sm font-semibold text-gray-900"
+                            >{{ totByStatus('Pendiente de pago') }}</span
                         >
                     </div>
                     <div
@@ -432,7 +480,7 @@
                                         @if (activeMessageEventId === event.id) {
                                             <div 
                                                 @popoverAnimation
-                                                class="absolute left-full top-0 z-50 ml-2 w-64 cursor-default rounded-xl bg-white p-3 shadow-xl ring-1 ring-gray-200"
+                                                class="absolute left-0 top-full z-50 mt-2 w-64 cursor-default rounded-xl bg-white p-3 shadow-xl ring-1 ring-gray-200"
                                                 (click)="$event.stopPropagation()"
                                             >
                                                 <div class="mb-2 text-xs font-semibold text-gray-900">Mensaje para {{event.patient.name}}</div>
