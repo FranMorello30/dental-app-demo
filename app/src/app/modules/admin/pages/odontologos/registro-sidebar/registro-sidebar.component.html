@@ -1,0 +1,345 @@
+<div
+    class="fixed inset-0 z-50 flex justify-end bg-black/40 backdrop-blur-sm px-4 py-6 md:p-8"
+    (click)="onClose()"
+>
+    <div
+        class="sidebar-panel relative flex h-full w-160 max-w-full flex-col overflow-hidden rounded-2xl bg-white shadow-2xl"
+        (click)="$event.stopPropagation()"
+    >
+        <div class="flex items-center justify-between border-b border-gray-200 bg-gray-50/60 px-6 py-4">
+            <div>
+                <p class="text-xs font-semibold uppercase tracking-wide text-blue-600">
+                    Nuevo Odontólogo
+                </p>
+                <h2 class="text-xl font-bold text-gray-900">Completa los datos requeridos</h2>
+            </div>
+            <button
+                (click)="onClose()"
+                class="rounded-full p-2 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700"
+                type="button"
+                [disabled]="saving"
+            >
+                <mat-icon svgIcon="feather:x" class="h-5 w-5"></mat-icon>
+            </button>
+        </div>
+
+        <div class="border-b border-gray-200 bg-white px-6 py-4">
+            <div class="flex items-center justify-between">
+                @for (step of steps; track step.number) {
+                    <div class="flex flex-col items-center gap-2">
+                        <div
+                            class="flex h-8 w-8 items-center justify-center rounded-full border-2 transition-colors duration-200"
+                            [ngClass]="{
+                                'border-blue-600 bg-blue-600 text-white': currentStep >= step.number,
+                                'border-gray-300 text-gray-400': currentStep < step.number
+                            }"
+                        >
+                            @if (currentStep > step.number) {
+                                <mat-icon class="icon-size-4" svgIcon="feather:check"></mat-icon>
+                            } @else {
+                                <span class="text-xs font-bold">{{ step.number }}</span>
+                            }
+                        </div>
+                        <span
+                            class="text-[10px] font-medium uppercase"
+                            [ngClass]="currentStep >= step.number ? 'text-blue-600' : 'text-gray-400'"
+                        >
+                            {{ step.title }}
+                        </span>
+                    </div>
+                    @if ($index !== steps.length - 1) {
+                        <div class="mx-2 mb-4 flex-1 border-t border-gray-200"></div>
+                    }
+                }
+            </div>
+        </div>
+
+        <div class="custom-scrollbar flex-1 overflow-y-auto px-6 py-5">
+            <form [formGroup]="infoForm" class="space-y-6">
+                @if (currentStep === 1) {
+                    <div class="animate-in fade-in slide-in-from-right-4 duration-300 space-y-4 rounded-xl bg-white p-6 shadow-sm border border-gray-100">
+                        <div>
+                            <label class="mb-1.5 block text-sm font-semibold text-gray-700">Nombre Completo <span class="text-red-500">*</span></label>
+                            <div class="relative">
+                                <mat-icon class="absolute left-3 top-1/2 icon-size-5 -translate-y-1/2 text-gray-400" svgIcon="heroicons_outline:user"></mat-icon>
+                                <input formControlName="name" class="w-full rounded-lg border border-gray-200 bg-gray-50 py-2.5 pl-10 pr-4 text-gray-900 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100 transition-all placeholder:text-gray-400">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="mb-1.5 block text-sm font-semibold text-gray-700">Teléfono <span class="text-red-500">*</span></label>
+                                <input formControlName="phone" class="w-full rounded-lg border border-gray-200 bg-gray-50 py-2.5 px-4 text-gray-900 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100 transition-all" placeholder="Ej: +58 424-0000000">
+                            </div>
+                            <div>
+                                <label class="mb-1.5 block text-sm font-semibold text-gray-700">Email <span class="text-red-500">*</span></label>
+                                <input type="email" formControlName="email" class="w-full rounded-lg border border-gray-200 bg-gray-50 py-2.5 px-4 text-gray-900 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100 transition-all" placeholder="doctora@mail.com">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="mb-1.5 block text-sm font-semibold text-gray-700">Especialidad <span class="text-red-500">*</span></label>
+                                <input formControlName="specialty" class="w-full rounded-lg border border-gray-200 bg-gray-50 py-2.5 px-4 text-gray-900 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100 transition-all" placeholder="Ortodoncia">
+                            </div>
+                            <div>
+                                <label class="mb-1.5 block text-sm font-semibold text-gray-700">Nro. Identificación <span class="text-red-500">*</span></label>
+                                <input formControlName="nro_Id" class="w-full rounded-lg border border-gray-200 bg-gray-50 py-2.5 px-4 text-gray-900 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100 transition-all" placeholder="Solo números">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="mb-1.5 block text-sm font-semibold text-gray-700">Licencia <span class="text-red-500">*</span></label>
+                                <input formControlName="license_number" class="w-full rounded-lg border border-gray-200 bg-gray-50 py-2.5 px-4 text-gray-900 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100 transition-all" placeholder="COL-12345">
+                            </div>
+                            <div>
+                                <label class="mb-1.5 block text-sm font-semibold text-gray-700">Avatar (URL)</label>
+                                <input formControlName="avatar" class="w-full rounded-lg border border-gray-200 bg-gray-50 py-2.5 px-4 text-gray-900 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100 transition-all" placeholder="https://...">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="mb-1.5 block text-sm font-semibold text-gray-700">Notas</label>
+                            <textarea rows="3" formControlName="notes" class="w-full rounded-lg border border-gray-200 bg-gray-50 p-3 text-gray-900 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100 transition-all resize-none" placeholder="Observaciones"></textarea>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <mat-slide-toggle color="primary" formControlName="isActive">Activo</mat-slide-toggle>
+                        </div>
+                    </div>
+                }
+
+                @if (currentStep === 2) {
+                    <div class="animate-in fade-in slide-in-from-right-4 duration-300 space-y-4 rounded-xl bg-white p-6 shadow-sm border border-gray-100">
+                        <div>
+                            <p class="text-xs font-semibold uppercase text-gray-500">Servicios asignados</p>
+                            <p class="text-sm text-gray-600">Selecciona los servicios que ofrece el odontólogo.</p>
+                        </div>
+
+                        @if (specialties.length) {
+                            <div class="space-y-2">
+                                @for (specialty of specialties; track specialty.id; let i = $index) {
+                                    <label class="flex items-center gap-3 rounded-lg border border-gray-200 px-3 py-3 transition-colors hover:bg-gray-50 cursor-pointer">
+                                        <input
+                                            type="checkbox"
+                                            class="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-600"
+                                            [checked]="isSpecialtySelected(specialty.id)"
+                                            (change)="toggleSpecialty(specialty.id)"
+                                        />
+                                        <span class="text-gray-900">{{ specialty.name }}</span>
+                                    </label>
+                                }
+                            </div>
+                        }
+                        @else {
+                            <p class="text-sm text-gray-500">No hay servicios registrados. Agrega especialidades en el sistema para listarlas aquí.</p>
+                        }
+                    </div>
+                }
+
+                @if (currentStep === 3) {
+                    <div class="animate-in fade-in slide-in-from-right-4 duration-300 space-y-4 rounded-xl bg-white p-6 shadow-sm border border-gray-100">
+                        <div>
+                            <p class="text-xs font-semibold uppercase text-gray-500">Horario semanal</p>
+                            <p class="text-sm text-gray-600">Activa los días laborables y ajusta los horarios.</p>
+                        </div>
+
+                        <div class="space-y-3">
+                            @for (day of weekSchedule; track day.day_of_week; let i = $index) {
+                                <div class="flex flex-col gap-3 rounded-lg border p-3 shadow-sm"
+                                    [ngClass]="day.is_working_day ? 'border-blue-100 bg-blue-50/40' : 'border-gray-100 bg-white'">
+                                    <div class="flex items-center justify-between">
+                                    <div class="flex items-center gap-3">
+                                        <mat-slide-toggle
+                                            color="primary"
+                                            [checked]="day.is_working_day"
+                                            (change)="toggleWorkingDay(day)"
+                                        ></mat-slide-toggle>
+                                        <span class="font-semibold" [ngClass]="day.is_working_day ? 'text-gray-900' : 'text-gray-400'">{{ day.label }}</span>
+                                    </div>
+                                    <div class="flex items-center gap-2 text-sm" [ngClass]="day.is_working_day ? 'text-green-600' : 'text-gray-500'">
+                                        @if (day.is_working_day) {
+                                            <span>Activo</span>
+                                        }
+                                        @else {
+                                            <span>No trabaja este día</span>
+                                        }
+                                    </div>
+                                    </div>
+                                    @if (day.is_working_day) {
+                                        <div class="grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4">
+                                            <div>
+                                                <label class="mb-1 block text-sm font-semibold text-gray-700">Inicio</label>
+                                                <input
+                                                    type="time"
+                                                    class="w-full rounded-lg border border-gray-200 bg-gray-50 py-2.5 px-3 text-gray-900 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100 transition-all"
+                                                    [(ngModel)]="day.start_time"
+                                                    name="start_time_{{i}}"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label class="mb-1 block text-sm font-semibold text-gray-700">Fin</label>
+                                                <input
+                                                    type="time"
+                                                    class="w-full rounded-lg border border-gray-200 bg-gray-50 py-2.5 px-3 text-gray-900 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100 transition-all"
+                                                    [(ngModel)]="day.end_time"
+                                                    name="end_time_{{i}}"
+                                                />
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+
+                @if (currentStep === 4) {
+                    <div class="animate-in fade-in slide-in-from-right-4 duration-300 space-y-4 rounded-xl bg-white p-6 shadow-sm border border-gray-100">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-xs font-semibold uppercase text-gray-500">Días libres / Ausencias</p>
+                                <p class="text-sm text-gray-600">Fechas en las que no estará disponible.</p>
+                            </div>
+                            <button
+                                type="button"
+                                (click)="openDayOffModal()"
+                                class="rounded-lg bg-blue-600 px-3 py-2 text-sm font-medium text-white shadow-sm transition-all hover:bg-blue-700"
+                            >
+                                Añadir día libre
+                            </button>
+                        </div>
+                        @if (unavailabilities.length) {
+                            <div class="space-y-2">
+                                @for (item of unavailabilities; track item; let i = $index) {
+                                    <div class="flex items-center justify-between rounded-lg border border-gray-100 bg-white p-3 shadow-sm">
+                                        <div class="space-y-1">
+                                            <div class="flex items-center gap-2">
+                                                <span class="inline-flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-white text-xs">{{ i + 1 }}</span>
+                                                <span class="font-semibold text-gray-900">{{ item.reason || 'Sin motivo' }}</span>
+                                            </div>
+                                            <div class="text-xs text-gray-600">{{ item.start_date }} - {{ item.end_date }}</div>
+                                            @if (item.repeatYearly) {
+                                                <div class="flex items-center gap-1 text-xs text-blue-600">
+                                                    <mat-icon class="icon-size-3" svgIcon="feather:refresh-ccw"></mat-icon>
+                                                    <span>Repetir cada año</span>
+                                                </div>
+                                            }
+                                        </div>
+                                        <button mat-icon-button type="button" (click)="removeUnavailability(i)">
+                                            <mat-icon svgIcon="feather:trash"></mat-icon>
+                                        </button>
+                                    </div>
+                                }
+                            </div>
+                        }
+                        @else {
+                            <p class="text-sm text-gray-500">Agrega días libres si es necesario.</p>
+                        }
+                    </div>
+                }
+            </form>
+        </div>
+
+        @if (showDayOffModal) {
+            <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" (click)="closeDayOffModal()">
+                <div
+                    class="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl border border-gray-100"
+                    (click)="$event.stopPropagation()"
+                >
+                    <div class="flex items-center justify-between mb-4">
+                        <div>
+                            <p class="text-xs font-semibold uppercase text-gray-500">Agregar día libre</p>
+                            <h3 class="text-lg font-bold text-gray-900">Define el rango y motivo</h3>
+                        </div>
+                        <button mat-icon-button type="button" (click)="closeDayOffModal()">
+                            <mat-icon svgIcon="feather:x"></mat-icon>
+                        </button>
+                    </div>
+
+                    <form [formGroup]="daysOffForm" class="space-y-4">
+                        <div>
+                            <label class="mb-1.5 block text-sm font-semibold text-gray-700">Motivo</label>
+                            <input
+                                placeholder="Ej: Vacaciones, licencia, congreso"
+                                formControlName="reason"
+                                class="w-full rounded-lg border border-gray-200 bg-gray-50 py-2.5 px-3 text-gray-900 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100 transition-all"
+                            />
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div>
+                                <label class="mb-1.5 block text-sm font-semibold text-gray-700">Desde</label>
+                                <input
+                                    type="date"
+                                    formControlName="start_date"
+                                    class="w-full rounded-lg border border-gray-200 bg-gray-50 py-2.5 px-3 text-gray-900 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100 transition-all"
+                                />
+                            </div>
+                            <div>
+                                <label class="mb-1.5 block text-sm font-semibold text-gray-700">Hasta</label>
+                                <input
+                                    type="date"
+                                    formControlName="end_date"
+                                    class="w-full rounded-lg border border-gray-200 bg-gray-50 py-2.5 px-3 text-gray-900 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100 transition-all"
+                                />
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between rounded-lg border border-gray-100 bg-gray-50 px-3 py-2">
+                            <div>
+                                <p class="text-sm font-semibold text-gray-800">Repetir cada año</p>
+                                <p class="text-xs text-gray-500">Marca si este día libre aplica de forma anual.</p>
+                            </div>
+                            <mat-slide-toggle color="primary" formControlName="repeatYearly"></mat-slide-toggle>
+                        </div>
+
+                        <div class="flex justify-end gap-2 pt-2">
+                            <button
+                                type="button"
+                                class="rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 shadow-sm transition-all hover:bg-gray-100"
+                                (click)="closeDayOffModal()"
+                            >
+                                Cancelar
+                            </button>
+                            <button
+                                type="button"
+                                class="rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-medium text-white shadow-md transition-all hover:bg-blue-700"
+                                (click)="submitDayOff()"
+                            >
+                                Guardar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        }
+
+        <div class="border-t border-gray-200 bg-gray-50 px-6 py-4">
+            <div class="flex items-center justify-between gap-3">
+                <button
+                    type="button"
+                    (click)="onClose()"
+                    class="rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 shadow-sm transition-all hover:bg-gray-100"
+                >
+                    Cancelar
+                </button>
+                <div class="flex gap-2">
+                    <button
+                        type="button"
+                        (click)="prevStep()"
+                        class="rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 shadow-sm transition-all hover:bg-gray-100"
+                        [disabled]="currentStep === 1"
+                    >
+                        Atrás
+                    </button>
+                    <button
+                        type="button"
+                        (click)="primaryAction()"
+                        class="flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-medium text-white shadow-md transition-all hover:bg-blue-700 disabled:opacity-60"
+                        [disabled]="saving"
+                    >
+                        <mat-icon svgIcon="feather:save" class="h-4 w-4"></mat-icon>
+                        @if (currentStep < steps.length) { Siguiente } @else { Guardar }
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

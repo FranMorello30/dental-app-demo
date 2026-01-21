@@ -70,7 +70,12 @@
 </div>
 
 
-@if(isOpenModalRegistro) {
-
-<modal-registro-patient (isClosed)="isOpenModalRegistro = false"/>
+@if (isOpenSidebarRegistro) {
+    <div   class="fixed inset-0 z-50 flex justify-end" (click)="isOpenSidebarRegistro = false"  @slideInOut >
+        <sidebar-registro-patient
+            class="w-160 h-full"
+            (isClosed)="isOpenSidebarRegistro = false"
+            (click)="$event.stopPropagation()"
+        />
+    </div>
 }

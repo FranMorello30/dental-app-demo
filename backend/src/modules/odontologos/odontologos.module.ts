@@ -8,6 +8,7 @@ import { DentistSchedule } from './entities/dentist-schedules.entity';
 
 import { DentistBreak } from './entities/dentist-breaks.entity';
 import { DentistUnavailability } from './entities/dentist-unavailabilities.entity';
+import { DentistSpecialty } from './entities/dentist-specialties.entity';
 
 @Module({
   controllers: [OdontologosController],
@@ -20,6 +21,7 @@ import { DentistUnavailability } from './entities/dentist-unavailabilities.entit
       DentistSchedule,
 
       DentistUnavailability,
+      DentistSpecialty,
     ]),
   ],
   exports: [TypeOrmModule],

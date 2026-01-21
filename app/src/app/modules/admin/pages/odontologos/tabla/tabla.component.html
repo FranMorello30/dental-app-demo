@@ -1,58 +1,89 @@
 <div class="relative min-h-screen w-full overflow-hidden">
-    <div class="relative pt-1 px-8 pb-8">
-        <div class="w-full flex justify-end items-center mb-6">
-            <button class="primary-btn">
+    <div class="relative pt-1 px-8 pb-8 space-y-6">
+        <div class="w-full flex justify-end items-center">
+            <button class="primary-btn" (click)="openSidebar()">
                 <mat-icon svgIcon="feather:plus" class="h-5 w-5" />
-                Añadir Nuevo Paciente
+                Añadir nuevo odontólogo
             </button>
         </div>
-        <div class="surface-card overflow-hidden">
-            <div class="overflow-x-auto">
-                <table class="w-full">
-                    <thead class="table-head">
-                        <tr>
-                            <th class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide">
-                                Nombre
-                            </th>
-                            <th class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide">
-                                Especialidad
-                            </th>
-                            <th class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide">
-                                Email
-                            </th>
-                            <th class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide">
-                                Teléfono
-                            </th>
-                            <th class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide">
-                                Acciones
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @for (patient of initialPatients; track patient.id) {
-                            <tr class="table-row">
-                                <td class="table-cell">{{patient.name}}</td>
-                                <td class="table-cell">{{patient.especiality}}</td>
-                                <td class="table-cell">{{patient.email}}</td>
-                                <td class="table-cell">{{patient.phone}}</td>
-                                <td class="table-cell">
-                                    <div class="flex gap-2">
-                                        <button (click)="irPerfil(patient.id)" mat-icon-button class="ghost-icon-btn" title="Ver perfil completo">
-                                            <mat-icon svgIcon="feather:user" class="h-4 w-4" />
-                                        </button>
-                                        <button mat-icon-button class="ghost-icon-btn" title="Ver historial de citas">
-                                            <mat-icon svgIcon="feather:calendar" class="h-4 w-4" />
-                                        </button>
-                                        <button mat-icon-button class="ghost-icon-btn" title="Borrar paciente">
-                                            <mat-icon svgIcon="feather:trash" class="h-4 w-4" />
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
+
+        @if (errorMessage) {
+            <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+                {{ errorMessage }}
             </div>
+        }
+
+        <div class="surface-card overflow-hidden">
+            <div class="flex items-center justify-between px-5 py-4 border-b border-black/5">
+                <div>
+                    <h2 class="text-lg font-semibold text-black">Listado de odontólogos</h2>
+                    <p class="text-sm text-black/60">Datos obtenidos desde la API.</p>
+                </div>
+                @if (loading) {
+                    <div class="text-sm text-black/60">Cargando...</div>
+                }
+            </div>
+            @if (!loading && dentists.length === 0) {
+                <div class="p-6 text-center text-black/60">No hay odontólogos registrados aún.</div>
+            }
+            @else {
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="table-head">
+                            <tr>
+                                <th class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide">
+                                    Nombre
+                                </th>
+                                <th class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide">
+                                    Especialidad
+                                </th>
+                                <th class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide">
+                                    Email
+                                </th>
+                                <th class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide">
+                                    Teléfono
+                                </th>
+                                <th class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide">
+                                    Estado
+                                </th>
+                                <th class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide">
+                                    Acciones
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (dentist of dentists; track dentist.id) {
+                                <tr class="table-row">
+                                    <td class="table-cell">{{ dentist.name }}</td>
+                                    <td class="table-cell">{{ dentist.specialty }}</td>
+                                    <td class="table-cell">{{ dentist.email }}</td>
+                                    <td class="table-cell">{{ dentist.phone }}</td>
+                                    <td class="table-cell">
+                                        @if (dentist.is_active) {
+                                            <span class="px-2 py-1 text-xs rounded-full bg-emerald-100 text-emerald-700">Activo</span>
+                                        }
+                                        @else {
+                                            <span class="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-600">Inactivo</span>
+                                        }
+                                    </td>
+                                    <td class="table-cell">
+                                        <div class="flex gap-2">
+                                            <button (click)="irPerfil(dentist.id)" mat-icon-button class="ghost-icon-btn" title="Ver perfil completo">
+                                                <mat-icon svgIcon="feather:user" class="h-4 w-4" />
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
         </div>
     </div>
 </div>
+@if (showSidebar) {
+    <app-odontologo-registro-sidebar
+        (closed)="closeSidebar()"
+        (created)="handleCreated($event)"></app-odontologo-registro-sidebar>
+}

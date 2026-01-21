@@ -9,6 +9,7 @@ import {
 
 import { DentistSchedule } from './dentist-schedules.entity';
 import { DentistUnavailability } from './dentist-unavailabilities.entity';
+import { DentistSpecialty } from './dentist-specialties.entity';
 
 @Entity('dentists')
 export class Dentist {
@@ -104,6 +105,12 @@ export class Dentist {
     (unavailability) => unavailability.dentist,
   )
   unavailabilities: DentistUnavailability[];
+
+  @OneToMany(
+    () => DentistSpecialty,
+    (dentistSpecialty) => dentistSpecialty.dentist,
+  )
+  specialties: DentistSpecialty[];
 
   // @BeforeInsert()
   // valirdarCheck() {

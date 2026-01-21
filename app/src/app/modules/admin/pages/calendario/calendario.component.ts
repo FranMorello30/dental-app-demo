@@ -562,8 +562,16 @@ export class CalendarioComponent implements OnInit, OnDestroy {
         const currentMinute = now.getMinutes();
 
         const decimal = currentHour - startHour + currentMinute / 60;
-        const top = decimal * 80; // 80px por hora
-        return `${top}px`;
+        const pxPerHour = 80;
+        const totalHeight = this.timeSlots.length * pxPerHour;
+
+        // Evita que la línea quede fuera del contenedor cuando es muy temprano o muy tarde.
+        const clampedTop = Math.min(
+            Math.max(decimal * pxPerHour, 6),
+            totalHeight - 6
+        );
+
+        return `${clampedTop}px`;
     }
 
     getEventDurationMinutes(event: Appointment): number {
