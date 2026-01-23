@@ -1,4 +1,4 @@
-import { AsyncPipe, CommonModule } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import {
     ChangeDetectionStrategy,
     ChangeDetectorRef,
@@ -30,7 +30,6 @@ import { MatSelectModule } from '@angular/material/select';
 import { Appointment } from '@shared/models/appointement.model';
 import { Dentist } from '@shared/models/dentist.model';
 import { Paciente } from '@shared/models/pacientes.model';
-import { Treatment } from '@shared/models/treatment.model';
 import { DefinicionesService } from '@shared/services/definiciones.service';
 import { Observable } from 'rxjs';
 import { CalendarioComponent } from '../../calendario.component';
@@ -49,7 +48,6 @@ import { CalendarioService } from '../../calendario.service';
         MatAutocompleteModule,
         MatSelectModule,
         MatOptionModule,
-        AsyncPipe,
     ],
     templateUrl: './modal-registro.component.html',
     styles: [
@@ -86,7 +84,7 @@ export class ModalRegistroComponent implements OnInit, OnChanges {
     // Propiedad para almacenar los endSlots filtrados
     public filteredEndSlots = [];
 
-    public tratamientos: Treatment[] = [];
+    public tratamientos: string[] = [];
 
     public edoCitas: AppointmentStatus[] = [
         'Sin confirmar',
@@ -117,7 +115,7 @@ export class ModalRegistroComponent implements OnInit, OnChanges {
     showResults = false;
 
     ngOnInit(): void {
-        this._getTreatments();
+        this._loadDentistServices();
         this._getPacientes();
         // Crea el formulario
         this._createForm();
@@ -163,6 +161,9 @@ export class ModalRegistroComponent implements OnInit, OnChanges {
     ngOnChanges(changes: SimpleChanges): void {
         if (changes.selectedDate && changes.selectedDate.currentValue) {
             this.initializeSlots();
+        }
+        if (changes.dentist && changes.dentist.currentValue) {
+            this._loadDentistServices();
         }
     }
     cerrarFormCita() {
@@ -369,16 +370,13 @@ export class ModalRegistroComponent implements OnInit, OnChanges {
         });
     }
 
-    private _getTreatments() {
-        this._calendarioService.getAllTreatments().subscribe({
-            next: (response) => {
-                this.tratamientos = response;
-                this._detectChange.detectChanges();
-            },
-            error: (error) => {
-                console.error('Error fetching Treatments:', error);
-            },
-        });
+    private _loadDentistServices(): void {
+        const specialties = this.dentist()?.specialty ?? '';
+        this.tratamientos = specialties
+            .split(',')
+            .map((item) => item.trim())
+            .filter((item) => !!item);
+        this._detectChange.markForCheck();
     }
 
     // Convierte una hora en formato 24 horas (HH:mm) a 12 horas (hh:mm AM/PM)

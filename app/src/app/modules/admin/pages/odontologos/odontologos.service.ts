@@ -62,13 +62,39 @@ export class OdontologoService {
             .pipe(map((response) => response.dentists));
     }
 
+    getDentist(id: string): Observable<Dentist> {
+        return this._http
+            .get<{ dentist: Dentist }>(`${this.baseUrl}/odontologos/${id}`)
+            .pipe(map((response) => response.dentist));
+    }
+
     createDentist(payload: CreateDentistPayload): Observable<Dentist> {
         return this._http.post<Dentist>(`${this.baseUrl}/odontologos`, payload);
     }
 
-    createSchedules(payload: CreateSchedulePayload[]): Observable<void> {
-        return this._http.post<void>(
+    updateDentist(
+        dentistId: string,
+        payload: CreateDentistPayload
+    ): Observable<Dentist> {
+        return this._http.patch<Dentist>(
+            `${this.baseUrl}/odontologos/${dentistId}`,
+            payload
+        );
+    }
+
+    createSchedules(payload: CreateSchedulePayload[]): Observable<Schedules[]> {
+        return this._http.post<Schedules[]>(
             `${this.baseUrl}/odontologos/schedule`,
+            payload
+        );
+    }
+
+    replaceSchedules(
+        dentistId: string,
+        payload: CreateSchedulePayload[]
+    ): Observable<Schedules[]> {
+        return this._http.put<Schedules[]>(
+            `${this.baseUrl}/odontologos/schedule/${dentistId}`,
             payload
         );
     }
@@ -82,6 +108,16 @@ export class OdontologoService {
         );
     }
 
+    replaceUnavailability(
+        dentistId: string,
+        payload: CreateUnavailabilityPayload[]
+    ): Observable<void> {
+        return this._http.put<void>(
+            `${this.baseUrl}/odontologos/unavailability/${dentistId}`,
+            payload
+        );
+    }
+
     createBreak(payload: CreateBreakPayload): Observable<void> {
         return this._http.post<void>(
             `${this.baseUrl}/odontologos/schedule-break`,
@@ -91,6 +127,16 @@ export class OdontologoService {
 
     getSpecialties(): Observable<Specialty[]> {
         return this._http.get<Specialty[]>(`${this.baseUrl}/specialties`);
+    }
+
+    createSpecialty(payload: {
+        name: string;
+        description?: string;
+    }): Observable<Specialty> {
+        return this._http.post<Specialty>(
+            `${this.baseUrl}/specialties`,
+            payload
+        );
     }
 
     getSchedule(dentistId: string): Observable<Schedules[]> {

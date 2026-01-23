@@ -184,9 +184,9 @@
                                 formControlName="tratamiento"
                                 placeholder="Seleccionar Tratamiento"
                             >
-                                @for (item of tratamientos; track item.id) {
-                                    <mat-option [value]="item.name">
-                                        {{ item.name }}
+                                @for (item of tratamientos; track item) {
+                                    <mat-option [value]="item">
+                                        {{ item }}
                                     </mat-option>
                                 }
                             </mat-select>

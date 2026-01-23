@@ -25,7 +25,7 @@ export class Dentist {
   @Column({ type: 'varchar', nullable: false })
   email: string;
 
-  @Column({ type: 'varchar' })
+  @Column({ type: 'varchar', nullable: true })
   avatar: string;
 
   // @Column({

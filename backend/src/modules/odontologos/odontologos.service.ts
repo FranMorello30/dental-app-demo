@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 
 import { UpdateOdontologoDto } from './dto/update-odontologo.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 
 import { Dentist } from './entities/dentist.entity';
 //import { Disponibilidad } from './entities/disponibilidad.entity';
@@ -111,8 +111,79 @@ export class OdontologosService {
     });
     return await this.unavailabilityRepository.save(unavailability);
   }
-  update(id: number, updateOdontologoDto: UpdateOdontologoDto) {
-    return `This action updates a #${id} odontologo`;
+
+  async update(id: string, updateOdontologoDto: UpdateOdontologoDto) {
+    const { isActive, ...rest } = updateOdontologoDto as UpdateOdontologoDto & {
+      isActive?: boolean;
+    };
+    const dentist = await this.dentistRepository.preload({
+      id,
+      ...rest,
+      ...(isActive !== undefined ? { is_active: isActive } : {}),
+    });
+    if (!dentist) throw new NotFoundException('Dentist not found');
+    return this.dentistRepository.save(dentist);
+  }
+
+  async replaceDentistSchedule(
+    dentistId: string,
+    dto: CreateDentistScheduleDto[],
+  ): Promise<DentistSchedule[]> {
+    const dentist = await this.dentistRepository.findOneBy({
+      id: dentistId,
+    });
+    if (!dentist) throw new NotFoundException('Dentist not found');
+
+    const existingSchedules = await this.scheduleRepository.find({
+      where: { dentist: { id: dentistId } },
+    });
+    const scheduleIds = existingSchedules.map((schedule) => schedule.id);
+
+    if (scheduleIds.length) {
+      await this.breakRepository.delete({
+        schedule: { id: In(scheduleIds) },
+      } as any);
+    }
+
+    await this.scheduleRepository.delete({
+      dentist: { id: dentistId },
+    } as any);
+
+    if (!dto.length) return [];
+
+    const schedules = dto.map((scheduleDto) =>
+      this.scheduleRepository.create({
+        ...scheduleDto,
+        dentist,
+      }),
+    );
+    return await this.scheduleRepository.save(schedules);
+  }
+
+  async replaceDentistUnavailability(
+    dentistId: string,
+    dto: CreateDentistUnavailabilityDto[],
+  ): Promise<DentistUnavailability[]> {
+    const dentist = await this.dentistRepository.findOneBy({
+      id: dentistId,
+    });
+    if (!dentist) throw new NotFoundException('Dentist not found');
+
+    await this.unavailabilityRepository.delete({
+      dentist: { id: dentistId },
+    } as any);
+
+    if (!dto.length) return [];
+
+    const unavailabilities = dto.map((item) =>
+      this.unavailabilityRepository.create({
+        unavailable_date: item.unavailable_date,
+        reason: item.reason,
+        dentist,
+      }),
+    );
+
+    return await this.unavailabilityRepository.save(unavailabilities);
   }
 
   remove(id: number) {

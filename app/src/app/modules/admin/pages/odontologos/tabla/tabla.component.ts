@@ -37,6 +37,7 @@ export class TablaComponent implements OnInit {
     dentists: Dentist[] = [];
     loading = false;
     showSidebar = false;
+    selectedDentist: Dentist | null = null;
     errorMessage: string | null = null;
 
     ngOnInit(): void {
@@ -62,17 +63,29 @@ export class TablaComponent implements OnInit {
             });
     }
 
-    openSidebar(): void {
+    openSidebar(dentist?: Dentist): void {
+        this.selectedDentist = dentist ?? null;
         this.showSidebar = true;
     }
 
     closeSidebar(): void {
         this.showSidebar = false;
+        this.selectedDentist = null;
     }
 
     handleCreated(dentist: Dentist): void {
         this.dentists = [dentist, ...this.dentists];
         this.showSidebar = false;
+        this.selectedDentist = null;
+        this.cdr.markForCheck();
+    }
+
+    handleUpdated(dentist: Dentist): void {
+        this.dentists = this.dentists.map((item) =>
+            item.id === dentist.id ? dentist : item
+        );
+        this.showSidebar = false;
+        this.selectedDentist = null;
         this.cdr.markForCheck();
     }
 

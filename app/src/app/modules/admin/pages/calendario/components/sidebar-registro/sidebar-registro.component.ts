@@ -28,7 +28,6 @@ import { MatSelectModule } from '@angular/material/select';
 import { Appointment } from '@shared/models/appointement.model';
 import { Dentist } from '@shared/models/dentist.model';
 import { Paciente } from '@shared/models/pacientes.model';
-import { Treatment } from '@shared/models/treatment.model';
 import { DefinicionesService } from '@shared/services/definiciones.service';
 import { forkJoin, of, switchMap } from 'rxjs';
 import { PacienteService } from '../../../pacientes/pacientes.service';
@@ -97,7 +96,7 @@ export class SidebarRegistroComponent implements OnInit, OnChanges, OnDestroy {
     public uploadedFiles: File[] = [];
 
     isExpanded = false;
-    public tratamientos: Treatment[] = [];
+    public tratamientos: string[] = [];
     public edoCitas: AppointmentStatus[] = [
         'Sin confirmar',
         'Confirmada',
@@ -128,7 +127,7 @@ export class SidebarRegistroComponent implements OnInit, OnChanges, OnDestroy {
         document.body.style.overflow = 'hidden';
         this._createForm();
         this._createPatientForm();
-        this._loadTreatments();
+        this._loadDentistServices();
         this._loadPatients();
         this._listenSearch();
         this._listenStartTime();
@@ -156,6 +155,9 @@ export class SidebarRegistroComponent implements OnInit, OnChanges, OnDestroy {
             (changes['dentist'] && !changes['dentist'].firstChange)
         ) {
             this._initSlots();
+        }
+        if (changes['dentist'] && changes['dentist'].currentValue) {
+            this._loadDentistServices();
         }
     }
 
@@ -536,16 +538,13 @@ export class SidebarRegistroComponent implements OnInit, OnChanges, OnDestroy {
             });
     }
 
-    private _loadTreatments(): void {
-        this._calendarioService.getAllTreatments().subscribe({
-            next: (response) => {
-                this.tratamientos = response;
-                this._cdr.detectChanges();
-            },
-            error: (error) => {
-                console.error('Error fetching Treatments:', error);
-            },
-        });
+    private _loadDentistServices(): void {
+        const specialties = this.dentist()?.specialty ?? '';
+        this.tratamientos = specialties
+            .split(',')
+            .map((item) => item.trim())
+            .filter((item) => !!item);
+        this._cdr.markForCheck();
     }
 
     private _loadPatients(): void {

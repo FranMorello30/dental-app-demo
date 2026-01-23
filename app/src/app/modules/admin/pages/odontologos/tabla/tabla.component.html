@@ -68,6 +68,9 @@
                                     </td>
                                     <td class="table-cell">
                                         <div class="flex gap-2">
+                                            <button (click)="openSidebar(dentist)" mat-icon-button class="ghost-icon-btn" title="Editar odontólogo">
+                                                <mat-icon svgIcon="feather:edit-2" class="h-4 w-4" />
+                                            </button>
                                             <button (click)="irPerfil(dentist.id)" mat-icon-button class="ghost-icon-btn" title="Ver perfil completo">
                                                 <mat-icon svgIcon="feather:user" class="h-4 w-4" />
                                             </button>
@@ -84,6 +87,8 @@
 </div>
 @if (showSidebar) {
     <app-odontologo-registro-sidebar
+        [dentist]="selectedDentist"
         (closed)="closeSidebar()"
-        (created)="handleCreated($event)"></app-odontologo-registro-sidebar>
+        (created)="handleCreated($event)"
+        (updated)="handleUpdated($event)"></app-odontologo-registro-sidebar>
 }

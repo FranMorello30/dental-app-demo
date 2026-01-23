@@ -102,15 +102,15 @@ export class DefinicionesService {
             return [];
         }
 
-        // Obtener hora de inicio y fin del horario
-        const startHour = schedule.start_time
-            ? parseInt(schedule.start_time.split(':')[0], 10)
-            : 9;
-        const endHour = schedule.end_time
-            ? parseInt(schedule.end_time.split(':')[0], 10)
-            : 17;
+        const slotMinutes = 30;
 
-        console.warn({ startHour, endHour });
+        // Obtener hora de inicio y fin del horario
+        const startTimeInMinutes = schedule.start_time
+            ? this.timeToMinutes(schedule.start_time)
+            : 9 * 60;
+        const endTimeInMinutes = schedule.end_time
+            ? this.timeToMinutes(schedule.end_time)
+            : 17 * 60;
 
         // Obtener los breaks (pausas) si existen
         const breaks = Array.isArray(schedule.breaks)
@@ -121,23 +121,13 @@ export class DefinicionesService {
             : [];
 
         const availableTimes: string[] = [];
-        const startTimeInMinutes = startHour * 60;
-        const endTimeInMinutes = endHour * 60;
-
         let currentTime = startTimeInMinutes;
 
-        while (currentTime < endTimeInMinutes) {
+        while (currentTime + slotMinutes <= endTimeInMinutes) {
             let overlapsBreak = false;
             for (const breakTime of breaks) {
-                const [breakStartHour, breakStartMinute] = breakTime.start
-                    .split(':')
-                    .map(Number);
-                const [breakEndHour, breakEndMinute] = breakTime.end
-                    .split(':')
-                    .map(Number);
-
-                const breakStart = breakStartHour * 60 + breakStartMinute;
-                const breakEnd = breakEndHour * 60 + breakEndMinute;
+                const breakStart = this.timeToMinutes(breakTime.start);
+                const breakEnd = this.timeToMinutes(breakTime.end);
 
                 if (currentTime >= breakStart && currentTime < breakEnd) {
                     overlapsBreak = true;
@@ -155,7 +145,7 @@ export class DefinicionesService {
                 availableTimes.push(timeString);
             }
 
-            currentTime += 30;
+            currentTime += slotMinutes;
         }
 
         return availableTimes;
@@ -174,5 +164,13 @@ export class DefinicionesService {
         }
 
         return `${endHour.toString().padStart(2, '0')}:${endMinute.toString().padStart(2, '0')}`;
+    }
+
+    private timeToMinutes(time: string): number {
+        if (!time) return 0;
+        const parts = time.split(':').map((value) => parseInt(value, 10));
+        const [hour, minute] = parts;
+        if (Number.isNaN(hour) || Number.isNaN(minute)) return 0;
+        return hour * 60 + minute;
     }
 }

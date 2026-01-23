@@ -6,6 +6,7 @@ import {
   Patch,
   Param,
   Delete,
+  Put,
 } from '@nestjs/common';
 import { OdontologosService } from './odontologos.service';
 
@@ -30,6 +31,14 @@ export class OdontologosController {
     return this.odontologosService.createDentistSchedule(body);
   }
 
+  @Put('schedule/:id')
+  replaceDentistSchedule(
+    @Param('id') id: string,
+    @Body() body: CreateDentistScheduleDto[],
+  ) {
+    return this.odontologosService.replaceDentistSchedule(id, body);
+  }
+
   @Post('schedule-break')
   createDentistBreak(@Body() body: CreateDentistBreakDto) {
     return this.odontologosService.createDentistBreak(body);
@@ -38,6 +47,14 @@ export class OdontologosController {
   @Post('unavailability')
   createDentistUnavailability(@Body() body: CreateDentistUnavailabilityDto) {
     return this.odontologosService.createDentistUnavailability(body);
+  }
+
+  @Put('unavailability/:id')
+  replaceDentistUnavailability(
+    @Param('id') id: string,
+    @Body() body: CreateDentistUnavailabilityDto[],
+  ) {
+    return this.odontologosService.replaceDentistUnavailability(id, body);
   }
 
   @Get()
@@ -64,7 +81,7 @@ export class OdontologosController {
     @Param('id') id: string,
     @Body() updateOdontologoDto: UpdateOdontologoDto,
   ) {
-    return this.odontologosService.update(+id, updateOdontologoDto);
+    return this.odontologosService.update(id, updateOdontologoDto);
   }
 
   @Delete(':id')

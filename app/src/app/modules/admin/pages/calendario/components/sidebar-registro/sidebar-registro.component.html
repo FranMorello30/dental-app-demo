@@ -461,8 +461,8 @@
                                     ></mat-icon>
                                     <select formControlName="tratamiento" class="appearance-none w-full rounded-xl border border-gray-200 bg-gray-50 py-3 pl-10 pr-8 text-gray-900 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100">
                                         <option value="" disabled selected>Seleccionar Tratamiento</option>
-                                        @for (tratamiento of tratamientos; track tratamiento.id) {
-                                            <option [value]="tratamiento.name">{{ tratamiento.name }}</option>
+                                        @for (tratamiento of tratamientos; track tratamiento) {
+                                            <option [value]="tratamiento">{{ tratamiento }}</option>
                                         }
                                     </select>
                                     <mat-icon
