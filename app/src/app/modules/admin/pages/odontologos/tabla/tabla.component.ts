@@ -34,6 +34,8 @@ export class TablaComponent implements OnInit {
     private readonly odontologoService = inject(OdontologoService);
     private readonly cdr = inject(ChangeDetectorRef);
 
+    readonly dayLabels = ['D', 'L', 'M', 'X', 'J', 'V', 'S'];
+
     dentists: Dentist[] = [];
     loading = false;
     showSidebar = false;
@@ -52,6 +54,7 @@ export class TablaComponent implements OnInit {
             .pipe(finalize(() => this.cdr.markForCheck()))
             .subscribe({
                 next: (dentists) => {
+                    console.log(dentists);
                     this.dentists = dentists;
                     this.loading = false;
                 },
@@ -91,5 +94,30 @@ export class TablaComponent implements OnInit {
 
     irPerfil(id: string): void {
         this.router.navigate([`admin/odontologos/perfil/${id}`]);
+    }
+
+    getSpecialtyDisplay(dentist: Dentist): string {
+        const specialties = this.splitSpecialties(dentist.specialty);
+        if (!specialties.length) return '—';
+        if (specialties.length <= 2) return specialties.join(', ');
+        const [first, second] = specialties;
+        return `${first}, ${second} +${specialties.length - 2}`;
+    }
+
+    isWorkingDay(dentist: Dentist, dayIndex: number): boolean {
+        return (
+            Array.isArray(dentist.schedules) &&
+            dentist.schedules.some(
+                (schedule) =>
+                    schedule.day_of_week === dayIndex && schedule.is_working_day
+            )
+        );
+    }
+
+    private splitSpecialties(raw: string): string[] {
+        return (raw || '')
+            .split(',')
+            .map((item) => item.trim())
+            .filter((item) => !!item);
     }
 }

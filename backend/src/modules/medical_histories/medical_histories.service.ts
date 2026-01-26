@@ -50,6 +50,9 @@ export class MedicalHistoriesService {
       notes: historyData.notes ?? '', // Ensure notes is string
       dentist: { id: historyData.dentistId },
       patient: { id: historyData.patientId },
+      appointment: appointmentId
+        ? ({ id: appointmentId } as Appointment)
+        : undefined,
       treated_teeth: treatedTeeth,
       attachments: medAttachments,
     });

@@ -38,6 +38,9 @@
                                     Especialidad
                                 </th>
                                 <th class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide">
+                                    Días de trabajo
+                                </th>
+                                <th class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide">
                                     Email
                                 </th>
                                 <th class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide">
@@ -55,7 +58,23 @@
                             @for (dentist of dentists; track dentist.id) {
                                 <tr class="table-row">
                                     <td class="table-cell">{{ dentist.name }}</td>
-                                    <td class="table-cell">{{ dentist.specialty }}</td>
+                                    <td class="table-cell">{{ getSpecialtyDisplay(dentist) }}</td>
+                                    <td class="table-cell">
+                                        <div class="flex gap-1">
+                                            @for (day of dayLabels; track $index) {
+                                                <span
+                                                    class="inline-flex h-7 w-7 items-center justify-center rounded-full border text-[11px] font-semibold"
+                                                    [ngClass]="
+                                                        isWorkingDay(dentist, $index)
+                                                            ? 'bg-primary-100 text-primary-700 border-primary-200'
+                                                            : 'bg-gray-100 text-gray-400 border-gray-200'
+                                                    "
+                                                >
+                                                    {{ day }}
+                                                </span>
+                                            }
+                                        </div>
+                                    </td>
                                     <td class="table-cell">{{ dentist.email }}</td>
                                     <td class="table-cell">{{ dentist.phone }}</td>
                                     <td class="table-cell">

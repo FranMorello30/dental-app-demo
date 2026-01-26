@@ -233,6 +233,8 @@ export class CalendarioComponent implements OnInit, OnDestroy {
             if (dentistId) {
                 this._getDentistAvailability(dentistId);
             }
+            this.getFilteredEvents();
+            this._detectChange.detectChanges();
         });
 
         this._websocketService
@@ -339,9 +341,10 @@ export class CalendarioComponent implements OnInit, OnDestroy {
     }
     getFilteredEvents() {
         const weekDates = this.diasemanas;
+        const events = this.getEventsForSelectedDentist();
 
         if (this.currentView === 'day') {
-            return (this.dayEvents = this.allEvents.filter(
+            return (this.dayEvents = events.filter(
                 (event) =>
                     event.start_time.getDate() === this.currentDate.getDate() &&
                     event.start_time.getMonth() ===
@@ -353,7 +356,7 @@ export class CalendarioComponent implements OnInit, OnDestroy {
             const weekStart = weekDates[0];
             const weekEnd = weekDates[6];
 
-            return (this.dayEvents = this.allEvents.filter(
+            return (this.dayEvents = events.filter(
                 (event) =>
                     event.start_time >= weekStart && event.start_time <= weekEnd
             ));
@@ -369,7 +372,7 @@ export class CalendarioComponent implements OnInit, OnDestroy {
             //     // console.log('Event End Time:', event.end_time);
             // });
 
-            return (this.dayEvents = this.allEvents.filter(
+            return (this.dayEvents = events.filter(
                 (event) =>
                     event.start_time.getMonth() ===
                         this.currentDate.getMonth() &&
@@ -405,7 +408,7 @@ export class CalendarioComponent implements OnInit, OnDestroy {
     getEventsByMonth(day: number) {
         const year = this.currentDate.getFullYear();
         const month = this.currentDate.getMonth();
-        return this.allEvents
+        return this.getEventsForSelectedDentist()
             .filter(
                 (event) =>
                     event.start_time.getDate() === day &&
@@ -480,7 +483,7 @@ export class CalendarioComponent implements OnInit, OnDestroy {
     getEventsByWeek(date: Date) {
         const year = this.currentDate.getFullYear();
         const month = this.currentDate.getMonth();
-        const eve = this.allEvents.filter(
+        const eve = this.getEventsForSelectedDentist().filter(
             (event) =>
                 event.start_time.getDate() === date.getDate() &&
                 event.start_time.getMonth() === date.getMonth() &&
@@ -572,6 +575,15 @@ export class CalendarioComponent implements OnInit, OnDestroy {
         );
 
         return `${clampedTop}px`;
+    }
+
+    isCurrentTimeInRange(): boolean {
+        const now = this.currentTime;
+        const startHour = 8;
+        const endHour = startHour + this.timeSlots.length;
+        const currentDecimal = now.getHours() + now.getMinutes() / 60;
+
+        return currentDecimal >= startHour && currentDecimal < endHour;
     }
 
     getEventDurationMinutes(event: Appointment): number {
@@ -687,7 +699,7 @@ export class CalendarioComponent implements OnInit, OnDestroy {
         }
     }
     totByStatus(status: AppointmentStatus) {
-        return this.allEvents.filter(
+        return this.getEventsForSelectedDentist().filter(
             (event) =>
                 event.start_time.getMonth() === this.currentDate.getMonth() &&
                 event.start_time.getFullYear() ===
@@ -776,6 +788,16 @@ export class CalendarioComponent implements OnInit, OnDestroy {
                 console.error('Error fetching dentists:', error);
             },
         });
+    }
+
+    getEventsForSelectedDentist(): Appointment[] {
+        if (!this.dentist) {
+            return [];
+        }
+
+        return this.allEvents.filter(
+            (event) => event.dentist?.id === this.dentist.id
+        );
     }
     openMoreEvents(day: number) {
         this.moreDay = day;

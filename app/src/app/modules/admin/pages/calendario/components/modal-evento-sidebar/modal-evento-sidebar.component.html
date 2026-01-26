@@ -120,6 +120,18 @@
                                  <p>Por favor complete el registro médico para cerrar la cita.</p>
                              </div>
 
+                             @if (isDev) {
+                                 <div class="flex justify-end">
+                                     <button
+                                         type="button"
+                                         class="rounded-lg border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-700 transition-colors hover:bg-blue-100"
+                                         (click)="fillDemoFinish()"
+                                     >
+                                         Generar datos demo
+                                     </button>
+                                 </div>
+                             }
+
                              <div>
                                 <label class="mb-1 block text-sm font-medium text-gray-700">Diagnóstico <span class="text-red-500">*</span></label>
                                 <textarea [(ngModel)]="finishForm.diagnosis" rows="3" class="w-full rounded-lg border border-gray-200 p-2 text-sm focus:border-blue-500 focus:outline-none" placeholder="Diagnóstico principal..."></textarea>

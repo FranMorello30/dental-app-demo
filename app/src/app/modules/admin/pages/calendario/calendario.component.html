@@ -240,7 +240,7 @@
                 <div
                     class="custom-scrollbar max-h-40 space-y-2 overflow-y-auto pr-1"
                 >
-                    @for (event of allEvents; track $index) {
+                    @for (event of getEventsForSelectedDentist(); track $index) {
                         @if (event.status === 'Finalizada (Pendiente)') {
                             <div
                                 (click)="eventDetails(event)"
@@ -417,7 +417,7 @@
                                 "
                                 (click)="onSlotClick(currentDate, $event)"
                             >
-                                @if (compareDate(currentDate)) {
+                                @if (compareDate(currentDate) && isCurrentTimeInRange()) {
                                     <div
                                         class="absolute z-20 w-full pointer-events-none"
                                         [ngStyle]="{
@@ -591,18 +591,19 @@
                                 }
                             </div>
                             @for (date of diasemanas; track $index) {
+                                <!-- hover:bg-gray-200 -->
                                 <div
                                     class="relative border-l border-gray-100"
                                     [ngClass]="{
                                         'bg-gray-400/50': !isDayAvailable(date),
-                                        'cursor-pointer hover:bg-blue-50/10':
+                                        'cursor-pointer ':
                                             !isPastDate(date),
                                         'cursor-not-allowed':
                                             isPastDate(date),
                                     }"
                                     (click)="onSlotClick(date, $event)"
                                 >
-                                    @if (compareDate(date)) {
+                                    @if (compareDate(date) && isCurrentTimeInRange()) {
                                         <div
                                             class="absolute z-20 w-full pointer-events-none"
                                             [ngStyle]="{
@@ -618,7 +619,7 @@
                                                 ></div>
                                                 <!-- Etiqueta con la hora -->
                                                 <div
-                                                    class="absolute -top-6 left-2 rounded shadow-sm bg-red-500 px-1.5 py-0.5 text-[10px] font-bold text-white z-30"
+                                                    class="absolute top-2 left-2 rounded shadow-sm bg-red-500 px-1.5 py-0.5 text-[10px] font-bold text-white z-30"
                                                 >
                                                     {{
                                                         currentTime
@@ -733,9 +734,7 @@
                 }
                 @if (currentView === 'month') {
                     <div class="flex h-full flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
-                        <div
-                            class="grid grid-cols-7 border-b border-gray-200 bg-gray-50/50"
-                        >
+                        <div class="grid grid-cols-7 border-b border-gray-200 bg-gray-50/50">
                             @for (day of diasHeaderMes; track $index) {
                                 <div
                                     class="p-3 text-center text-xs font-semibold uppercase tracking-wider text-gray-500"
@@ -767,7 +766,7 @@
                                                         !isWeekDayAvailable(
                                                             day
                                                         ),
-                                                    'hover:bg-blue-50/30':
+                                                    'hover:bg-gray-200':
                                                         !getPastDay(day),
                                                     'cursor-pointer':
                                                         !getPastDay(day),

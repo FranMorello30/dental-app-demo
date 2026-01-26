@@ -1,6 +1,13 @@
+import { MedicalHistory } from 'src/modules/medical_histories/entities/medical_history.entity';
 import { Dentist } from 'src/modules/odontologos/entities/dentist.entity';
 import { Patient } from 'src/modules/patients/entities/patient.entity';
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
 export enum AppointmentStatus {
   UNCONFIRMED = 'Sin confirmar',
@@ -72,4 +79,7 @@ export class Appointment {
     default: false,
   })
   is_deleted: boolean;
+
+  @OneToMany(() => MedicalHistory, (medical) => medical.appointment)
+  medical_histories: MedicalHistory[];
 }

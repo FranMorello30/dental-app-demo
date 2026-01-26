@@ -69,7 +69,13 @@ export class AppointmentsService {
   async findOne(id: string): Promise<Appointment> {
     const appointment = await this.appointmentRepository.findOne({
       where: { id, is_deleted: false },
-      relations: ['dentist', 'patient'],
+      relations: [
+        'dentist',
+        'patient',
+        'medical_histories',
+        'medical_histories.treated_teeth',
+        'medical_histories.attachments',
+      ],
     });
     if (!appointment)
       throw new NotFoundException(`Appointment #${id} not found`);
@@ -156,7 +162,13 @@ export class AppointmentsService {
         dentist: { id: dentistId },
         is_deleted: false,
       },
-      relations: ['dentist', 'patient'],
+      relations: [
+        'dentist',
+        'patient',
+        'medical_histories',
+        'medical_histories.treated_teeth',
+        'medical_histories.attachments',
+      ],
     });
   }
 

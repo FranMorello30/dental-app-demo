@@ -29,6 +29,7 @@ import { Appointment } from '@shared/models/appointement.model';
 import { Dentist } from '@shared/models/dentist.model';
 import { Paciente } from '@shared/models/pacientes.model';
 import { DefinicionesService } from '@shared/services/definiciones.service';
+import { NgxMaskDirective } from 'ngx-mask';
 import { forkJoin, of, switchMap } from 'rxjs';
 import { PacienteService } from '../../../pacientes/pacientes.service';
 import { AppointmentStatus } from '../../calendario.model';
@@ -47,6 +48,7 @@ import { CalendarioService } from '../../calendario.service';
         MatAutocompleteModule,
         MatFormFieldModule,
         MatOptionModule,
+        NgxMaskDirective,
     ],
     templateUrl: './sidebar-registro.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
@@ -122,6 +124,7 @@ export class SidebarRegistroComponent implements OnInit, OnChanges, OnDestroy {
     public filteredEndSlots: string[] = [];
 
     public currentErrors: string | string[] | null = null;
+    public readonly isDev = true;
 
     ngOnInit(): void {
         document.body.style.overflow = 'hidden';
@@ -204,6 +207,47 @@ export class SidebarRegistroComponent implements OnInit, OnChanges, OnDestroy {
 
     removeFile(index: number): void {
         this.uploadedFiles.splice(index, 1);
+    }
+
+    fillDemoPatient(): void {
+        const now = new Date();
+        const birthDate = new Date(
+            now.getFullYear() - 28,
+            Math.max(0, now.getMonth() - 3),
+            12
+        );
+        const yyyy = birthDate.getFullYear();
+        const mm = `${birthDate.getMonth() + 1}`.padStart(2, '0');
+        const dd = `${birthDate.getDate()}`.padStart(2, '0');
+
+        this.patientForm.patchValue({
+            dni: '12.345.678',
+            name: 'Paciente Demo',
+            phone: '412 5551234',
+            date_of_birth: `${yyyy}-${mm}-${dd}`,
+            email: 'demo@correo.com',
+            insurance: 'Seguro Demo',
+            insurance_id: 'P-12345',
+            address: 'Av. Principal, Caracas',
+            notes: 'Datos de prueba para desarrollo.',
+            habits: {
+                smoking: false,
+                alcohol: false,
+                bruxism: true,
+                brushingFrequency: '2',
+                flossing: 'weekly',
+            },
+            history: {
+                allergies: 'Ninguna',
+                medications: 'Ninguno',
+                surgeries: 'Sin cirugías',
+                illnesses: 'Sin antecedentes',
+            },
+        });
+
+        this.patientForm.markAsDirty();
+        this.patientForm.markAsTouched();
+        this._cdr.markForCheck();
     }
 
     savePatient(): void {

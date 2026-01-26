@@ -9,6 +9,7 @@ import { TreatedTeeth } from './treated_teeth.entity';
 import { MedicalAttachment } from './medical_attachment.entity';
 import { Dentist } from '../../odontologos/entities/dentist.entity';
 import { Patient } from '../../patients/entities/patient.entity';
+import { Appointment } from '../../appointments/entities/appointment.entity';
 
 @Entity({ name: 'medical_history' })
 export class MedicalHistory {
@@ -63,4 +64,13 @@ export class MedicalHistory {
 
   @OneToMany(() => TreatedTeeth, (tooth) => tooth.medical, { cascade: true })
   treated_teeth: TreatedTeeth[];
+
+  @ManyToOne(
+    () => Appointment,
+    (appointment) => appointment.medical_histories,
+    {
+      nullable: true,
+    },
+  )
+  appointment?: Appointment;
 }

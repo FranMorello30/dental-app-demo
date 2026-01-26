@@ -15,6 +15,7 @@ import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
+import { environment } from '@environments/environment';
 import { Appointment } from '@shared/models/appointement.model';
 import { AppointmentStatus } from '../../calendario.model';
 import { CalendarioService } from '../../calendario.service';
@@ -75,6 +76,7 @@ export class ModalEventoSidebarComponent implements OnInit {
         notes: '',
     };
     isSavingHistory = false;
+    readonly isDev = !environment.production;
 
     readonly edoCitas: AppointmentStatus[] = [
         'Sin confirmar',
@@ -134,6 +136,16 @@ export class ModalEventoSidebarComponent implements OnInit {
             this.isExpanded = true;
         }
         //  this.isExpandedSidebar.emit(this.isExpanded);
+    }
+
+    fillDemoFinish(): void {
+        this.finishForm = {
+            diagnosis: 'Caries dental en molar superior.',
+            treatment: 'Limpieza profunda y obturación con resina.',
+            medications: 'Ibuprofeno 400mg cada 8h por 2 días.',
+            notes: 'Paciente toleró bien el procedimiento.',
+        };
+        this._detectChange.detectChanges();
     }
 
     saveMedicalRecord() {
