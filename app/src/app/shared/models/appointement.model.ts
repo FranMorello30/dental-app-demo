@@ -20,4 +20,30 @@ export interface Appointment {
     is_deleted: boolean;
     dentist: Dentist;
     patient: Paciente;
+    medical_histories?: MedicalHistory[];
+}
+
+export interface MedicalHistory {
+    id: string;
+    date: Date;
+    diagnosis: string;
+    treatment: string;
+    medications: string;
+    notes: string;
+    treated_teeth?: TreatedTooth[];
+    attachments?: MedicalAttachment[];
+}
+
+export interface TreatedTooth {
+    id: string;
+    tooth_number: number;
+    treatment: string;
+}
+
+export interface MedicalAttachment {
+    id: string;
+    name: string;
+    file_type: string;
+    file_path: string;
+    file_size: number;
 }

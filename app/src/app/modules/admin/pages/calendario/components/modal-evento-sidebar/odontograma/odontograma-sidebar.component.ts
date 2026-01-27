@@ -1,5 +1,14 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import {
+    ChangeDetectorRef,
+    Component,
+    EventEmitter,
+    Input,
+    OnInit,
+    Output,
+    inject,
+} from '@angular/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 interface Tooth {
@@ -12,6 +21,13 @@ interface Condition {
     name: string;
     color: string;
 }
+interface TreatmentTeethResponse {
+    treatment_teeth: Array<{
+        id: string;
+        color: string;
+        treatment: string;
+    }>;
+}
 
 @Component({
     selector: 'app-odontograma-sidebar',
@@ -19,11 +35,19 @@ interface Condition {
     imports: [CommonModule, MatFormFieldModule, MatSelectModule],
     templateUrl: './odontograma-sidebar.component.html',
 })
-export class OdontogramaSidebarComponent {
+export class OdontogramaSidebarComponent implements OnInit {
+    private readonly _http = inject(HttpClient);
+    private readonly _cdr = inject(ChangeDetectorRef);
     @Input() selectedTeeth: Record<string, string> = {};
+    @Input() readOnly = false;
     @Output() selectedTeethChange = new EventEmitter<Record<string, string>>();
 
-    currentCondition: string = 'blue';
+    currentCondition: string = '';
+
+    ngOnInit(): void {
+        this.loadTreatmentOptions();
+        console.log('Selected teeth:', this.selectedTeeth);
+    }
 
     // Add this method to the FacturasComponent class
     hasSelectedTeeth(): boolean {
@@ -35,6 +59,7 @@ export class OdontogramaSidebarComponent {
     }
 
     handleToothClick(toothId: string) {
+        if (this.readOnly) return;
         console.log({ toothId, condicion: this.currentCondition });
         const newState = { ...this.selectedTeeth };
 
@@ -49,10 +74,13 @@ export class OdontogramaSidebarComponent {
     }
 
     getToothFill(toothId: string) {
-        return this.selectedTeeth[toothId] || 'transparent';
+        const conditionId = this.selectedTeeth[toothId];
+        if (!conditionId) return 'transparent';
+        return this.getConditionColor(conditionId) ?? 'transparent';
     }
 
     clearAll() {
+        if (this.readOnly) return;
         this.selectedTeeth = {};
         this.selectedTeethChange.emit(this.selectedTeeth);
     }
@@ -95,13 +123,34 @@ export class OdontogramaSidebarComponent {
         { id: '38', x: 445, y: 430 },
     ];
 
-    conditions: Condition[] = [
-        { id: 'blue', name: 'Tratamiento pendiente', color: '#90b3ff' },
-        { id: 'red', name: 'Caries', color: '#ff9090' },
-        { id: 'green', name: 'Tratado', color: '#90ff9d' },
-        { id: 'yellow', name: 'En observación', color: '#ffec90' },
-        { id: 'gray', name: 'Ausente', color: '#d0d0d0' },
-    ];
+    conditions: Condition[] = [];
+
+    private loadTreatmentOptions(): void {
+        this._http
+            .get<TreatmentTeethResponse>(
+                'http://localhost:4978/api/medical-histories/treatment-teeth'
+            )
+            .subscribe({
+                next: (response) => {
+                    this.conditions = (response.treatment_teeth ?? []).map(
+                        (item) => ({
+                            id: item.id,
+                            name: item.treatment,
+                            color: item.color,
+                        })
+                    );
+                    this.currentCondition =
+                        this.conditions[0]?.id ?? this.currentCondition;
+                    this._cdr.markForCheck();
+                },
+                error: (error) => {
+                    console.error(
+                        'Error loading treatment teeth options',
+                        error
+                    );
+                },
+            });
+    }
 
     getConditionColor(conditionId: string): string | undefined {
         const condition = this.conditions.find((c) => c.id === conditionId);
@@ -109,7 +158,6 @@ export class OdontogramaSidebarComponent {
     }
 
     getConditionName(conditionId: string): string | undefined {
-        console.log('conditionId', conditionId);
         const condition = this.conditions.find((c) => c.id === conditionId);
         return condition?.name;
     }

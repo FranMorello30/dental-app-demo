@@ -6,6 +6,7 @@ import { MedicalHistory } from './entities/medical_history.entity';
 import { MedicalAttachment } from './entities/medical_attachment.entity';
 import { TreatedTeeth } from './entities/treated_teeth.entity';
 import { Appointment } from '../appointments/entities/appointment.entity';
+import { TreatmentTeeth } from './entities/treatment_teeth.entity';
 
 @Module({
   controllers: [MedicalHistoriesController],
@@ -16,6 +17,7 @@ import { Appointment } from '../appointments/entities/appointment.entity';
       MedicalAttachment,
       TreatedTeeth,
       Appointment,
+      TreatmentTeeth,
     ]),
   ],
 })

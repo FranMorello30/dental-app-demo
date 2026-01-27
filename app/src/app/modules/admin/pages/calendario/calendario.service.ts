@@ -51,6 +51,11 @@ export class CalendarioService {
             .get<AppointmentResponse>(`${this.baseUrl}/appointments`)
             .pipe(map((response) => response.appointments));
     }
+    getAppointmentById(id: string): Observable<Appointment> {
+        return this._http.get<Appointment>(
+            `${this.baseUrl}/appointments/${id}`
+        );
+    }
     updateAppointmentStatus(id: string, status: string): Observable<string> {
         return this._http
             .patch<Mensaje>(`${this.baseUrl}/appointments/status/${id}`, {

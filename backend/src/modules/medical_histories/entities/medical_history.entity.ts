@@ -7,6 +7,7 @@ import {
 } from 'typeorm';
 import { TreatedTeeth } from './treated_teeth.entity';
 import { MedicalAttachment } from './medical_attachment.entity';
+import { TreatmentTeeth } from './treatment_teeth.entity';
 import { Dentist } from '../../odontologos/entities/dentist.entity';
 import { Patient } from '../../patients/entities/patient.entity';
 import { Appointment } from '../../appointments/entities/appointment.entity';
@@ -64,6 +65,11 @@ export class MedicalHistory {
 
   @OneToMany(() => TreatedTeeth, (tooth) => tooth.medical, { cascade: true })
   treated_teeth: TreatedTeeth[];
+
+  // @OneToMany(() => TreatmentTeeth, (tooth) => tooth.medical, {
+  //   cascade: true,
+  // })
+  // treatment_teeth: TreatmentTeeth[];
 
   @ManyToOne(
     () => Appointment,

@@ -44,9 +44,6 @@ export class ModalEventoSidebarComponent implements OnInit {
     @ViewChild(OdontogramaSidebarComponent)
     odontogramaComponent!: OdontogramaSidebarComponent;
 
-    ngOnInit(): void {
-        // console.log('Selected Event:', this.selectedEvent());
-    }
     private readonly _calendarioService = inject(CalendarioService);
     private readonly _odontologoService = inject(OdontologoService);
     private readonly _detectChange = inject(ChangeDetectorRef);
@@ -59,10 +56,8 @@ export class ModalEventoSidebarComponent implements OnInit {
     @Output() changedEvent = new EventEmitter<void>();
     @Output() editEvent = new EventEmitter<Appointment>();
     isExpanded = false;
-
-    get isFinalized(): boolean {
-        return this.selectedEvent()?.status === 'Finalizada';
-    }
+    isLoadingDetails = false;
+    hasDetailsError = false;
 
     activeView: 'habits' | 'odontogram' | 'uploads' | 'finish' = 'habits';
     uploadedAttachments: any[] = [];
@@ -77,6 +72,72 @@ export class ModalEventoSidebarComponent implements OnInit {
     };
     isSavingHistory = false;
     readonly isDev = !environment.production;
+    get isFinalized(): boolean {
+        return this.selectedEvent()?.status === 'Finalizada';
+    }
+    ngOnInit(): void {
+        if (this.isFinalized) {
+            this.activeView = 'finish';
+            this.isExpanded = true;
+            const existingHistory = this.selectedEvent().medical_histories?.[0];
+            if (existingHistory) {
+                this.applyMedicalHistoryToForm(existingHistory);
+            }
+            this.loadFinalizedAppointment();
+        }
+    }
+    private loadFinalizedAppointment(): void {
+        const event = this.selectedEvent();
+        if (!event?.id) return;
+
+        this.isLoadingDetails = true;
+        this.hasDetailsError = false;
+
+        this._calendarioService.getAppointmentById(event.id).subscribe({
+            next: (appointment) => {
+                console.warn('Loaded finalized appointment:', appointment);
+                Object.assign(event, appointment);
+                if (appointment.start_time) {
+                    event.start_time = new Date(appointment.start_time as any);
+                }
+                if (appointment.end_time) {
+                    event.end_time = new Date(appointment.end_time as any);
+                }
+                this.applyMedicalHistoryToForm(
+                    appointment.medical_histories?.[0]
+                );
+                this.isLoadingDetails = false;
+                this._detectChange.detectChanges();
+            },
+            error: (err) => {
+                console.error('Error loading appointment details', err);
+                this.isLoadingDetails = false;
+                this.hasDetailsError = true;
+                this._detectChange.detectChanges();
+            },
+        });
+    }
+
+    private applyMedicalHistoryToForm(history?: any): void {
+        if (!history) return;
+
+        this.finishForm = {
+            diagnosis: history.diagnosis ?? '',
+            treatment: history.treatment ?? '',
+            medications: history.medications ?? '',
+            notes: history.notes ?? '',
+        };
+
+        const teethMap: Record<string, string> = {};
+        if (history.treated_teeth?.length) {
+            history.treated_teeth.forEach((tooth: any) => {
+                if (tooth?.tooth_number) {
+                    teethMap[String(tooth.tooth_number)] = 'green';
+                }
+            });
+        }
+        this.teethSelection = teethMap;
+    }
 
     readonly edoCitas: AppointmentStatus[] = [
         'Sin confirmar',
@@ -103,6 +164,11 @@ export class ModalEventoSidebarComponent implements OnInit {
             startTime: '',
             endTime: '',
         };
+    private readonly _rescheduleAllowed: AppointmentStatus[] = [
+        'Confirmada',
+        'Sin confirmar',
+        'Cancelada',
+    ];
     private workingDays = new Set<number>();
     private scheduleLoaded = false;
     currentDate: Date = new Date();
@@ -223,6 +289,7 @@ export class ModalEventoSidebarComponent implements OnInit {
     }
 
     startReschedule() {
+        if (!this.canReschedule()) return;
         const event = this.selectedEvent();
         const startDate = new Date(event.start_time);
         const endDate = new Date(event.end_time);
@@ -241,6 +308,23 @@ export class ModalEventoSidebarComponent implements OnInit {
         this.currentDate = new Date(this.rescheduleData.date);
         this.dateSelected = new Date(this.rescheduleData.date);
         this.rescheduleMode = true;
+    }
+
+    toggleReschedulePanel(): void {
+        if (this.rescheduleMode) {
+            this.cancelReschedule();
+            return;
+        }
+
+        this.startReschedule();
+    }
+
+    canReschedule(): boolean {
+        const status = this.selectedEvent()?.status as
+            | AppointmentStatus
+            | undefined;
+        if (!status) return false;
+        return this._rescheduleAllowed.includes(status);
     }
 
     cancelReschedule() {

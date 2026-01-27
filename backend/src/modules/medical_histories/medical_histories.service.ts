@@ -6,6 +6,9 @@ import { MedicalHistory } from './entities/medical_history.entity';
 import { TreatedTeeth } from './entities/treated_teeth.entity';
 import { MedicalAttachment } from './entities/medical_attachment.entity';
 import { Appointment } from '../appointments/entities/appointment.entity';
+import { TreatmentTeeth } from './entities/treatment_teeth.entity';
+import { CreateTreatmentTeethDto } from './dto/create-treatment_teeth.dto';
+import { UpdateTreatmentTeethDto } from './dto/update-treatment_teeth.dto';
 
 @Injectable()
 export class MedicalHistoriesService {
@@ -14,6 +17,8 @@ export class MedicalHistoriesService {
     private readonly medicalHistoryRepository: Repository<MedicalHistory>,
     @InjectRepository(Appointment)
     private readonly appointmentRepository: Repository<Appointment>,
+    @InjectRepository(TreatmentTeeth)
+    private readonly treatmentTeethRepository: Repository<TreatmentTeeth>,
   ) {}
 
   async create(createMedicalHistoryDto: CreateMedicalHistoryDto) {
@@ -87,5 +92,52 @@ export class MedicalHistoriesService {
 
   remove(id: number) {
     return `This action removes a #${id} medicalHistory`;
+  }
+
+  async createTreatmentTeeth(
+    dto: CreateTreatmentTeethDto,
+  ): Promise<TreatmentTeeth> {
+    const treatmentTeeth = this.treatmentTeethRepository.create({
+      color: dto.color,
+      treatment: dto.treatment,
+    });
+
+    return this.treatmentTeethRepository.save(treatmentTeeth);
+  }
+
+  async findAllTreatmentTeeth(): Promise<{
+    treatment_teeth: TreatmentTeeth[];
+  }> {
+    const treatment_teeth = await this.treatmentTeethRepository.find({
+      where: { is_deleted: false },
+    });
+    return { treatment_teeth };
+  }
+
+  async findTreatmentTeeth(id: string): Promise<TreatmentTeeth> {
+    const treatmentTeeth = await this.treatmentTeethRepository.findOne({
+      where: { id, is_deleted: false },
+    });
+    if (!treatmentTeeth)
+      throw new NotFoundException('TreatmentTeeth not found');
+    return treatmentTeeth;
+  }
+
+  async updateTreatmentTeeth(
+    id: string,
+    dto: UpdateTreatmentTeethDto,
+  ): Promise<TreatmentTeeth> {
+    const treatmentTeeth = await this.findTreatmentTeeth(id);
+
+    if (dto.color !== undefined) treatmentTeeth.color = dto.color;
+    if (dto.treatment !== undefined) treatmentTeeth.treatment = dto.treatment;
+
+    return this.treatmentTeethRepository.save(treatmentTeeth);
+  }
+
+  async removeTreatmentTeeth(id: string): Promise<void> {
+    const treatmentTeeth = await this.findTreatmentTeeth(id);
+    treatmentTeeth.is_deleted = true;
+    await this.treatmentTeethRepository.save(treatmentTeeth);
   }
 }
