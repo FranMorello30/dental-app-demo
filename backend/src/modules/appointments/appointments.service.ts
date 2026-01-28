@@ -54,7 +54,13 @@ export class AppointmentsService {
   async findAll(): Promise<{ appointments: Appointment[] }> {
     const appointments = await this.appointmentRepository.find({
       where: { is_deleted: false },
-      relations: ['dentist', 'patient'],
+      relations: [
+        'dentist',
+        'patient',
+        'patient.habit',
+        'patient.medical_alerts',
+        'patient.attachments',
+      ],
     });
 
     // appointments.forEach((appointment) => {
@@ -72,6 +78,9 @@ export class AppointmentsService {
       relations: [
         'dentist',
         'patient',
+        'patient.habit',
+        'patient.medical_alerts',
+        'patient.attachments',
         'medical_histories',
         'medical_histories.treated_teeth',
         'medical_histories.attachments',

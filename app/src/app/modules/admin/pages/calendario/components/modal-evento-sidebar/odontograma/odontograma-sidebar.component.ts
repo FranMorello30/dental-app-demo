@@ -141,6 +141,7 @@ export class OdontogramaSidebarComponent implements OnInit {
                     );
                     this.currentCondition =
                         this.conditions[0]?.id ?? this.currentCondition;
+                    console.log('Loaded conditions:', this.conditions);
                     this._cdr.markForCheck();
                 },
                 error: (error) => {

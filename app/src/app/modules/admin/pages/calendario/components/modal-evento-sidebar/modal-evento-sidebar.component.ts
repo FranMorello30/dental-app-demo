@@ -1,4 +1,5 @@
 import { CommonModule } from '@angular/common';
+import { HttpClient } from '@angular/common/http';
 import {
     ChangeDetectionStrategy,
     ChangeDetectorRef,
@@ -25,6 +26,20 @@ import { UploadArchivoComponent } from '@shared/components/upload-archivo/upload
 import { CalendarioComponent } from '../../calendario.component';
 import { OdontogramaSidebarComponent } from './odontograma/odontograma-sidebar.component';
 
+interface Condition {
+    id: string;
+    name: string;
+    color: string;
+}
+
+interface TreatmentTeethResponse {
+    treatment_teeth: Array<{
+        id: string;
+        color: string;
+        treatment: string;
+    }>;
+}
+
 @Component({
     selector: 'app-modal-evento-sidebar',
     standalone: true,
@@ -46,6 +61,7 @@ export class ModalEventoSidebarComponent implements OnInit {
 
     private readonly _calendarioService = inject(CalendarioService);
     private readonly _odontologoService = inject(OdontologoService);
+    private readonly _http = inject(HttpClient);
     private readonly _detectChange = inject(ChangeDetectorRef);
 
     @Host() private padre = inject(CalendarioComponent);
@@ -62,6 +78,7 @@ export class ModalEventoSidebarComponent implements OnInit {
     activeView: 'habits' | 'odontogram' | 'uploads' | 'finish' = 'habits';
     uploadedAttachments: any[] = [];
     teethSelection: Record<string, string> = {}; // Store teeth selection here
+    treatmentOptions: Condition[] = [];
 
     // Form fields for finishing appointment
     finishForm = {
@@ -76,6 +93,7 @@ export class ModalEventoSidebarComponent implements OnInit {
         return this.selectedEvent()?.status === 'Finalizada';
     }
     ngOnInit(): void {
+        this.loadTreatmentOptions();
         if (this.isFinalized) {
             this.activeView = 'finish';
             this.isExpanded = true;
@@ -118,6 +136,31 @@ export class ModalEventoSidebarComponent implements OnInit {
         });
     }
 
+    private loadTreatmentOptions(): void {
+        this._http
+            .get<TreatmentTeethResponse>(
+                'http://localhost:4978/api/medical-histories/treatment-teeth'
+            )
+            .subscribe({
+                next: (response) => {
+                    this.treatmentOptions = (
+                        response.treatment_teeth ?? []
+                    ).map((item) => ({
+                        id: item.id,
+                        name: item.treatment,
+                        color: item.color,
+                    }));
+                    this._detectChange.detectChanges();
+                },
+                error: (error) => {
+                    console.error(
+                        'Error loading treatment teeth options',
+                        error
+                    );
+                },
+            });
+    }
+
     private applyMedicalHistoryToForm(history?: any): void {
         if (!history) return;
 
@@ -132,11 +175,47 @@ export class ModalEventoSidebarComponent implements OnInit {
         if (history.treated_teeth?.length) {
             history.treated_teeth.forEach((tooth: any) => {
                 if (tooth?.tooth_number) {
-                    teethMap[String(tooth.tooth_number)] = 'green';
+                    const treatmentId =
+                        typeof tooth.treatment === 'string'
+                            ? tooth.treatment
+                            : tooth.treatment?.id;
+                    if (treatmentId) {
+                        teethMap[String(tooth.tooth_number)] = treatmentId;
+                    }
                 }
             });
         }
         this.teethSelection = teethMap;
+    }
+
+    getTreatmentName(treatment: any): string {
+        if (!treatment) return '';
+        if (typeof treatment === 'string') {
+            return (
+                this.treatmentOptions.find((t) => t.id === treatment)?.name ??
+                treatment
+            );
+        }
+        const treatmentId =
+            treatment.id ?? treatment.treatment_id ?? treatment.treatmentId;
+        if (treatmentId) {
+            return (
+                this.treatmentOptions.find((t) => t.id === String(treatmentId))
+                    ?.name ?? String(treatmentId)
+            );
+        }
+        return treatment.treatment ?? '';
+    }
+
+    getAttachmentName(file: any): string {
+        if (!file) return '';
+        return (
+            file.name ??
+            file.nombre ??
+            file.nombreOriginal ??
+            file.ruta ??
+            String(file)
+        );
     }
 
     readonly edoCitas: AppointmentStatus[] = [
@@ -152,6 +231,9 @@ export class ModalEventoSidebarComponent implements OnInit {
     ];
     private readonly _futureRestricted: AppointmentStatus[] = [
         'En consulta',
+        'En espera',
+        'Ausente',
+        'Pendiente de pago',
         'Finalizada',
         'Finalizada (Pendiente)',
     ];
@@ -202,6 +284,57 @@ export class ModalEventoSidebarComponent implements OnInit {
             this.isExpanded = true;
         }
         //  this.isExpandedSidebar.emit(this.isExpanded);
+    }
+
+    getHabitItems(): Array<{ label: string; value: string }> {
+        const habit = this.getPatientHabits();
+        if (!habit) return [];
+
+        return [
+            {
+                label: 'Fumador',
+                value: habit.smoking ? 'Sí' : 'No',
+            },
+            {
+                label: 'Consumo de alcohol',
+                value: habit.alcohol ? 'Sí' : 'No',
+            },
+            {
+                label: 'Bruxismo',
+                value: habit.bruxism ? 'Sí' : 'No',
+            },
+            {
+                label: 'Uso de hilo dental',
+                value: this.formatFrequency(habit.flossing, {
+                    daily: 'Diario',
+                    weekly: 'Semanal',
+                    never: 'Nunca',
+                }),
+            },
+            {
+                label: 'Frecuencia de cepillado',
+                value: this.formatFrequency(habit.brushingFrequency, {
+                    '1': '1 vez al día',
+                    '2': '2 veces al día',
+                    '3': '3 veces al día',
+                    '4': '4 veces al día',
+                    daily: 'Diario',
+                }),
+            },
+        ];
+    }
+
+    private getPatientHabits(): any | null {
+        const patient = this.selectedEvent()?.patient as any;
+        return patient?.habit ?? patient?.habits ?? null;
+    }
+
+    private formatFrequency(
+        value: string | null | undefined,
+        dictionary: Record<string, string>
+    ): string {
+        if (!value) return 'No registrado';
+        return dictionary[value] ?? String(value);
     }
 
     fillDemoFinish(): void {
@@ -533,6 +666,13 @@ export class ModalEventoSidebarComponent implements OnInit {
         }
 
         return this.edoCitas;
+    }
+
+    isFutureAppointment(): boolean {
+        const event = this.selectedEvent();
+        if (!event?.start_time) return false;
+        const startTime = new Date(event.start_time as any);
+        return startTime.getTime() > new Date().getTime();
     }
 
     changeStatus(status: AppointmentStatus) {

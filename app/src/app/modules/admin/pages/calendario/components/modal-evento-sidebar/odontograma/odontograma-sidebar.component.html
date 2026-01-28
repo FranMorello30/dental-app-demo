@@ -1,6 +1,6 @@
 <div class="flex h-full w-full flex-col p-4">
     <!-- Controls Section -->
-    <div class="mb-4 flex flex-col gap-3">
+    <div class="mb-4 flex flex-col gap-3" *ngIf="!readOnly">
         <mat-form-field appearance="outline" class="w-full">
             <mat-label>Condición</mat-label>
             <mat-select [(value)]="currentCondition" [disabled]="readOnly">

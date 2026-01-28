@@ -37,77 +37,33 @@
                 </div>
                 <div class="flex-1 space-y-4 overflow-y-auto p-4">
                     <div [style.display]="activeView === 'habits' ? 'block' : 'none'">
-                        <!-- Mock Content -->
-                        <div class="rounded-xl bg-gray-50 p-4">
-                            <div class="flex items-start gap-3">
-                                <div
-                                    class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white"
-                                >
-                                    1
+                        @if (getHabitItems().length) {
+                            @for (item of getHabitItems(); track $index) {
+                                <div class="rounded-xl bg-gray-50 p-4">
+                                    <div class="flex items-start gap-3">
+                                        <div
+                                            class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white"
+                                        >
+                                            {{ $index + 1 }}
+                                        </div>
+                                        <div>
+                                            <div class="text-xs text-gray-500">
+                                                {{ item.label }}
+                                            </div>
+                                            <div class="font-medium text-gray-900">
+                                                {{ item.value }}
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div>
-                                    <div class="text-xs text-gray-500">
-                                        When did you make the latest dental
-                                        visit?
-                                    </div>
-                                    <div class="font-medium text-gray-900">
-                                        Less than 3 months ago
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="rounded-xl bg-gray-50 p-4">
-                            <div class="flex items-start gap-3">
-                                <div
-                                    class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white"
-                                >
-                                    2
-                                </div>
-                                <div>
-                                    <div class="text-xs text-gray-500">
-                                        What time did you start dental care?
-                                    </div>
-                                    <div class="font-medium text-gray-900">
-                                        Teenager
-                                    </div>
+                            }
+                        } @else {
+                            <div class="rounded-xl bg-gray-50 p-4">
+                                <div class="text-sm text-gray-500">
+                                    No hay hábitos registrados para este paciente.
                                 </div>
                             </div>
-                        </div>
-                        <div class="rounded-xl bg-gray-50 p-4">
-                            <div class="flex items-start gap-3">
-                                <div
-                                    class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white"
-                                >
-                                    3
-                                </div>
-                                <div>
-                                    <div class="text-xs text-gray-500">
-                                        How many time, in a day, do you wash
-                                        your teeth?
-                                    </div>
-                                    <div class="font-medium text-gray-900">
-                                        Once
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="rounded-xl bg-gray-50 p-4">
-                            <div class="flex items-start gap-3">
-                                <div
-                                    class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white"
-                                >
-                                    4
-                                </div>
-                                <div>
-                                    <div class="text-xs text-gray-500">
-                                        Do you use mouthwash?
-                                    </div>
-                                    <div class="font-medium text-gray-900">
-                                        From 3 to 6 months ago
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                        }
                     </div>
                     <div [style.display]="activeView === 'odontogram' ? 'block' : 'none'">
                         <app-odontograma-sidebar
@@ -120,10 +76,12 @@
                     </div>
                     <div [style.display]="activeView === 'finish' ? 'block' : 'none'">
                         <div class="space-y-4 rounded-xl bg-gray-50 p-4">
-                                 <div class="mb-2 rounded-lg bg-blue-50 p-3 text-sm text-blue-700">
-                                     <p class="font-bold">Finalizando Cita</p>
-                                     <p>Por favor complete el registro médico para cerrar la cita.</p>
-                                 </div>
+                                 @if (!isFinalized) {
+                                     <div class="mb-2 rounded-lg bg-blue-50 p-3 text-sm text-blue-700">
+                                         <p class="font-bold">Finalizando Cita</p>
+                                         <p>Por favor complete el registro médico para cerrar la cita.</p>
+                                     </div>
+                                 }
 
                                  @if (isDev && !isFinalized) {
                                      <div class="flex justify-end">
@@ -156,6 +114,32 @@
                                     <label class="mb-1 block text-sm font-medium text-gray-700">Notas Adicionales</label>
                                     <textarea [(ngModel)]="finishForm.notes" rows="2" class="w-full rounded-lg border border-gray-200 p-2 text-sm focus:border-blue-500 focus:outline-none" placeholder="Notas internas..." [readOnly]="isFinalized"></textarea>
                                  </div>
+
+                                 @if (!isFinalized && uploadedAttachments?.length) {
+                                     <div>
+                                         <label class="mb-1 block text-sm font-medium text-gray-700">Adjuntos</label>
+                                         <div class="mt-2 space-y-1">
+                                             @for (file of uploadedAttachments; track $index) {
+                                                 <div class="text-xs text-blue-600">
+                                                     {{ getAttachmentName(file) }}
+                                                 </div>
+                                             }
+                                         </div>
+                                     </div>
+                                 }
+
+                                 @if (isFinalized && selectedEvent().medical_histories?.[0]?.attachments?.length) {
+                                     <div>
+                                         <label class="mb-1 block text-sm font-medium text-gray-700">Adjuntos</label>
+                                         <div class="mt-2 space-y-1">
+                                             @for (file of selectedEvent().medical_histories[0].attachments; track $index) {
+                                                 <div class="text-xs text-blue-600">
+                                                     {{ getAttachmentName(file) }}
+                                                 </div>
+                                             }
+                                         </div>
+                                     </div>
+                                 }
                         </div>
                     </div>
                 </div>
@@ -197,7 +181,7 @@
                     >
                         <mat-icon
                             class="icon-size-5"
-                            svgIcon="heroicons_outline:check-circle"
+                            svgIcon="heroicons_outline:pencil"
                         ></mat-icon>
                     </button>
                     <button
@@ -210,7 +194,7 @@
                     >
                         <mat-icon
                             class="icon-size-5"
-                            svgIcon="heroicons_outline:user"
+                            svgIcon="custom_outline:smile"
                         ></mat-icon>
                     </button>
                     <button
@@ -223,7 +207,7 @@
                     >
                         <mat-icon
                             class="icon-size-5"
-                            svgIcon="heroicons_outline:document-text"
+                            svgIcon="feather:upload-cloud"
                         ></mat-icon>
                     </button>
                     
@@ -494,7 +478,7 @@
                                             <div class="mt-2 flex flex-wrap gap-2">
                                                 @for (tooth of selectedEvent().medical_histories[0].treated_teeth; track $index) {
                                                     <span class="rounded-full bg-blue-50 px-2 py-1 text-xs font-semibold text-blue-700">
-                                                        {{ tooth.tooth_number }} - {{ tooth.treatment }}
+                                                        {{ tooth.tooth_number }} - {{ getTreatmentName(tooth.treatment) }}
                                                     </span>
                                                 }
                                             </div>
@@ -760,7 +744,7 @@
                         class="flex items-center justify-between border-t border-gray-100 px-8 py-4"
                     >
                         <button
-                            (click)="cancelAppointment()"
+                            (click)="close()"
                             [disabled]="isFinalized"
                             class="rounded-xl border border-red-200 bg-white px-6 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
@@ -778,7 +762,7 @@
                                     svgIcon="heroicons_mini:arrow-path"
                                 ></mat-icon> -->
                             </button>
-                        }@else{
+                        }@else if (!isFutureAppointment()){
                             <button
                                 #btnAction
                                 class="rounded-xl border border-gray-200 bg-white px-6 py-2.5 text-sm font-medium text-blue-600 hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed"
