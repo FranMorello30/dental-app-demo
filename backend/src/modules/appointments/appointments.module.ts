@@ -6,12 +6,14 @@ import { Appointment } from './entities/appointment.entity';
 import { OdontologosModule } from '../odontologos/odontologos.module';
 import { PatientsModule } from '../patients/patients.module';
 import { SocketModule } from 'src/socket/socket-ws.module';
+import { TreatmentProcedure } from '../treatment_plans/entities/treatment_procedure.entity';
+import { TreatmentPlan } from '../treatment_plans/entities/treatment_plan.entity';
 
 @Module({
   controllers: [AppointmentsController],
   providers: [AppointmentsService],
   imports: [
-    TypeOrmModule.forFeature([Appointment]),
+    TypeOrmModule.forFeature([Appointment, TreatmentProcedure, TreatmentPlan]),
     OdontologosModule,
     PatientsModule,
     SocketModule,

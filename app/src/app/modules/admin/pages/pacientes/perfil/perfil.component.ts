@@ -1,10 +1,21 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import {
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    OnInit,
+    inject,
+} from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTabsModule } from '@angular/material/tabs';
+import { ActivatedRoute } from '@angular/router';
+import { MedicalHistory } from '@shared/models/appointement.model';
+import { Paciente } from '@shared/models/pacientes.model';
+import { TreatmentPlan } from '@shared/models/treatment-plan.model';
 import { format } from 'date-fns';
 import { AppointmentStatus } from '../../calendario/calendario.model';
+import { PacienteService } from '../pacientes.service';
 import { HistorialCitaComponent } from './historial-cita/historial-cita.component';
 import { OdontogramaComponent } from './odontograma/odontograma.component';
 import { PlanTratamientoComponent } from './plan-tratamiento/plan-tratamiento.component';
@@ -24,8 +35,18 @@ import { PlanTratamientoComponent } from './plan-tratamiento/plan-tratamiento.co
 
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class PerfilComponent {
+export class PerfilComponent implements OnInit {
+    private readonly _activatedRoute = inject(ActivatedRoute);
+    private readonly _pacienteService = inject(PacienteService);
+    private readonly _cdr = inject(ChangeDetectorRef);
+
     public registerEvent = false;
+    public patientId =
+        this._activatedRoute.snapshot.paramMap.get('id') ||
+        this._activatedRoute.parent?.snapshot.paramMap.get('id') ||
+        '';
+    public isLoadingPatient = false;
+    public patientError: string | null = null;
     currentDate: Date = new Date();
     year = this.currentDate.getFullYear();
     month = this.currentDate.getMonth();
@@ -142,88 +163,23 @@ export class PerfilComponent {
         'Ortodoncia - Consulta Inicial',
     ];
     patient = {
-        id: 1,
-        name: 'Francisco Morello',
-        email: 'jose19francisco@gmail.com',
-        phone: '(58) 424-436-8567',
-        address: 'Resiendias Rio Caroni II Sector Paraparal',
-        dateOfBirth: '1990-02-26',
-        lastAppointment: '2025-03-15', // Fecha de última consulta
-        nextAppointment: '2025-05-20', // Fecha de próxima consulta
+        id: '',
+        name: '',
+        email: '',
+        phone: '',
+        address: '',
+        dateOfBirth: '',
+        lastAppointment: null as string | null,
+        nextAppointment: null as string | null,
         insurance: 'No registrado',
         insuranceId: 'No registrado',
     };
-
-    // Sample treatment plans
-
-    // Sample medical history records
-    medicalHistoryData = [
-        {
-            id: 1,
-            date: '2025-03-15',
-            type: 'Examen periódico',
-            description: 'Examen dental completo con radiografías',
-            findings:
-                'Salud dental general buena. No se detectaron nuevas caries.',
-            recommendations:
-                'Continuar con higiene dental habitual. Próxima revisión en 6 meses.',
-            dentist: 'Dr. María García',
-            attachments: [
-                {
-                    id: 1,
-                    name: 'Radiografía panorámica',
-                    type: 'image',
-                    url: '#',
-                },
-                { id: 2, name: 'Informe dental', type: 'pdf', url: '#' },
-            ],
-        },
-        {
-            id: 2,
-            date: '2025-01-20',
-            type: 'Procedimiento',
-            description: 'Extracción de muela del juicio inferior derecha',
-            findings:
-                'Extracción sin complicaciones. Buen pronóstico de cicatrización.',
-            recommendations:
-                'Dieta blanda por 48 horas. Analgésicos según prescripción. Revisión en 2 semanas.',
-            dentist: 'Dr. Carlos Ruiz',
-            attachments: [
-                { id: 1, name: 'Radiografía previa', type: 'image', url: '#' },
-                { id: 2, name: 'Prescripción', type: 'pdf', url: '#' },
-            ],
-        },
-        {
-            id: 3,
-            date: '2024-11-05',
-            type: 'Diagnóstico',
-            description: 'Revisión y diagnóstico de dolor en zona molar',
-            findings:
-                'Se detecta caries incipiente en molar inferior derecho. No hay afectación pulpar.',
-            recommendations:
-                'Programar tratamiento de caries. Reforzar higiene en zona molar.',
-            dentist: 'Dr. María García',
-            attachments: [
-                {
-                    id: 1,
-                    name: 'Radiografía de diagnóstico',
-                    type: 'image',
-                    url: '#',
-                },
-            ],
-        },
-        {
-            id: 4,
-            date: '2024-08-12',
-            type: 'Procedimiento',
-            description: 'Empaste en molar inferior derecho',
-            findings: 'Caries de profundidad media. No hubo exposición pulpar.',
-            recommendations:
-                'Evitar alimentos duros por 24 horas. Mantener higiene regular.',
-            dentist: 'Dr. Carlos Ruiz',
-            attachments: [],
-        },
-    ];
+    public medicalHistoryData: MedicalHistory[] = [];
+    public isLoadingMedicalHistory = false;
+    public medicalHistoryError: string | null = null;
+    public billingPlans: TreatmentPlan[] = [];
+    public isLoadingBilling = false;
+    public billingError: string | null = null;
 
     dientesTratados = [
         { toothNumber: 18, treatmentId: 'extraction' },
@@ -231,57 +187,147 @@ export class PerfilComponent {
         { toothNumber: 46, treatmentId: 'caries' },
         { toothNumber: 26, treatmentId: 'crown' },
     ];
-    // Sample payment history
-    paymentHistoryData = [
-        {
-            id: 1,
-            date: '2025-03-15',
-            amount: 80.0,
-            method: 'Tarjeta de crédito',
-            description: 'Pago por limpieza dental',
-            invoice: 'INV-2025-001',
-        },
-        {
-            id: 2,
-            date: '2025-01-20',
-            amount: 150.0,
-            method: 'Efectivo',
-            description: 'Pago por extracción dental',
-            invoice: 'INV-2025-002',
-        },
-        {
-            id: 3,
-            date: '2025-01-05',
-            amount: 500.0,
-            method: 'Transferencia',
-            description: 'Primer pago tratamiento ortodoncia',
-            invoice: 'INV-2025-003',
-        },
-        {
-            id: 4,
-            date: '2024-12-15',
-            amount: 500.0,
-            method: 'Transferencia',
-            description: 'Depósito inicial tratamiento ortodoncia',
-            invoice: 'INV-2024-045',
-        },
-        {
-            id: 5,
-            date: '2024-11-05',
-            amount: 50.0,
-            method: 'Tarjeta de débito',
-            description: 'Pago por revisión',
-            invoice: 'INV-2024-040',
-        },
-        {
-            id: 6,
-            date: '2024-08-12',
-            amount: 95.0,
-            method: 'Efectivo',
-            description: 'Pago por empaste dental',
-            invoice: 'INV-2024-032',
-        },
-    ];
+
+    ngOnInit(): void {
+        this.loadPatient();
+        this.loadMedicalHistory();
+        this.loadBillingData();
+    }
+
+    private loadPatient(): void {
+        if (!this.patientId) {
+            this.patientError = 'No se encontró el paciente solicitado.';
+            this._cdr.markForCheck();
+            return;
+        }
+
+        this.isLoadingPatient = true;
+        this.patientError = null;
+
+        this._pacienteService.getPatientById(this.patientId).subscribe({
+            next: (patient: Paciente & { insurance_id?: string }) => {
+                this.patient = {
+                    id: patient.id,
+                    name: patient.name || '',
+                    email: patient.email || '',
+                    phone: patient.phone || '',
+                    address: patient.address || '',
+                    dateOfBirth: patient.date_of_birth || '',
+                    lastAppointment: patient.last_appointment,
+                    nextAppointment: patient.next_appointment,
+                    insurance: patient.insurance || 'No registrado',
+                    insuranceId: patient.insurance_id || 'No registrado',
+                };
+                this.isLoadingPatient = false;
+                this._cdr.markForCheck();
+            },
+            error: () => {
+                this.patientError =
+                    'No se pudo cargar la información del paciente.';
+                this.isLoadingPatient = false;
+                this._cdr.markForCheck();
+            },
+        });
+    }
+
+    private loadMedicalHistory(): void {
+        if (!this.patientId) {
+            this.medicalHistoryError =
+                'No se encontró el paciente para cargar su historia clínica.';
+            this._cdr.markForCheck();
+            return;
+        }
+
+        this.isLoadingMedicalHistory = true;
+        this.medicalHistoryError = null;
+
+        this._pacienteService.getMedicalHistories().subscribe({
+            next: (
+                histories: Array<MedicalHistory & { patient?: { id: string } }>
+            ) => {
+                this.medicalHistoryData = histories
+                    .filter((history) => history.patient?.id === this.patientId)
+                    .sort(
+                        (a, b) =>
+                            new Date(b.date).getTime() -
+                            new Date(a.date).getTime()
+                    );
+                this.isLoadingMedicalHistory = false;
+                this._cdr.markForCheck();
+            },
+            error: () => {
+                this.medicalHistoryError =
+                    'No se pudo cargar la historia clínica del paciente.';
+                this.isLoadingMedicalHistory = false;
+                this._cdr.markForCheck();
+            },
+        });
+    }
+
+    private loadBillingData(): void {
+        if (!this.patientId) {
+            this.billingError =
+                'No se encontró el paciente para cargar su facturación.';
+            this._cdr.markForCheck();
+            return;
+        }
+
+        this.isLoadingBilling = true;
+        this.billingError = null;
+
+        this._pacienteService.getTreatmentPlans().subscribe({
+            next: (plans) => {
+                this.billingPlans = plans
+                    .filter((plan) => plan.patient?.id === this.patientId)
+                    .sort(
+                        (a, b) =>
+                            new Date(b.created_at).getTime() -
+                            new Date(a.created_at).getTime()
+                    );
+                this.isLoadingBilling = false;
+                this._cdr.markForCheck();
+            },
+            error: () => {
+                this.billingError =
+                    'No se pudo cargar la facturación del paciente.';
+                this.isLoadingBilling = false;
+                this._cdr.markForCheck();
+            },
+        });
+    }
+
+    getBillingTotal(): number {
+        return this.billingPlans.reduce(
+            (total, plan) => total + Number(plan.total_cost || 0),
+            0
+        );
+    }
+
+    getBillingPaid(): number {
+        return this.billingPlans.reduce(
+            (total, plan) => total + Number(plan.paid_amount || 0),
+            0
+        );
+    }
+
+    getBillingPending(): number {
+        return this.getBillingTotal() - this.getBillingPaid();
+    }
+
+    getPlanPendingAmount(plan: TreatmentPlan): number {
+        return Number(plan.total_cost || 0) - Number(plan.paid_amount || 0);
+    }
+
+    getBillingStatus(plan: TreatmentPlan): string {
+        const pending = this.getPlanPendingAmount(plan);
+        if (pending <= 0) {
+            return 'Pagado';
+        }
+        if (Number(plan.paid_amount || 0) > 0) {
+            return 'Parcial';
+        }
+        return 'Pendiente';
+    }
     formatDate(dateString: string | null | undefined) {
         if (!dateString) return 'No registrada';
 
@@ -303,6 +349,10 @@ export class PerfilComponent {
         return dateObj.toLocaleDateString('es-ES', options);
     }
     getEdad() {
+        if (!this.patient.dateOfBirth) {
+            return 0;
+        }
+
         return Math.floor(
             (new Date().getTime() -
                 new Date(this.patient.dateOfBirth).getTime()) /

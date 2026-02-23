@@ -343,7 +343,7 @@
                                 class="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-50 text-gray-400"
                             >
                                 <mat-icon
-                                    class="icon-size-5"
+                                   
                                     svgIcon="heroicons_outline:sparkles"
                                 ></mat-icon>
                             </div>
@@ -362,10 +362,26 @@
                             <div
                                 class="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-50 text-gray-400"
                             >
-                                <mat-icon
-                                    class="icon-size-5"
-                                    svgIcon="heroicons_outline:clock"
-                                ></mat-icon>
+                                <!-- <mat-icon
+                                      (click)="toggleReschedulePanel()"
+                                      
+                                    class="icon-size-5 hover:text-blue-600 cursor-pointer"
+                                    svgIcon="heroicons_outline:calendar-days"
+                                     title="Reprogramar"
+                                ></mat-icon> -->
+                                <button
+                                        mat-icon-button
+                                        class=" text-gray-400  disabled:opacity-30"
+                                        (click)="toggleReschedulePanel()"
+                                        [disabled]="!canReschedule()"
+                                       title="Reprogramar"
+                                    >
+                                        <mat-icon
+                                           class="hover:text-blue-600"
+                                            svgIcon="heroicons_outline:calendar-days"
+                                        ></mat-icon>
+                                    </button> 
+                                <!--  -->
                             </div>
                             <div>
                                 <div
@@ -391,18 +407,18 @@
                                                 | date: 'hh:mm a'
                                         }}
                                     </span>
-                                    <button
+                                    <!-- <button
                                         mat-icon-button
                                         class="h-6 w-6 text-gray-400 hover:text-blue-600 disabled:opacity-30"
                                         (click)="toggleReschedulePanel()"
-                                        [disabled]="!canReschedule()"
-                                        title="Reprogramar"
+                                        
+                                       
                                     >
                                         <mat-icon
                                             class="icon-size-4"
                                             svgIcon="heroicons_outline:calendar-days"
                                         ></mat-icon>
-                                    </button>
+                                    </button> -->
                                 </div>
                             </div>
                         </div>
@@ -411,7 +427,7 @@
                                 class="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-50 text-gray-400"
                             >
                                 <mat-icon
-                                    class="icon-size-5"
+                                  
                                     svgIcon="heroicons_outline:user"
                                 ></mat-icon>
                             </div>

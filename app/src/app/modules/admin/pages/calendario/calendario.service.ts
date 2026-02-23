@@ -8,6 +8,10 @@ import {
 } from '@shared/models/appointement.model';
 import { Dentist, DentistResponse } from '@shared/models/dentist.model';
 import { Paciente, PacientesResponse } from '@shared/models/pacientes.model';
+import {
+    TreatmentPlan,
+    TreatmentProcedure,
+} from '@shared/models/treatment-plan.model';
 import { Treatment, TreatmentResponse } from '@shared/models/treatment.model';
 import { map, type Observable } from 'rxjs';
 
@@ -41,6 +45,31 @@ export class CalendarioService {
             .get<PacientesResponse>(`${this.baseUrl}/patients`)
             .pipe(map((response) => response.patients));
     }
+
+    getTreatmentPlans(): Observable<TreatmentPlan[]> {
+        return this._http.get<TreatmentPlan[]>(
+            `${this.baseUrl}/treatment-plans`
+        );
+    }
+
+    getPendingProceduresByPatient(
+        patientId: string
+    ): Observable<TreatmentProcedure[]> {
+        return this.getTreatmentPlans().pipe(
+            map((plans) =>
+                plans
+                    .filter((plan) => plan.patient?.id === patientId)
+                    .flatMap((plan) => plan.procedures ?? [])
+                    .filter((procedure) => {
+                        const status = (procedure.status || '').toLowerCase();
+                        return (
+                            status !== 'completado' && status !== 'finalizado'
+                        );
+                    })
+            )
+        );
+    }
+
     createAppointment(cita: any): Observable<string> {
         return this._http
             .post<Mensaje>(`${this.baseUrl}/appointments`, { ...cita })

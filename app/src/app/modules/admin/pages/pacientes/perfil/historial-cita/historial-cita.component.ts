@@ -1,6 +1,17 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import {
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    OnChanges,
+    OnInit,
+    SimpleChanges,
+    inject,
+    input,
+} from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
+import { Appointment } from '@shared/models/appointement.model';
+import { CalendarioService } from '../../../calendario/calendario.service';
 
 @Component({
     selector: 'historial-cita',
@@ -10,49 +21,82 @@ import { MatIconModule } from '@angular/material/icon';
     styles: ``,
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class HistorialCitaComponent {
-    public appointmentHistoryData = [
-        {
-            id: 1,
-            date: '2025-03-15',
-            treatment: 'Limpieza Dental',
-            dentist: 'Dr. María García',
-            status: 'Completada',
-            notes: 'Paciente sin problemas, próxima revisión en 6 meses',
-            cost: 80.0,
-            paid: true,
-        },
-        {
-            id: 2,
-            date: '2025-01-20',
-            treatment: 'Extracción',
-            dentist: 'Dr. Carlos Ruiz',
-            status: 'Completada',
-            notes: 'Extracción de muela del juicio, seguimiento en 2 semanas',
-            cost: 150.0,
-            paid: true,
-        },
-        {
-            id: 3,
-            date: '2024-11-05',
-            treatment: 'Revisión',
-            dentist: 'Dr. María García',
-            status: 'Cancelada',
-            notes: 'Radiografías realizadas, se detecta caries incipiente en molar inferior derecho',
-            cost: 50.0,
-            paid: true,
-        },
-        {
-            id: 4,
-            date: '2024-08-12',
-            treatment: 'Empaste',
-            dentist: 'Dr. Carlos Ruiz',
-            status: 'Completada',
-            notes: 'Empaste en molar inferior derecho, seguimiento satisfactorio',
-            cost: 95.0,
-            paid: true,
-        },
-    ];
+export class HistorialCitaComponent implements OnInit, OnChanges {
+    private readonly _calendarioService = inject(CalendarioService);
+    private readonly _cdr = inject(ChangeDetectorRef);
+
+    public patientId = input<string>('');
+    public isLoading = false;
+    public errorMessage: string | null = null;
+
+    public appointmentHistoryData: Array<{
+        id: string;
+        date: string;
+        treatment: string;
+        dentist: string;
+        status: string;
+        notes: string;
+        cost: number;
+        paid: boolean;
+    }> = [];
+
+    ngOnInit(): void {
+        this.loadHistory();
+    }
+
+    ngOnChanges(changes: SimpleChanges): void {
+        if (changes['patientId'] && !changes['patientId'].firstChange) {
+            this.loadHistory();
+        }
+    }
+
+    private loadHistory(): void {
+        if (!this.patientId()) {
+            this.appointmentHistoryData = [];
+            this.errorMessage = null;
+            this._cdr.markForCheck();
+            return;
+        }
+
+        this.isLoading = true;
+        this.errorMessage = null;
+
+        this._calendarioService.getAppointments().subscribe({
+            next: (appointments: Appointment[]) => {
+                const patientAppointments = appointments
+                    .filter(
+                        (appointment) =>
+                            appointment.patient?.id === this.patientId()
+                    )
+                    .map((appointment) => ({
+                        id: appointment.id,
+                        date: String(appointment.start_time),
+                        treatment: appointment.treatment || 'Sin tratamiento',
+                        dentist: appointment.dentist?.name || 'Sin asignar',
+                        status: appointment.status,
+                        notes: appointment.notes || '',
+                        cost: 0,
+                        paid: false,
+                    }))
+                    .sort(
+                        (a, b) =>
+                            new Date(b.date).getTime() -
+                            new Date(a.date).getTime()
+                    );
+
+                this.appointmentHistoryData = patientAppointments;
+                this.isLoading = false;
+                this._cdr.markForCheck();
+            },
+            error: () => {
+                this.appointmentHistoryData = [];
+                this.errorMessage =
+                    'No se pudo cargar el historial de citas del paciente.';
+                this.isLoading = false;
+                this._cdr.markForCheck();
+            },
+        });
+    }
 
     formatDate(dateString: string | null | undefined) {
         if (!dateString) return 'No registrada';

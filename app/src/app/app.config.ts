@@ -1,9 +1,5 @@
 import { provideHttpClient } from '@angular/common/http';
-import {
-    ApplicationConfig,
-    LOCALE_ID,
-    importProvidersFrom,
-} from '@angular/core';
+import { ApplicationConfig, LOCALE_ID } from '@angular/core';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import {
     PreloadAllModules,
@@ -13,9 +9,6 @@ import {
     withPreloading,
 } from '@angular/router';
 import { provideFuse } from '@fuse';
-
-import { CalendarModule, DateAdapter } from 'angular-calendar';
-import { adapterFactory } from 'angular-calendar/date-adapters/date-fns';
 
 import { appRoutes } from 'app/app.routes';
 import { provideAuth } from 'app/core/auth/auth.provider';
@@ -117,13 +110,6 @@ export const appConfig: ApplicationConfig = {
                 ],
             },
         }),
-
-        importProvidersFrom(
-            CalendarModule.forRoot({
-                provide: DateAdapter,
-                useFactory: adapterFactory,
-            })
-        ),
     ],
 };
 

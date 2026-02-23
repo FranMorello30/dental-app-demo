@@ -1,4 +1,12 @@
 <div class="surface-card p-6">
+              @if (isLoading) {
+                <div class="mb-4 text-sm text-gray-600 dark:text-gray-300">Cargando historial de citas...</div>
+              }
+
+              @if (errorMessage) {
+                <div class="mb-4 text-sm text-red-600">{{ errorMessage }}</div>
+              }
+
               <div class="flex justify-between items-center mb-6">
                 <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Historial de Citas</h2>
                 <div class="flex gap-2">

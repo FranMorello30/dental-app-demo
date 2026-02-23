@@ -12,6 +12,8 @@ import { UpdateAppointmentDto } from './dto/update-appointment.dto';
 import { Dentist } from 'src/modules/odontologos/entities/dentist.entity';
 import { Patient } from 'src/modules/patients/entities/patient.entity';
 import { SocketService } from 'src/socket/socket-ws.service';
+import { TreatmentProcedure } from '../treatment_plans/entities/treatment_procedure.entity';
+import { TreatmentPlan } from '../treatment_plans/entities/treatment_plan.entity';
 
 @Injectable()
 export class AppointmentsService {
@@ -22,28 +24,56 @@ export class AppointmentsService {
     private readonly dentistRepository: Repository<Dentist>,
     @InjectRepository(Patient)
     private readonly patientRepository: Repository<Patient>,
+    @InjectRepository(TreatmentProcedure)
+    private readonly procedureRepository: Repository<TreatmentProcedure>,
+    @InjectRepository(TreatmentPlan)
+    private readonly planRepository: Repository<TreatmentPlan>,
     private readonly socketService: SocketService,
   ) {}
 
   async create(
     createAppointmentDto: CreateAppointmentDto,
   ): Promise<{ message: string }> {
-    console.log('Creating appointment with DTO:', createAppointmentDto);
+    const { procedureId, ...appointmentDto } = createAppointmentDto;
 
     const dentist = await this.dentistRepository.findOne({
-      where: { id: createAppointmentDto.dentistId },
+      where: { id: appointmentDto.dentistId },
     });
     if (!dentist) throw new NotFoundException('Dentist not found');
     const patient = await this.patientRepository.findOne({
-      where: { id: createAppointmentDto.patientId },
+      where: { id: appointmentDto.patientId },
     });
     if (!patient) throw new NotFoundException('Patient not found');
 
+    let procedure: TreatmentProcedure | null = null;
+    if (procedureId) {
+      procedure = await this.procedureRepository.findOne({
+        where: { id: procedureId },
+        relations: ['plan', 'plan.patient'],
+      });
+
+      if (!procedure) {
+        throw new NotFoundException('Treatment procedure not found');
+      }
+
+      if (procedure.plan?.patient?.id !== patient.id) {
+        throw new BadRequestException(
+          'Procedure does not belong to the selected patient',
+        );
+      }
+    }
+
+    const status = appointmentDto.status || AppointmentStatus.UNCONFIRMED;
+    this.ensureFinishedStatusHasProcedure(status, !!procedure);
+
     const appointment = this.appointmentRepository.create({
-      ...createAppointmentDto,
+      ...appointmentDto,
       dentist,
       patient,
-      status: createAppointmentDto.status || AppointmentStatus.UNCONFIRMED,
+      procedure: procedure || undefined,
+      treatment:
+        appointmentDto.treatment || procedure?.name || 'Sin tratamiento',
+      status,
     });
     const savedAppointment = await this.appointmentRepository.save(appointment);
     this.socketService.emitEvent('change-status-appointment', savedAppointment);
@@ -60,6 +90,8 @@ export class AppointmentsService {
         'patient.habit',
         'patient.medical_alerts',
         'patient.attachments',
+        'procedure',
+        'procedure.plan',
       ],
     });
 
@@ -81,6 +113,8 @@ export class AppointmentsService {
         'patient.habit',
         'patient.medical_alerts',
         'patient.attachments',
+        'procedure',
+        'procedure.plan',
         'medical_histories',
         'medical_histories.treated_teeth',
         'medical_histories.attachments',
@@ -96,6 +130,10 @@ export class AppointmentsService {
     updateAppointmentDto: UpdateAppointmentDto,
   ): Promise<Appointment> {
     const appointment = await this.findOne(id);
+
+    const nextStatus = updateAppointmentDto.status ?? appointment.status;
+    this.ensureFinishedStatusHasProcedure(nextStatus, !!appointment.procedure);
+
     Object.assign(appointment, updateAppointmentDto);
     const updatedAppointment =
       await this.appointmentRepository.save(appointment);
@@ -111,6 +149,13 @@ export class AppointmentsService {
     status: AppointmentStatus,
   ): Promise<{ message: string }> {
     const appointment = await this.findOne(id);
+
+    this.ensureFinishedStatusHasProcedure(status, !!appointment.procedure);
+
+    if (status === AppointmentStatus.FINISHED && appointment.procedure?.id) {
+      await this.markProcedureCompleted(appointment.procedure.id);
+    }
+
     appointment.status = status;
     const updatedAppointment =
       await this.appointmentRepository.save(appointment);
@@ -119,6 +164,70 @@ export class AppointmentsService {
       updatedAppointment,
     );
     return { message: 'Appointment status updated successfully' };
+  }
+
+  private async markProcedureCompleted(procedureId: string): Promise<void> {
+    const procedure = await this.procedureRepository.findOne({
+      where: { id: procedureId },
+      relations: ['plan'],
+    });
+
+    if (!procedure) {
+      return;
+    }
+
+    procedure.status = 'completado';
+    procedure.completed_date = new Date();
+    await this.procedureRepository.save(procedure);
+
+    if (procedure.plan?.id) {
+      await this.syncPlanProgress(procedure.plan.id);
+    }
+  }
+
+  private async syncPlanProgress(planId: string): Promise<void> {
+    const plan = await this.planRepository.findOne({ where: { id: planId } });
+    if (!plan) {
+      return;
+    }
+
+    const totalProcedures = await this.procedureRepository.count({
+      where: { plan: { id: planId } },
+    });
+
+    const completedProcedures = await this.procedureRepository
+      .createQueryBuilder('procedure')
+      .where('procedure.planId = :planId', { planId })
+      .andWhere('LOWER(procedure.status) = :completedStatus', {
+        completedStatus: 'completado',
+      })
+      .getCount();
+
+    const progress =
+      totalProcedures === 0
+        ? 0
+        : Math.round((completedProcedures / totalProcedures) * 100);
+
+    plan.progress = progress;
+    if (completedProcedures === totalProcedures && totalProcedures > 0) {
+      plan.status = 'finalizado';
+      if (!plan.estimated_end_date) {
+        plan.estimated_end_date = new Date();
+      }
+    }
+
+    await this.planRepository.save(plan);
+  }
+
+  private ensureFinishedStatusHasProcedure(
+    status: AppointmentStatus,
+    hasProcedure: boolean,
+  ): void {
+    if (status === AppointmentStatus.FINISHED && !hasProcedure) {
+      throw new BadRequestException(
+        'Cannot set appointment as Finalizada without linked treatment procedure',
+      );
+    }
   }
 
   async cancel(id: string, reason: string): Promise<Appointment> {
@@ -184,9 +293,8 @@ export class AppointmentsService {
   @Cron(CronExpression.EVERY_MINUTE)
   async checkScheduledAppointments() {
     const now = new Date();
-    const absenceThreshold = new Date(now.getTime() - 20 * 60 * 1000); // 20 minutes after scheduled start
+    const absenceThreshold = new Date(now.getTime() - 20 * 60 * 1000);
 
-    // Mark confirmed appointments as absent if they have not been checked in within 20 minutes of the start time
     const appointmentsMarkedAbsent = await this.appointmentRepository.find({
       where: {
         status: AppointmentStatus.CONFIRMED,
@@ -196,10 +304,6 @@ export class AppointmentsService {
     });
 
     if (appointmentsMarkedAbsent.length > 0) {
-      console.log(
-        `[Cron] Found ${appointmentsMarkedAbsent.length} appointments still CONFIRMED 20+ minutes after start. Updating to AUSENTE.`,
-      );
-
       for (const appointment of appointmentsMarkedAbsent) {
         appointment.status = AppointmentStatus.AUSENTE;
       }

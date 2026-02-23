@@ -21,7 +21,7 @@
                     <input
                     type="text"
                     name="name"
-                    
+                    [(ngModel)]="planDraft.name"
                     class="w-full rounded-md px-3 py-2 bg-gray-50 border border-gray-200 text-gray-800 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-400 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100"
                     placeholder="Ej: Plan de Ortodoncia 2025"
                     />
@@ -33,8 +33,7 @@
                     <input
                         type="number"
                         name="totalCost"
-                    
-                    
+                        [ngModel]="totalCost"
                         class="w-full rounded-md pl-10 pr-3 py-2 bg-gray-50 border border-gray-200 text-gray-800 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-400 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100"
                         placeholder="0.00"
                         step="0.01"
@@ -50,7 +49,7 @@
                     <input
                     type="date"
                     name="startDate"
-                
+                    [(ngModel)]="planDraft.start_date"
                     class="w-full rounded-md px-3 py-2 bg-gray-50 border border-gray-200 text-gray-800 focus:outline-none focus:ring-2 focus:ring-primary-400 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100"
                     />
                 </div>
@@ -59,7 +58,7 @@
                     <input
                     type="date"
                     name="estimatedEndDate"
-                    
+                    [(ngModel)]="planDraft.estimated_end_date"
                     class="w-full rounded-md px-3 py-2 bg-gray-50 border border-gray-200 text-gray-800 focus:outline-none focus:ring-2 focus:ring-primary-400 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100"
                     />
                 </div>
@@ -69,7 +68,7 @@
                 <label class="block text-sm font-medium text-gray-800 dark:text-gray-100 mb-1">Descripción</label>
             
                 <textarea  name="description"
-                
+                    [(ngModel)]="planDraft.description"
                     rows="3"
                     class="w-full rounded-md px-3 py-2 bg-gray-50 border border-gray-200 text-gray-800 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-400 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100"
                     placeholder="Descripción detallada del plan de tratamiento..."></textarea>
@@ -79,7 +78,7 @@
                 <label class="block text-sm font-medium text-gray-800 dark:text-gray-100 mb-1">Notas Adicionales</label>
                 <textarea
                     name="notes"
-                
+                    [(ngModel)]="planDraft.notes"
                     rows="2"
                     class="w-full rounded-md px-3 py-2 bg-gray-50 border border-gray-200 text-gray-800 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-400 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100"
                     placeholder="Notas adicionales, consideraciones especiales..."
@@ -111,22 +110,19 @@
                                 <input
                                     type="text"
                                     name="name"
-                                
+                                    [(ngModel)]="treatmentDraft.name"
                                     class="w-full rounded-md px-3 py-2 bg-gray-50 border border-gray-200 text-gray-800 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-400 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100"
                                     placeholder="Ej: Colocación de brackets"
                                 />
                                 </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-800 dark:text-gray-100 mb-1">Prioridad</label>
-                                <select
-                                    name="priority"
-                                
+                                <label class="block text-sm font-medium text-gray-800 dark:text-gray-100 mb-1">Fecha programada</label>
+                                <input
+                                    type="date"
+                                    name="scheduledDate"
+                                    [(ngModel)]="treatmentDraft.scheduled_date"
                                     class="w-full rounded-md px-3 py-2 bg-gray-50 border border-gray-200 text-gray-800 focus:outline-none focus:ring-2 focus:ring-primary-400 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100"
-                                >
-                                    <option value="low">Baja</option>
-                                    <option value="medium">Media</option>
-                                    <option value="high">Alta</option>
-                                </select>
+                                />
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-800 dark:text-gray-100 mb-1">Costo Estimado</label>
@@ -135,7 +131,7 @@
                                     <input
                                     type="number"
                                     name="estimatedCost"
-                                    
+                                    [(ngModel)]="treatmentDraft.cost"
                                     class="w-full rounded-md pl-10 pr-3 py-2 bg-gray-50 border border-gray-200 text-gray-800 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-400 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100"
                                     placeholder="0.00"
                                     step="0.01"
@@ -143,13 +139,12 @@
                                 </div>
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-800 dark:text-gray-100 mb-1">Duración Estimada</label>
+                                <label class="block text-sm font-medium text-gray-800 dark:text-gray-100 mb-1">Estado inicial</label>
                                 <input
                                     type="text"
-                                    name="estimatedDuration"
-                                
-                                    class="w-full rounded-md px-3 py-2 bg-gray-50 border border-gray-200 text-gray-800 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-400 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100"
-                                    placeholder="Ej: 1 hora, 30 minutos"
+                                    class="w-full rounded-md px-3 py-2 bg-gray-100 border border-gray-200 text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200"
+                                    value="Pendiente"
+                                    readonly
                                 />
                             </div>
                         </div>
@@ -157,6 +152,7 @@
                             <label class="block text-sm font-medium text-gray-800 dark:text-gray-100 mb-1">Descripción</label>
                             <textarea
                             name="description"                                                
+                            [(ngModel)]="treatmentDraft.description"
                             rows="2"
                             class="w-full rounded-md px-3 py-2 bg-gray-50 border border-gray-200 text-gray-800 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-400 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100"
                             placeholder="Descripción del tratamiento..."
@@ -184,18 +180,17 @@
                                 <p class="text-gray-600 dark:text-gray-300 text-sm">{{treatment.description}}</p>
                                 </div>
                                 <div class="flex items-center gap-2">
-                                <span
-                                    [ngClass]="['px-2', 'py-0.5', 'rounded-full', 'text-xs', 'border', getPriorityColor(treatment.priority)]"
-                                >  {{getPriorityLabel(treatment.priority)}}
+                                <span class="px-2 py-0.5 rounded-full text-xs border bg-gray-100 text-gray-700 border-gray-200 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700">
+                                    Pendiente
                                 </span>
-                                <button (click)="treatments.splice($index, 1)" class="ghost-icon-btn" title="Eliminar">
+                                <button (click)="removeTreatment($index)" class="ghost-icon-btn" title="Eliminar">
                                     <mat-icon svgIcon="feather:trash-2" class="h-4 w-4 text-red-500" />
                                 </button>
                                 </div>
                             </div>
                             <div class="flex justify-between items-center text-sm text-gray-700 dark:text-gray-200">
-                                <span>Duración: {{treatment.estimatedDuration}}</span>
-                                <span class="font-semibold">${{treatment.estimatedCost | number}}</span>
+                                <span>Fecha: {{ treatment.scheduled_date | date: 'dd/MM/yyyy' }}</span>
+                                <span class="font-semibold">${{treatment.cost | number}}</span>
                             </div>
                         </div>
                     }
@@ -214,11 +209,14 @@
               </button>
               <button
                 type="button"
-                
+                                (click)="savePlan()"
                 class="primary-btn flex-1 justify-center"
-                
-              >Grabar</button>
+                                [disabled]="isSaving"
+                            >{{ isSaving ? 'Guardando...' : 'Grabar' }}</button>
           </div>
+                    @if (errorMessage) {
+                        <p class="mt-3 text-sm text-red-600">{{ errorMessage }}</p>
+                    }
         </div>             
     </div>
 </div>

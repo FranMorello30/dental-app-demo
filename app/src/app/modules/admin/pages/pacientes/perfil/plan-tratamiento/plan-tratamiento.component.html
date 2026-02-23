@@ -7,6 +7,20 @@
         </button>
     </div>
 
+    @if (isLoading) {
+        <div class="surface-card p-6 text-gray-600 dark:text-gray-300">Cargando planes de tratamiento...</div>
+    }
+
+    @if (errorMessage) {
+        <div class="surface-card p-6 text-red-600">{{ errorMessage }}</div>
+    }
+
+    @if (!isLoading && !errorMessage && treatmentPlansData.length === 0) {
+        <div class="surface-card p-6 text-gray-600 dark:text-gray-300">
+            Este paciente aún no tiene planes de tratamiento.
+        </div>
+    }
+
     @for (plan of treatmentPlansData; track $index) {
         <div class="surface-card p-6">
             <div class="flex flex-col md:flex-row md:justify-between md:items-start gap-4 mb-4">

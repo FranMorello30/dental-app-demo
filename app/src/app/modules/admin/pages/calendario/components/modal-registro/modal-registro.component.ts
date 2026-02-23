@@ -30,6 +30,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { Appointment } from '@shared/models/appointement.model';
 import { Dentist } from '@shared/models/dentist.model';
 import { Paciente } from '@shared/models/pacientes.model';
+import { TreatmentProcedure } from '@shared/models/treatment-plan.model';
 import { DefinicionesService } from '@shared/services/definiciones.service';
 import { Observable } from 'rxjs';
 import { CalendarioComponent } from '../../calendario.component';
@@ -99,6 +100,8 @@ export class ModalRegistroComponent implements OnInit, OnChanges {
     ];
     patients: Paciente[] = [];
     paciente: Paciente = null;
+    pendingProcedures: TreatmentProcedure[] = [];
+    isLoadingProcedures = false;
     filteredOptions: Observable<Paciente[]>;
 
     public formulario: FormGroup<{
@@ -107,6 +110,7 @@ export class ModalRegistroComponent implements OnInit, OnChanges {
         startTime: FormControl<string>;
         endTime: FormControl<string>;
         paciente: FormControl<string | Paciente>;
+        procedureId: FormControl<string>;
         dentist: FormControl<Dentist>;
     }>;
 
@@ -226,6 +230,7 @@ export class ModalRegistroComponent implements OnInit, OnChanges {
             treatment: this.formulario.value.tratamiento,
             dentistId: this.dentist().id,
             patientId: pacienteId,
+            procedureId: this.formulario.value.procedureId || undefined,
         };
 
         this._calendarioService.createAppointment(cita).subscribe({
@@ -354,8 +359,24 @@ export class ModalRegistroComponent implements OnInit, OnChanges {
                 '',
                 Validators.required
             ),
+            procedureId: [''],
             dentist: [this.dentist()],
         });
+
+        this.formulario
+            .get('procedureId')
+            ?.valueChanges.subscribe((procedureId: string) => {
+                const selectedProcedure = this.pendingProcedures.find(
+                    (item) => item.id === procedureId
+                );
+
+                if (selectedProcedure) {
+                    this.formulario
+                        .get('tratamiento')
+                        ?.setValue(selectedProcedure.name);
+                }
+                this._detectChange.markForCheck();
+            });
     }
 
     private _getPacientes() {
@@ -415,6 +436,7 @@ export class ModalRegistroComponent implements OnInit, OnChanges {
     selectPaciente(paciente: Paciente) {
         this.paciente = paciente;
         this.formulario.get('paciente').setValue(paciente);
+        this._loadPendingProcedures(paciente.id);
         this.showResults = false;
         this.searchControl.setValue('');
     }
@@ -422,6 +444,49 @@ export class ModalRegistroComponent implements OnInit, OnChanges {
     clearSelection() {
         this.paciente = null;
         this.formulario.get('paciente').setValue('');
+        this.formulario.get('procedureId').setValue('');
+        this.pendingProcedures = [];
         this.searchControl.setValue('');
+    }
+
+    private _loadPendingProcedures(patientId: string): void {
+        this.isLoadingProcedures = true;
+        this.formulario.get('procedureId')?.setValue('');
+        this.pendingProcedures = [];
+        this._setProcedureRequired(false);
+
+        this._calendarioService
+            .getPendingProceduresByPatient(patientId)
+            .subscribe({
+                next: (procedures) => {
+                    this.pendingProcedures = procedures;
+                    this._setProcedureRequired(
+                        this.pendingProcedures.length > 0
+                    );
+                    this.isLoadingProcedures = false;
+                    this._detectChange.markForCheck();
+                },
+                error: () => {
+                    this.pendingProcedures = [];
+                    this._setProcedureRequired(false);
+                    this.isLoadingProcedures = false;
+                    this._detectChange.markForCheck();
+                },
+            });
+    }
+
+    private _setProcedureRequired(required: boolean): void {
+        const procedureControl = this.formulario.get('procedureId');
+        if (!procedureControl) {
+            return;
+        }
+
+        if (required) {
+            procedureControl.setValidators([Validators.required]);
+        } else {
+            procedureControl.clearValidators();
+        }
+
+        procedureControl.updateValueAndValidity({ emitEvent: false });
     }
 }

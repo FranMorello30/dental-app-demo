@@ -1,5 +1,13 @@
 <div class="relative min-h-screen w-full overflow-hidden">
     <div class="relative pt-1 px-8 pb-8">
+        @if (isLoadingPatient) {
+            <div class="surface-card p-4 mb-4 text-gray-600 dark:text-gray-300">Cargando paciente...</div>
+        }
+
+        @if (patientError) {
+            <div class="surface-card p-4 mb-4 text-red-600">{{ patientError }}</div>
+        }
+
         <div class="surface-card p-6 mb-6">
             <div class="flex flex-col md:flex-row gap-6 items-start md:items-center">
                 <div class="relative rounded-full overflow-hidden h-24 w-24 border-4 border-gray-100 dark:border-gray-800 flex items-center justify-center bg-white dark:bg-gray-800">
@@ -155,16 +163,139 @@
                     </div>
                 </mat-tab>
                 <mat-tab label="Historia Clínica" class="text-gray-700 dark:text-gray-200">
-                   
+                    <div class="grid grid-cols-1 gap-4 p-6">
+                        @if (isLoadingMedicalHistory) {
+                            <div class="surface-card p-6 text-gray-600 dark:text-gray-300">
+                                Cargando historia clínica...
+                            </div>
+                        } @else if (medicalHistoryError) {
+                            <div class="surface-card p-6 text-red-600 dark:text-red-400">
+                                {{ medicalHistoryError }}
+                            </div>
+                        } @else if (medicalHistoryData.length === 0) {
+                            <div class="surface-card p-6 text-gray-600 dark:text-gray-300">
+                                Este paciente aún no tiene registros de historia clínica.
+                            </div>
+                        } @else {
+                            @for (history of medicalHistoryData; track history.id) {
+                                <div class="surface-card p-5">
+                                    <div class="flex items-center justify-between mb-3">
+                                        <h3 class="text-base font-semibold text-gray-900 dark:text-white">
+                                            {{ history.diagnosis || 'Sin diagnóstico registrado' }}
+                                        </h3>
+                                        <span class="text-sm text-gray-500 dark:text-gray-400">
+                                            {{ formatDate(history.date?.toString()) }}
+                                        </span>
+                                    </div>
+
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                                        <div>
+                                            <p class="font-medium text-gray-700 dark:text-gray-200 mb-1">
+                                                Tratamiento
+                                            </p>
+                                            <p class="text-gray-600 dark:text-gray-300">
+                                                {{ history.treatment || 'No registrado' }}
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <p class="font-medium text-gray-700 dark:text-gray-200 mb-1">
+                                                Medicación
+                                            </p>
+                                            <p class="text-gray-600 dark:text-gray-300">
+                                                {{ history.medications || 'No registrada' }}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div class="mt-4">
+                                        <p class="font-medium text-gray-700 dark:text-gray-200 mb-1 text-sm">
+                                            Notas
+                                        </p>
+                                        <p class="text-sm text-gray-600 dark:text-gray-300">
+                                            {{ history.notes || 'Sin notas' }}
+                                        </p>
+                                    </div>
+                                </div>
+                            }
+                        }
+                    </div>
                 </mat-tab>
                 <mat-tab label="Planes de tratamiento" class="text-gray-700 dark:text-gray-200">
-                   <plan-tratamiento></plan-tratamiento>
+                         <plan-tratamiento [patientId]="patientId"></plan-tratamiento>
                 </mat-tab>
                 <mat-tab label="Historal de citas" class="text-gray-700 dark:text-gray-200">
-                    <historial-cita></historial-cita>
+                    <historial-cita [patientId]="patientId"></historial-cita>
                 </mat-tab>
                 <mat-tab label="Facturación" class="text-gray-700 dark:text-gray-200">
+                    <div class="p-6 space-y-4">
+                        @if (isLoadingBilling) {
+                            <div class="surface-card p-6 text-gray-600 dark:text-gray-300">
+                                Cargando facturación...
+                            </div>
+                        } @else if (billingError) {
+                            <div class="surface-card p-6 text-red-600 dark:text-red-400">
+                                {{ billingError }}
+                            </div>
+                        } @else if (billingPlans.length === 0) {
+                            <div class="surface-card p-6 text-gray-600 dark:text-gray-300">
+                                Este paciente no tiene montos de tratamiento registrados.
+                            </div>
+                        } @else {
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div class="surface-card p-4">
+                                    <p class="text-sm text-gray-500 dark:text-gray-400">Total</p>
+                                    <p class="text-xl font-semibold text-gray-900 dark:text-white">
+                                        {{ getBillingTotal() | currency:'MXN':'symbol':'1.2-2':'es-MX' }}
+                                    </p>
+                                </div>
+                                <div class="surface-card p-4">
+                                    <p class="text-sm text-gray-500 dark:text-gray-400">Pagado</p>
+                                    <p class="text-xl font-semibold text-green-600 dark:text-green-400">
+                                        {{ getBillingPaid() | currency:'MXN':'symbol':'1.2-2':'es-MX' }}
+                                    </p>
+                                </div>
+                                <div class="surface-card p-4">
+                                    <p class="text-sm text-gray-500 dark:text-gray-400">Pendiente</p>
+                                    <p class="text-xl font-semibold text-amber-600 dark:text-amber-400">
+                                        {{ getBillingPending() | currency:'MXN':'symbol':'1.2-2':'es-MX' }}
+                                    </p>
+                                </div>
+                            </div>
 
+                            <div class="surface-card p-4 overflow-x-auto">
+                                <table class="w-full text-sm">
+                                    <thead>
+                                        <tr class="text-left text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700">
+                                            <th class="py-2 pr-3">Plan</th>
+                                            <th class="py-2 pr-3">Fecha</th>
+                                            <th class="py-2 pr-3">Total</th>
+                                            <th class="py-2 pr-3">Pagado</th>
+                                            <th class="py-2 pr-3">Pendiente</th>
+                                            <th class="py-2">Estado</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @for (plan of billingPlans; track plan.id) {
+                                            <tr class="border-b border-gray-100 dark:border-gray-800">
+                                                <td class="py-3 pr-3 text-gray-900 dark:text-white">{{ plan.name }}</td>
+                                                <td class="py-3 pr-3 text-gray-600 dark:text-gray-300">{{ formatDate(plan.created_at) }}</td>
+                                                <td class="py-3 pr-3 text-gray-600 dark:text-gray-300">
+                                                    {{ plan.total_cost | currency:'MXN':'symbol':'1.2-2':'es-MX' }}
+                                                </td>
+                                                <td class="py-3 pr-3 text-gray-600 dark:text-gray-300">
+                                                    {{ plan.paid_amount | currency:'MXN':'symbol':'1.2-2':'es-MX' }}
+                                                </td>
+                                                <td class="py-3 pr-3 text-gray-600 dark:text-gray-300">
+                                                    {{ getPlanPendingAmount(plan) | currency:'MXN':'symbol':'1.2-2':'es-MX' }}
+                                                </td>
+                                                <td class="py-3 text-gray-700 dark:text-gray-200">{{ getBillingStatus(plan) }}</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                    </div>
                 </mat-tab>
                 
             </mat-tab-group>

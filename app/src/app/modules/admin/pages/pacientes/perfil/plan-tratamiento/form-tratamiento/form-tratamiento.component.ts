@@ -1,17 +1,27 @@
 import { CommonModule } from '@angular/common';
 import {
     ChangeDetectionStrategy,
+    ChangeDetectorRef,
     Component,
     inject,
-    output,
 } from '@angular/core';
-import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { FormsModule } from '@angular/forms';
+import {
+    MAT_DIALOG_DATA,
+    MatDialogModule,
+    MatDialogRef,
+} from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
+import {
+    CreateTreatmentPlanPayload,
+    CreateTreatmentProcedurePayload,
+} from '@shared/models/treatment-plan.model';
+import { PacienteService } from '../../../pacientes.service';
 
 @Component({
     selector: 'form-tratamiento',
     standalone: true,
-    imports: [CommonModule, MatDialogModule, MatIconModule],
+    imports: [CommonModule, MatDialogModule, MatIconModule, FormsModule],
     templateUrl: './form-tratamiento.component.html',
     styles: ``,
     changeDetection: ChangeDetectionStrategy.OnPush,
@@ -20,70 +30,131 @@ export class FormTratamientoComponent {
     public readonly matDialogRef = inject(
         MatDialogRef<FormTratamientoComponent>
     );
+    private readonly _patientService = inject(PacienteService);
+    private readonly _cdr = inject(ChangeDetectorRef);
+
+    public readonly data = inject(MAT_DIALOG_DATA, { optional: true }) as {
+        patientId?: string;
+    } | null;
 
     public newTreatmentForm = false;
+    public isSaving = false;
+    public errorMessage: string | null = null;
 
-    public treatments = [
-        // {
-        //     id: '1',
-        //     name: 'Limpieza Dental',
-        //     description: 'Limpieza profunda de dientes y encías.',
-        //     priority: 'medium',
-        //     estimatedDuration: '30 minutos',
-        //     estimatedCost: 50,
-        // },
-        // {
-        //     id: '2',
-        //     name: 'Ortodoncia',
-        //     description: 'Tratamiento de alineación dental.',
-        //     priority: 'high',
-        //     estimatedDuration: '6 meses',
-        //     estimatedCost: 1500,
-        // },
-    ];
+    public planDraft = {
+        name: '',
+        description: '',
+        start_date: '',
+        estimated_end_date: '',
+        notes: '',
+    };
 
-    public isClosed = output<boolean>();
+    public treatmentDraft = {
+        name: '',
+        description: '',
+        cost: 0,
+        scheduled_date: '',
+    };
+
+    public treatments: CreateTreatmentProcedurePayload[] = [];
 
     cerrarForm() {
-        //this.isClosed.emit(true);
-        this.matDialogRef.close();
+        this.matDialogRef.close(false);
     }
-    getPriorityColor(priority: string) {
-        switch (priority) {
-            case 'high':
-                return 'text-red-400 bg-red-500/20 border-red-400/30';
-            case 'medium':
-                return 'text-amber-400 bg-amber-500/20 border-amber-400/30';
-            case 'low':
-                return 'text-green-400 bg-green-500/20 border-green-400/30';
-            default:
-                return 'text-blue-400 bg-blue-500/20 border-blue-400/30';
-        }
-    }
-    getPriorityLabel(priority: string) {
-        switch (priority) {
-            case 'high':
-                return 'Alta';
-            case 'medium':
-                return 'Media';
-            case 'low':
-                return 'Baja';
-            default:
-                return 'Media';
-        }
-    }
+
     crearTreatment() {
-        // Aquí puedes implementar la lógica para crear un nuevo tratamiento
-        // Por ejemplo, enviar los datos a un servicio o API
-        console.log('Nuevo tratamiento creado');
-        this.newTreatmentForm = false;
+        this.errorMessage = null;
+
+        if (
+            !this.treatmentDraft.name.trim() ||
+            !this.treatmentDraft.description.trim() ||
+            !this.treatmentDraft.scheduled_date ||
+            Number(this.treatmentDraft.cost) <= 0
+        ) {
+            this.errorMessage =
+                'Completa nombre, descripción, fecha y costo válido del tratamiento.';
+            this._cdr.markForCheck();
+            return;
+        }
+
         this.treatments.push({
-            id: '1',
-            name: 'Limpieza Dental',
-            description: 'Limpieza profunda de dientes y encías.',
-            priority: 'medium',
-            estimatedDuration: '30 minutos',
-            estimatedCost: 50,
+            name: this.treatmentDraft.name.trim(),
+            description: this.treatmentDraft.description.trim(),
+            cost: Number(this.treatmentDraft.cost),
+            scheduled_date: this.treatmentDraft.scheduled_date,
+        });
+
+        this.treatmentDraft = {
+            name: '',
+            description: '',
+            cost: 0,
+            scheduled_date: '',
+        };
+        this.newTreatmentForm = false;
+        this._cdr.markForCheck();
+    }
+
+    removeTreatment(index: number): void {
+        this.treatments.splice(index, 1);
+        this._cdr.markForCheck();
+    }
+
+    get totalCost(): number {
+        return this.treatments.reduce(
+            (sum, treatment) => sum + Number(treatment.cost || 0),
+            0
+        );
+    }
+
+    savePlan(): void {
+        this.errorMessage = null;
+
+        if (!this.data?.patientId) {
+            this.errorMessage = 'No se encontró el paciente del plan.';
+            this._cdr.markForCheck();
+            return;
+        }
+
+        if (!this.planDraft.name.trim() || !this.planDraft.start_date) {
+            this.errorMessage =
+                'El nombre del plan y la fecha de inicio son obligatorios.';
+            this._cdr.markForCheck();
+            return;
+        }
+
+        if (this.treatments.length === 0) {
+            this.errorMessage =
+                'Debes agregar al menos un tratamiento al plan.';
+            this._cdr.markForCheck();
+            return;
+        }
+
+        this.isSaving = true;
+
+        const payload: CreateTreatmentPlanPayload = {
+            name: this.planDraft.name.trim(),
+            description: this.planDraft.description.trim() || 'Sin descripción',
+            start_date: this.planDraft.start_date,
+            estimated_end_date: this.planDraft.estimated_end_date || undefined,
+            progress: 0,
+            total_cost: this.totalCost,
+            paid_amount: 0,
+            status: 'pendiente',
+            patientId: this.data.patientId,
+            procedures: this.treatments,
+        };
+
+        this._patientService.createTreatmentPlan(payload).subscribe({
+            next: () => {
+                this.isSaving = false;
+                this.matDialogRef.close(true);
+            },
+            error: (error) => {
+                this.isSaving = false;
+                this.errorMessage =
+                    error?.error?.message || 'No se pudo guardar el plan.';
+                this._cdr.markForCheck();
+            },
         });
     }
 }

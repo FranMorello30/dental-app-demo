@@ -202,6 +202,35 @@
                             }
                         </mat-form-field>
                     </div>
+
+                    <div>
+                        <label class="mb-1.5 block text-sm font-semibold text-gray-700"
+                            >Procedimiento del plan</label
+                        >
+                        <mat-form-field class="w-full" appearance="outline">
+                            <mat-select
+                                formControlName="procedureId"
+                                placeholder="Seleccionar procedimiento"
+                            >
+                                <mat-option value="">Sin vincular a plan</mat-option>
+                                @for (procedure of pendingProcedures; track procedure.id) {
+                                    <mat-option [value]="procedure.id">
+                                        {{ procedure.name }} - {{ procedure.scheduled_date | date: 'dd/MM/yyyy' }}
+                                    </mat-option>
+                                }
+                            </mat-select>
+                        </mat-form-field>
+                        @if (isLoadingProcedures) {
+                            <p class="mt-1 text-xs text-gray-500">Cargando procedimientos pendientes...</p>
+                        }
+                        @if (!isLoadingProcedures && paciente && pendingProcedures.length === 0) {
+                            <p class="mt-1 text-xs text-gray-500">El paciente no tiene procedimientos pendientes.</p>
+                        }
+                        @if (formulario.get('procedureId')?.hasError('required') && formulario.get('procedureId')?.touched) {
+                            <p class="mt-1 text-xs text-red-600">Debes seleccionar un procedimiento pendiente para este paciente.</p>
+                        }
+                    </div>
+
                     <div class="grid grid-cols-2 gap-4">
                         <div>
                             <label

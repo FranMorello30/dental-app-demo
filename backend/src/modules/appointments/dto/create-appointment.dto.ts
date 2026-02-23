@@ -1,4 +1,10 @@
-import { IsString, IsDateString, IsEnum, IsOptional } from 'class-validator';
+import {
+  IsString,
+  IsDateString,
+  IsEnum,
+  IsOptional,
+  IsUUID,
+} from 'class-validator';
 import { AppointmentStatus } from '../entities/appointment.entity';
 
 export class CreateAppointmentDto {
@@ -34,4 +40,8 @@ export class CreateAppointmentDto {
 
   @IsString()
   patientId: string;
+
+  @IsOptional()
+  @IsUUID()
+  procedureId?: string;
 }

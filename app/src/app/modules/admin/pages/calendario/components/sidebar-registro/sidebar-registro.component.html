@@ -486,6 +486,35 @@
                                 </div>
                             </div>
 
+                            <div>
+                                <label class="mb-1.5 block text-sm font-semibold text-gray-700">Procedimiento del plan</label>
+                                <div class="relative">
+                                    <mat-icon
+                                        svgIcon="heroicons_outline:clipboard-document-list"
+                                        class="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400"
+                                    ></mat-icon>
+                                    <select formControlName="procedureId" class="appearance-none w-full rounded-xl border border-gray-200 bg-gray-50 py-3 pl-10 pr-8 text-gray-900 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100">
+                                        <option value="">Sin vincular a plan</option>
+                                        @for (procedure of pendingProcedures; track procedure.id) {
+                                            <option [value]="procedure.id">{{ procedure.name }} - {{ procedure.scheduled_date | date: 'dd/MM/yyyy' }}</option>
+                                        }
+                                    </select>
+                                    <mat-icon
+                                        svgIcon="heroicons_outline:chevron-down"
+                                        class="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400"
+                                    ></mat-icon>
+                                </div>
+                                @if (isLoadingProcedures) {
+                                    <p class="mt-2 text-xs text-gray-500">Cargando procedimientos pendientes...</p>
+                                }
+                                @if (!isLoadingProcedures && pacienteSeleccionado && pendingProcedures.length === 0) {
+                                    <p class="mt-2 text-xs text-gray-500">El paciente no tiene procedimientos pendientes.</p>
+                                }
+                                @if (formulario.get('procedureId')?.hasError('required') && formulario.get('procedureId')?.touched) {
+                                    <p class="mt-2 text-xs text-red-600">Debes seleccionar un procedimiento pendiente para este paciente.</p>
+                                }
+                            </div>
+
                             <div class="grid grid-cols-2 gap-4">
                                 <div>
                                     <label class="mb-1.5 block text-sm font-semibold text-gray-700">Hora inicio</label>

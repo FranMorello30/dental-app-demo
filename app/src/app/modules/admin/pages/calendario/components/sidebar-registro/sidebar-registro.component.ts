@@ -28,6 +28,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { Appointment } from '@shared/models/appointement.model';
 import { Dentist } from '@shared/models/dentist.model';
 import { Paciente } from '@shared/models/pacientes.model';
+import { TreatmentProcedure } from '@shared/models/treatment-plan.model';
 import { DefinicionesService } from '@shared/services/definiciones.service';
 import { NgxMaskDirective } from 'ngx-mask';
 import { forkJoin, of, switchMap } from 'rxjs';
@@ -73,6 +74,7 @@ export class SidebarRegistroComponent implements OnInit, OnChanges, OnDestroy {
         startTime: FormControl<string>;
         endTime: FormControl<string>;
         paciente: FormControl<string | Paciente>;
+        procedureId: FormControl<string>;
         dentist: FormControl<Dentist>;
     }>;
 
@@ -118,6 +120,8 @@ export class SidebarRegistroComponent implements OnInit, OnChanges, OnDestroy {
     public searchResults: Paciente[] = [];
     public showResults = false;
     public showPatientsList = false;
+    public pendingProcedures: TreatmentProcedure[] = [];
+    public isLoadingProcedures = false;
 
     public timeInitSlots: string[] = [];
     public timeEndSlots: string[] = [];
@@ -354,6 +358,7 @@ export class SidebarRegistroComponent implements OnInit, OnChanges, OnDestroy {
             treatment: this.formulario.value.tratamiento,
             dentistId: this.dentist().id,
             patientId: pacienteId as string,
+            procedureId: this.formulario.value.procedureId || undefined,
         } as any;
 
         this._calendarioService.createAppointment(payload).subscribe({
@@ -376,6 +381,8 @@ export class SidebarRegistroComponent implements OnInit, OnChanges, OnDestroy {
         this.searchControl.setValue('');
         this.showPatientsList = false;
 
+        this._loadPendingProcedures(paciente.id);
+
         if (this.showExtraSidebar) {
             this.cancelNewPatient();
         }
@@ -386,6 +393,8 @@ export class SidebarRegistroComponent implements OnInit, OnChanges, OnDestroy {
     clearPaciente(): void {
         this.pacienteSeleccionado = null;
         this.formulario.get('paciente')?.setValue('');
+        this.formulario.get('procedureId')?.setValue('');
+        this.pendingProcedures = [];
         this.searchControl.setValue('');
     }
 
@@ -446,8 +455,24 @@ export class SidebarRegistroComponent implements OnInit, OnChanges, OnDestroy {
                 '',
                 Validators.required
             ),
+            procedureId: this._fb.control(''),
             dentist: this._fb.control(this.dentist()),
         });
+
+        this.formulario
+            .get('procedureId')
+            ?.valueChanges.subscribe((procedureId: string) => {
+                const selectedProcedure = this.pendingProcedures.find(
+                    (item) => item.id === procedureId
+                );
+
+                if (selectedProcedure) {
+                    this.formulario
+                        .get('tratamiento')
+                        ?.setValue(selectedProcedure.name);
+                }
+                this._cdr.markForCheck();
+            });
     }
 
     private _listenSearch(): void {
@@ -603,6 +628,47 @@ export class SidebarRegistroComponent implements OnInit, OnChanges, OnDestroy {
         });
     }
 
+    private _loadPendingProcedures(patientId: string): void {
+        this.isLoadingProcedures = true;
+        this.formulario.get('procedureId')?.setValue('');
+        this.pendingProcedures = [];
+        this._setProcedureRequired(false);
+
+        this._calendarioService
+            .getPendingProceduresByPatient(patientId)
+            .subscribe({
+                next: (procedures) => {
+                    this.pendingProcedures = procedures;
+                    this._setProcedureRequired(
+                        this.pendingProcedures.length > 0
+                    );
+                    this.isLoadingProcedures = false;
+                    this._cdr.markForCheck();
+                },
+                error: () => {
+                    this.pendingProcedures = [];
+                    this._setProcedureRequired(false);
+                    this.isLoadingProcedures = false;
+                    this._cdr.markForCheck();
+                },
+            });
+    }
+
+    private _setProcedureRequired(required: boolean): void {
+        const procedureControl = this.formulario.get('procedureId');
+        if (!procedureControl) {
+            return;
+        }
+
+        if (required) {
+            procedureControl.setValidators([Validators.required]);
+        } else {
+            procedureControl.clearValidators();
+        }
+
+        procedureControl.updateValueAndValidity({ emitEvent: false });
+    }
+
     private _filterPacientes(value: string): Paciente[] {
         const filterValue = value.toLowerCase();
         return this.patients.filter((option) =>
@@ -676,6 +742,7 @@ export class SidebarRegistroComponent implements OnInit, OnChanges, OnDestroy {
             startTime: '',
             endTime: '',
             paciente: '',
+            procedureId: '',
             dentist: this.dentist(),
         });
         this.formulario.get('endTime')?.disable();
@@ -684,6 +751,8 @@ export class SidebarRegistroComponent implements OnInit, OnChanges, OnDestroy {
         this.searchResults = [];
         this.showResults = false;
         this.showPatientsList = false;
+        this.pendingProcedures = [];
+        this.isLoadingProcedures = false;
         this.timeInitSlots = [];
         this.timeEndSlots = [];
         this.filteredEndSlots = [];

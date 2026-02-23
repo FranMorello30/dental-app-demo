@@ -1,6 +1,7 @@
 import { MedicalHistory } from 'src/modules/medical_histories/entities/medical_history.entity';
 import { Dentist } from 'src/modules/odontologos/entities/dentist.entity';
 import { Patient } from 'src/modules/patients/entities/patient.entity';
+import { TreatmentProcedure } from 'src/modules/treatment_plans/entities/treatment_procedure.entity';
 import {
   Column,
   Entity,
@@ -59,6 +60,9 @@ export class Appointment {
 
   @ManyToOne(() => Patient, (patient) => patient.id, { cascade: true })
   patient: Patient;
+
+  @ManyToOne(() => TreatmentProcedure, { nullable: true })
+  procedure?: TreatmentProcedure;
 
   @Column({
     type: 'timestamp',
