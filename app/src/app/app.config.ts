@@ -1,5 +1,9 @@
 import { provideHttpClient } from '@angular/common/http';
-import { ApplicationConfig, LOCALE_ID } from '@angular/core';
+import {
+    ApplicationConfig,
+    LOCALE_ID,
+    importProvidersFrom,
+} from '@angular/core';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import {
     PreloadAllModules,
@@ -18,7 +22,7 @@ import { provideEnvironmentNgxMask } from 'ngx-mask';
 import { DatePipe, registerLocaleData } from '@angular/common';
 import localcl from '@angular/common/locales/es-CL';
 import { environment } from '@environments/environment';
-import { SocketIoConfig, provideSocketIo } from 'ngx-socket-io';
+import { SocketIoConfig, SocketIoModule } from 'ngx-socket-io';
 
 registerLocaleData(localcl);
 
@@ -41,7 +45,7 @@ export const appConfig: ApplicationConfig = {
             withInMemoryScrolling({ scrollPositionRestoration: 'enabled' }),
             withHashLocation()
         ),
-        provideSocketIo(config),
+        importProvidersFrom(SocketIoModule.forRoot(config)),
         // Material Date Adapter
 
         // {

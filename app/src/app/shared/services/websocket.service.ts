@@ -1,4 +1,4 @@
-import { ApplicationRef, Injectable } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { environment } from '@environments/environment';
 import { Socket } from 'ngx-socket-io';
 import { BehaviorSubject } from 'rxjs';
@@ -12,18 +12,15 @@ export class WebsocketService extends Socket {
     // Observable público
     public socketStatus$ = this._socketStatus$.asObservable();
 
-    constructor(appRef: ApplicationRef) {
-        super(
-            {
-                url: environment.wsUrl,
-                options: {
-                    extraHeaders: {
-                        auth: sessionStorage.getItem('accessToken'),
-                    },
+    constructor() {
+        super({
+            url: environment.wsUrl,
+            options: {
+                extraHeaders: {
+                    auth: sessionStorage.getItem('accessToken'),
                 },
             },
-            appRef
-        );
+        });
         this.checkStatus();
     }
 
