@@ -1,6 +1,6 @@
 <div class="relative min-h-screen w-full overflow-hidden bg-slate-50">
     <div class="relative flex h-full w-full items-start pb-4 pt-1">
-       
+        @if (layoutMode === 'list') {
         <div
             class="z-10 flex h-full w-72 flex-col items-start justify-between border-r border-gray-200 bg-white p-6 shadow-lg"
         >
@@ -275,8 +275,93 @@
                 </div>
             </div>
         </div>
+        }
 
-        <div class="flex h-full flex-1 flex-col overflow-hidden bg-slate-50">
+        <div
+            class="flex h-full flex-1 flex-col overflow-hidden bg-slate-50"
+            [ngClass]="
+                layoutMode === 'cards' ? 'px-4 pb-4 md:px-6 md:pb-6' : ''
+            "
+        >
+            @if (layoutMode === 'cards') {
+                <div class="mb-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm md:p-5">
+                    <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                        <div class="min-w-0 flex-1">
+                            <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                                Selecciona un odontologo
+                            </p>
+                            <div class="custom-scrollbar mt-3 flex gap-3 overflow-x-auto pb-2">
+                                @for (dentistCard of dentists; track dentistCard.id) {
+                                    <button
+                                        type="button"
+                                        (click)="selectDentistFromCard(dentistCard)"
+                                        class="min-w-56 rounded-xl border p-3 text-left transition-all duration-200"
+                                        [ngClass]="
+                                            isDentistSelected(dentistCard)
+                                                ? 'border-blue-300 bg-blue-50 shadow-sm ring-1 ring-blue-200'
+                                                : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50'
+                                        "
+                                    >
+                                        <div class="flex items-start gap-3">
+                                            @if (dentistCard.avatar) {
+                                                <img
+                                                    [src]="dentistCard.avatar"
+                                                    alt="Foto odontologo"
+                                                    class="h-10 w-10 rounded-full border border-slate-200 object-cover"
+                                                />
+                                            } @else {
+                                                <div class="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-slate-100 text-slate-600">
+                                                    <mat-icon class="icon-size-5" svgIcon="feather:user"></mat-icon>
+                                                </div>
+                                            }
+                                            <div class="min-w-0 flex-1">
+                                                <p class="truncate text-sm font-semibold text-slate-900">
+                                                    {{ dentistCard.name }} {{ dentistCard.apellido }}
+                                                </p>
+                                                <p class="mt-1 truncate text-xs text-slate-600">
+                                                    {{ dentistCard.specialty || 'Sin especialidad' }}
+                                                </p>
+                                                <p class="mt-2 truncate text-xs text-slate-500">
+                                                    {{ dentistCard.phone || 'Sin telefono' }}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </button>
+                                }
+                            </div>
+                        </div>
+
+                        <div class="flex flex-col gap-2 lg:w-72">
+                            <div class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+                                @if (dentist) {
+                                    <p class="text-xs font-medium uppercase tracking-wide text-slate-500">Odontologo activo</p>
+                                    <p class="mt-1 text-sm font-semibold text-slate-900">
+                                        {{ dentist.name }} {{ dentist.apellido }}
+                                    </p>
+                                    <p class="mt-0.5 text-xs text-slate-600">
+                                        {{ dentist.specialty || 'Sin especialidad' }}
+                                    </p>
+                                } @else {
+                                    <p class="text-sm text-slate-600">
+                                        Selecciona una tarjeta para cargar su agenda.
+                                    </p>
+                                }
+                            </div>
+
+                            <button
+                                [disabled]="!dentist"
+                                (click)="crearCita()"
+                                class="flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-700"
+                                [ngClass]="{ 'cursor-not-allowed opacity-50': !dentist }"
+                            >
+                                <mat-icon class="text-white icon-size-5" svgIcon="feather:plus"></mat-icon>
+                                Nueva cita
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            }
+
             <div class="flex items-center justify-between px-8 py-6">
                 <div class="flex items-center gap-6">
                     <button
@@ -321,42 +406,111 @@
                     </h2>
                 </div>
 
-                <div
-                    class="flex items-center rounded-lg border border-gray-200 bg-white p-1 shadow-sm"
-                >
-                    <button
-                        (click)="onViewChange('day')"
-                        class="rounded-md px-4 py-1.5 text-sm font-medium transition-all"
-                        [ngClass]="
-                            currentView === 'day'
-                                ? 'bg-gray-900 text-white shadow-md'
-                                : 'text-gray-600 hover:bg-gray-50'
-                        "
+                <div class="flex items-center gap-3">
+                    <div
+                        class="flex items-center rounded-lg border border-gray-200 bg-white p-1 shadow-sm"
                     >
-                        Día
-                    </button>
-                    <button
-                        (click)="onViewChange('week')"
-                        class="rounded-md px-4 py-1.5 text-sm font-medium transition-all"
-                        [ngClass]="
-                            currentView === 'week'
-                                ? 'bg-gray-900 text-white shadow-md'
-                                : 'text-gray-600 hover:bg-gray-50'
-                        "
+                        <button
+                            (click)="setLayoutMode('list')"
+                            class="rounded-md px-3 py-1.5 text-xs font-semibold uppercase tracking-wide transition-all"
+                            [ngClass]="
+                                layoutMode === 'list'
+                                    ? 'bg-blue-600 text-white shadow-sm'
+                                    : 'text-gray-600 hover:bg-gray-50'
+                            "
+                        >
+                            Lista
+                        </button>
+                        <button
+                            (click)="setLayoutMode('cards')"
+                            class="rounded-md px-3 py-1.5 text-xs font-semibold uppercase tracking-wide transition-all"
+                            [ngClass]="
+                                layoutMode === 'cards'
+                                    ? 'bg-blue-600 text-white shadow-sm'
+                                    : 'text-gray-600 hover:bg-gray-50'
+                            "
+                        >
+                            Cards
+                        </button>
+                    </div>
+
+                    <div
+                        class="flex items-center rounded-lg border border-gray-200 bg-white p-1 shadow-sm"
                     >
-                        Semana
-                    </button>
-                    <button
-                        (click)="onViewChange('month')"
-                        class="rounded-md px-4 py-1.5 text-sm font-medium transition-all"
-                        [ngClass]="
-                            currentView === 'month'
-                                ? 'bg-gray-900 text-white shadow-md'
-                                : 'text-gray-600 hover:bg-gray-50'
-                        "
-                    >
-                        Mes
-                    </button>
+                        <button
+                            (click)="onViewChange('day')"
+                            class="rounded-md px-4 py-1.5 text-sm font-medium transition-all"
+                            [ngClass]="
+                                currentView === 'day'
+                                    ? 'bg-gray-900 text-white shadow-md'
+                                    : 'text-gray-600 hover:bg-gray-50'
+                            "
+                        >
+                            Día
+                        </button>
+                        <button
+                            (click)="onViewChange('week')"
+                            class="rounded-md px-4 py-1.5 text-sm font-medium transition-all"
+                            [ngClass]="
+                                currentView === 'week'
+                                    ? 'bg-gray-900 text-white shadow-md'
+                                    : 'text-gray-600 hover:bg-gray-50'
+                            "
+                        >
+                            Semana
+                        </button>
+                        <button
+                            (click)="onViewChange('month')"
+                            class="rounded-md px-4 py-1.5 text-sm font-medium transition-all"
+                            [ngClass]="
+                                currentView === 'month'
+                                    ? 'bg-gray-900 text-white shadow-md'
+                                    : 'text-gray-600 hover:bg-gray-50'
+                            "
+                        >
+                            Mes
+                        </button>
+                        <button
+                            (click)="onViewChange('multi')"
+                            class="rounded-md px-4 py-1.5 text-sm font-medium transition-all"
+                            [ngClass]="
+                                currentView === 'multi'
+                                    ? 'bg-gray-900 text-white shadow-md'
+                                    : 'text-gray-600 hover:bg-gray-50'
+                            "
+                        >
+                            Multi
+                        </button>
+                    </div>
+
+                    @if (currentView === 'multi') {
+                        <div
+                            class="flex items-center rounded-lg border border-gray-200 bg-white p-1 shadow-sm"
+                        >
+                            <button
+                                (click)="setMultiDentistScope('all')"
+                                class="rounded-md px-3 py-1.5 text-xs font-semibold uppercase tracking-wide transition-all"
+                                [ngClass]="
+                                    multiDentistScope === 'all'
+                                        ? 'bg-blue-600 text-white shadow-sm'
+                                        : 'text-gray-600 hover:bg-gray-50'
+                                "
+                            >
+                                Todos
+                            </button>
+                            <button
+                                (click)="setMultiDentistScope('selected')"
+                                class="rounded-md px-3 py-1.5 text-xs font-semibold uppercase tracking-wide transition-all"
+                                [ngClass]="
+                                    multiDentistScope === 'selected'
+                                        ? 'bg-blue-600 text-white shadow-sm'
+                                        : 'text-gray-600 hover:bg-gray-50'
+                                "
+                            >
+                                Seleccionado
+                            </button>
+                        </div>
+                    }
                 </div>
             </div>
 
@@ -506,10 +660,26 @@
                                             </div>
                                         }
 
-                                        <div
-                                            class="truncate text-sm font-bold shadow-sm"
-                                        >
-                                            {{ event.treatment }}
+                                        <div class="flex items-center gap-2 pr-8">
+                                            @if (event.dentist?.avatar) {
+                                                <img
+                                                    [src]="event.dentist.avatar"
+                                                    alt="Foto odontologo"
+                                                    class="h-6 w-6 rounded-full border border-white/50 object-cover"
+                                                />
+                                            } @else {
+                                                <div class="flex h-6 w-6 items-center justify-center rounded-full bg-white/20">
+                                                    <mat-icon class="text-white icon-size-3.5" svgIcon="feather:user"></mat-icon>
+                                                </div>
+                                            }
+                                            <div class="min-w-0">
+                                                <div class="truncate text-xs font-bold">
+                                                    {{ event.dentist?.name }} {{ event.dentist?.apellido }}
+                                                </div>
+                                                <div class="truncate text-[10px] opacity-90">
+                                                    {{ event.dentist?.specialty || 'Odontologo' }}
+                                                </div>
+                                            </div>
                                         </div>
                                         @if (getEventDurationMinutes(event) > 30) {
                                             <div
@@ -699,10 +869,21 @@
                                                     </div>
                                                 }
 
-                                                <div
-                                                    class="truncate text-xs font-bold"
-                                                >
-                                                    {{ event.treatment }}
+                                                <div class="flex items-center gap-1.5 pr-5">
+                                                    @if (event.dentist?.avatar) {
+                                                        <img
+                                                            [src]="event.dentist.avatar"
+                                                            alt="Foto odontologo"
+                                                            class="h-5 w-5 rounded-full border border-white/40 object-cover"
+                                                        />
+                                                    } @else {
+                                                        <div class="flex h-5 w-5 items-center justify-center rounded-full bg-white/20">
+                                                            <mat-icon class="text-white icon-size-3" svgIcon="feather:user"></mat-icon>
+                                                        </div>
+                                                    }
+                                                    <div class="min-w-0 truncate text-[10px] font-bold">
+                                                        {{ event.dentist?.name }} {{ event.dentist?.apellido }}
+                                                    </div>
                                                 </div>
                                                 <div
                                                     class="mt-0.5 truncate text-[10px] font-medium opacity-90"
@@ -730,6 +911,117 @@
                                 </div>
                             }
                         </div>
+                    </div>
+                }
+                @if (currentView === 'multi') {
+                    <div class="flex h-full flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+                        @if (getDentistsForMultiView().length === 0) {
+                            <div class="flex h-full items-center justify-center p-8 text-center text-sm text-slate-600">
+                                Selecciona un odontologo para ver su agenda o cambia el alcance a "Todos".
+                            </div>
+                        } @else {
+                            <div
+                                class="grid border-b border-gray-200 bg-gray-50/50"
+                                [style.grid-template-columns]="'80px repeat(' + getDentistsForMultiView().length + ', minmax(220px, 1fr))'"
+                            >
+                                <div class="border-r border-gray-100 p-3 text-center text-xs font-medium uppercase tracking-wider text-gray-400">
+                                    Hora
+                                </div>
+                                @for (dentistBoard of getDentistsForMultiView(); track dentistBoard.id) {
+                                    <div class="border-l border-gray-100 p-3">
+                                        <div class="flex items-center gap-2">
+                                            @if (dentistBoard.avatar) {
+                                                <img
+                                                    [src]="dentistBoard.avatar"
+                                                    alt="Foto odontologo"
+                                                    class="h-8 w-8 rounded-full border border-slate-200 object-cover"
+                                                />
+                                            } @else {
+                                                <div class="flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-slate-100 text-slate-500">
+                                                    <mat-icon class="icon-size-4" svgIcon="feather:user"></mat-icon>
+                                                </div>
+                                            }
+                                            <div class="min-w-0">
+                                                <div class="truncate text-sm font-semibold text-slate-900">
+                                                    {{ dentistBoard.name }} {{ dentistBoard.apellido }}
+                                                </div>
+                                                <div class="truncate text-xs text-slate-500">
+                                                    {{ dentistBoard.specialty || 'Sin especialidad' }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+
+                            <div
+                                class="custom-scrollbar grid flex-1 overflow-y-auto"
+                                [style.grid-template-columns]="'80px repeat(' + getDentistsForMultiView().length + ', minmax(220px, 1fr))'"
+                            >
+                                <div class="border-r border-gray-100 bg-gray-50/30 text-gray-400">
+                                    @for (time of timeSlots; track $index) {
+                                        <div class="relative flex h-20 items-center justify-end border-b border-gray-100 pr-3 text-right text-xs font-medium">
+                                            <span class="-translate-y-1/2">{{
+                                                time > 12
+                                                    ? time - 12 + ' PM'
+                                                    : time === 12
+                                                      ? time + ' PM'
+                                                      : time + ' AM'
+                                            }}</span>
+                                        </div>
+                                    }
+                                </div>
+
+                                @for (dentistBoard of getDentistsForMultiView(); track dentistBoard.id) {
+                                    <div
+                                        class="relative border-l border-gray-100"
+                                        [ngClass]="{
+                                            'bg-gray-400/20': !isDayAvailableForDentist(currentDate, dentistBoard),
+                                            'cursor-pointer': !isPastDate(currentDate) && isDayAvailableForDentist(currentDate, dentistBoard),
+                                            'cursor-not-allowed': isPastDate(currentDate) || !isDayAvailableForDentist(currentDate, dentistBoard)
+                                        }"
+                                        (click)="onMultiSlotClick(dentistBoard, currentDate, $event)"
+                                    >
+                                        @if (compareDate(currentDate) && isCurrentTimeInRange()) {
+                                            <div
+                                                class="absolute z-20 w-full pointer-events-none"
+                                                [ngStyle]="{ top: getCurrentTimePosition() }"
+                                            >
+                                                <div class="relative w-full border-t-2 border-red-500">
+                                                    <div class="absolute -left-1.5 -top-1.5 h-3 w-3 rounded-full bg-red-500"></div>
+                                                </div>
+                                            </div>
+                                        }
+
+                                        @for (time of timeSlots; track $index) {
+                                            <div
+                                                class="h-20 border-b border-gray-100"
+                                                (click)="onMultiSlotHourClick(dentistBoard, currentDate, time, $event)"
+                                            ></div>
+                                        }
+
+                                        @for (event of getEventsByDentistAndDate(dentistBoard.id, currentDate); track event.id) {
+                                            <div
+                                                class="absolute cursor-pointer rounded-md border-l-2 border-white/20 p-2 text-white shadow-sm"
+                                                [class]="getStatusColor(event.status)"
+                                                [ngStyle]="calculateEventStyle(event.start_time, event.end_time)"
+                                                (click)="openEvent(event); $event.stopPropagation()"
+                                            >
+                                                <div class="truncate text-xs font-semibold">
+                                                    {{ event.patient?.name }}
+                                                </div>
+                                                <div class="mt-0.5 truncate text-[10px] opacity-90">
+                                                    {{ event.start_time | date: 'hh:mm a' }} - {{ event.end_time | date: 'hh:mm a' }}
+                                                </div>
+                                                <div class="mt-1 inline-block rounded bg-black/10 px-1.5 py-0.5 text-[10px]">
+                                                    {{ event.status }}
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        }
                     </div>
                 }
                 @if (currentView === 'month') {
@@ -827,7 +1119,10 @@
                                                                     "
                                                                 >
                                                                     <div class="flex items-center justify-between gap-1 text-white">
-                                                                        <span class="truncate">{{ event.treatment }}</span>
+                                                                        <span class="truncate flex items-center gap-1">
+                                                                            <mat-icon class="icon-size-3 text-white/90" svgIcon="feather:user"></mat-icon>
+                                                                            {{ event.dentist?.name }} {{ event.dentist?.apellido }}
+                                                                        </span>
                                                                         <button 
                                                                             class="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-white/20 transition-colors hover:bg-white/40 opacity-0 group-hover:opacity-100"
                                                                             (click)="toggleMessageInput(event.id, $event)"
@@ -981,12 +1276,17 @@
                                                                         $event.stopPropagation()
                                                                     "
                                                                 >
-                                                                    <div
-                                                                        class="truncate font-bold"
-                                                                    >
-                                                                        {{
-                                                                            event.treatment
-                                                                        }}
+                                                                    <div class="flex items-center gap-1.5">
+                                                                        <mat-icon
+                                                                            svgIcon="feather:user"
+                                                                            class="icon-size-3 text-white"
+                                                                        />
+                                                                        <span class="truncate font-bold">
+                                                                            {{ event.dentist?.name }} {{ event.dentist?.apellido }}
+                                                                        </span>
+                                                                    </div>
+                                                                    <div class="mt-0.5 truncate text-[10px] opacity-90">
+                                                                        {{ event.dentist?.specialty || 'Odontologo' }}
                                                                     </div>
                                                                     <div
                                                                         class="mt-0.5 flex items-center gap-1 text-[10px] opacity-90"

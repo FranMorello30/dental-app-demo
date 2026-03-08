@@ -25,6 +25,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
 import { MatDrawer, MatSidenavModule } from '@angular/material/sidenav';
+import { environment } from '@environments/environment';
 import { Appointment } from '@shared/models/appointement.model';
 import { Dentist } from '@shared/models/dentist.model';
 import { WebsocketService } from '@shared/services/websocket.service';
@@ -33,7 +34,6 @@ import { CalendarioService } from './calendario.service';
 import { ModalDetalleComponent } from './components/modal-detalle/modal-detalle.component';
 import { ModalEventoSidebarComponent } from './components/modal-evento-sidebar/modal-evento-sidebar.component';
 import { ModalEventoComponent } from './components/modal-evento/modal-evento.component';
-import { ModalRegistroComponent } from './components/modal-registro/modal-registro.component';
 import { SidebarRegistroComponent } from './components/sidebar-registro/sidebar-registro.component';
 
 @Component({
@@ -47,7 +47,6 @@ import { SidebarRegistroComponent } from './components/sidebar-registro/sidebar-
         MatIconModule,
         MatButtonModule,
         MatSelectModule,
-        ModalRegistroComponent,
         ModalEventoComponent,
         ModalDetalleComponent,
         ModalEventoSidebarComponent,
@@ -110,7 +109,10 @@ export class CalendarioComponent implements OnInit, OnDestroy {
     private readonly _calendarioService = inject(CalendarioService);
     private readonly _websocketService = inject(WebsocketService);
 
-    currentView: 'day' | 'week' | 'month' = 'week';
+    currentView: 'day' | 'week' | 'month' | 'multi' = 'week';
+    public layoutMode: 'list' | 'cards' =
+        environment.calendarLayoutMode === 'cards' ? 'cards' : 'list';
+    public multiDentistScope: 'all' | 'selected' = 'all';
     currentDate: Date = new Date();
 
     // Message popup state
@@ -229,13 +231,15 @@ export class CalendarioComponent implements OnInit, OnDestroy {
         this.getWeekDates();
         this._getDentist();
         this.getAppointments();
-        this.selectDentist.valueChanges.subscribe((dentistId: Dentist) => {
-            if (dentistId) {
-                this._getDentistAvailability(dentistId);
+        this.selectDentist.valueChanges.subscribe(
+            (selectedDentist: Dentist) => {
+                if (selectedDentist) {
+                    this._getDentistAvailability(selectedDentist);
+                }
+                this.getFilteredEvents();
+                this._detectChange.detectChanges();
             }
-            this.getFilteredEvents();
-            this._detectChange.detectChanges();
-        });
+        );
 
         this._websocketService
             .listen('change-status-appointment')
@@ -455,6 +459,8 @@ export class CalendarioComponent implements OnInit, OnDestroy {
             newDate.setDate(newDate.getDate() - 1);
         } else if (this.currentView === 'week') {
             newDate.setDate(newDate.getDate() - 7);
+        } else if (this.currentView === 'multi') {
+            newDate.setDate(newDate.getDate() - 1);
         } else if (this.currentView === 'month') {
             newDate.setMonth(newDate.getMonth() - 1);
         }
@@ -470,6 +476,8 @@ export class CalendarioComponent implements OnInit, OnDestroy {
             newDate.setDate(newDate.getDate() + 1);
         } else if (this.currentView === 'week') {
             newDate.setDate(newDate.getDate() + 7);
+        } else if (this.currentView === 'multi') {
+            newDate.setDate(newDate.getDate() + 1);
         } else if (this.currentView === 'month') {
             newDate.setMonth(newDate.getMonth() + 1);
         }
@@ -671,8 +679,112 @@ export class CalendarioComponent implements OnInit, OnDestroy {
         this.crearCita(date);
     }
 
-    onViewChange(view: 'day' | 'week' | 'month'): void {
+    onViewChange(view: 'day' | 'week' | 'month' | 'multi'): void {
         this.currentView = view;
+        if (view === 'multi') {
+            this.multiDentistScope = 'all';
+        }
+    }
+
+    setLayoutMode(mode: 'list' | 'cards'): void {
+        this.layoutMode = mode;
+        if (
+            this.layoutMode === 'cards' &&
+            !this.dentist &&
+            this.dentists.length > 0
+        ) {
+            this.selectDentist.setValue(this.dentists[0]);
+        }
+    }
+
+    setMultiDentistScope(scope: 'all' | 'selected'): void {
+        this.multiDentistScope = scope;
+    }
+
+    getDentistsForMultiView(): Dentist[] {
+        if (this.multiDentistScope === 'selected') {
+            return this.dentist ? [this.dentist] : [];
+        }
+
+        return this.dentists;
+    }
+
+    isDayAvailableForDentist(date: Date, dentist: Dentist): boolean {
+        const dayOfWeek = date.getDay();
+        const availableDays = dentist.schedules
+            .filter((schedule) => schedule.is_working_day)
+            .map((schedule) => schedule.day_of_week);
+
+        let available = availableDays.includes(dayOfWeek);
+
+        if (dentist.unavailabilities && dentist.unavailabilities.length > 0) {
+            const dateToCheck = new Date(date);
+            dateToCheck.setHours(0, 0, 0, 0);
+
+            const isUnavailable = dentist.unavailabilities.some((u) => {
+                const unavailDate = new Date(u.unavailable_date + 'T00:00:00');
+                unavailDate.setHours(0, 0, 0, 0);
+                return unavailDate.getTime() === dateToCheck.getTime();
+            });
+
+            available = available && !isUnavailable;
+        }
+
+        return available;
+    }
+
+    getEventsByDentistAndDate(dentistId: string, date: Date): Appointment[] {
+        return this.allEvents
+            .filter(
+                (event) =>
+                    event.dentist?.id === dentistId &&
+                    event.start_time.getDate() === date.getDate() &&
+                    event.start_time.getMonth() === date.getMonth() &&
+                    event.start_time.getFullYear() === date.getFullYear()
+            )
+            .sort((a, b) => a.start_time.getTime() - b.start_time.getTime());
+    }
+
+    onMultiSlotHourClick(
+        dentist: Dentist,
+        date: Date,
+        hour: number,
+        event?: MouseEvent
+    ): void {
+        if (event) {
+            event.stopPropagation();
+        }
+
+        this.selectDentist.setValue(dentist);
+
+        const targetDate = new Date(date);
+        targetDate.setHours(hour, 0, 0, 0);
+
+        if (
+            this.isPastDate(targetDate) ||
+            !this.isDayAvailableForDentist(targetDate, dentist)
+        ) {
+            return;
+        }
+
+        this.crearCita(targetDate);
+    }
+
+    onMultiSlotClick(dentist: Dentist, date: Date, event?: MouseEvent): void {
+        if (event) {
+            event.stopPropagation();
+        }
+
+        this.selectDentist.setValue(dentist);
+
+        if (
+            this.isPastDate(date) ||
+            !this.isDayAvailableForDentist(date, dentist)
+        ) {
+            return;
+        }
+
+        this.crearCita(date);
     }
     getStatusColor(status: string): string {
         switch (status) {
@@ -782,12 +894,27 @@ export class CalendarioComponent implements OnInit, OnDestroy {
         this._calendarioService.getAllDentists().subscribe({
             next: (response) => {
                 this.dentists = response;
+                if (
+                    this.layoutMode === 'cards' &&
+                    !this.dentist &&
+                    this.dentists.length > 0
+                ) {
+                    this.selectDentist.setValue(this.dentists[0]);
+                }
                 this._detectChange.detectChanges();
             },
             error: (error) => {
                 console.error('Error fetching dentists:', error);
             },
         });
+    }
+
+    isDentistSelected(dentist: Dentist): boolean {
+        return this.dentist?.id === dentist.id;
+    }
+
+    selectDentistFromCard(dentist: Dentist): void {
+        this.selectDentist.setValue(dentist);
     }
 
     getEventsForSelectedDentist(): Appointment[] {
